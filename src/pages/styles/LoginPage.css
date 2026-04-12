@@ -1,0 +1,132 @@
+.login-page {
+  min-height: 100vh;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Inter", sans-serif;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  padding: 40px 35px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e2e8f0;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-logo {
+  width: 100px;
+  margin-bottom: 10px;
+}
+
+.login-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin-top: 5px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Inputs */
+.login-input {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  transition: 0.2s ease;
+}
+
+.login-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Radio buttons */
+.login-role {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.login-role label {
+  font-size: 14px;
+  color: #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.login-role input[type="radio"] {
+  accent-color: #1e293b; /* اللون الأساسي للـ radio */
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Button */
+.login-button {
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #1e293b;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-button:hover {
+  background: #334155;
+}
+
+
+/* Error message */
+.error {
+  color: #dc2626; /* أحمر فاتح */
+  font-size: 13px;
+  text-align: center;
+  margin-top: -5px;
+  margin-bottom: 5px;
+}
+
+/* Footer */
+.login-footer {
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 20px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .login-card {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+
+  .login-role {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

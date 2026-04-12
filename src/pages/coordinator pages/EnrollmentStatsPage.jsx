@@ -1,0 +1,342 @@
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import api from "../../services/api";
+import swalService from "../../services/swal";
+import {
+    ArrowLeft, Users, Search, Lock, Unlock,
+    GraduationCap, BookOpen, AlertCircle, CheckCircle2
+} from "lucide-react";
+
+import { FaArrowLeft } from "react-icons/fa";
+// تأكدي أن المسار لملف الـ CSS صحيح
+import "../styles/EnrollmentStatusPage.css";
+
+const EnrollmentStatsPage = () => {
+    const { semesterId } = useParams();
+    const navigate = useNavigate();
+    const { role } = useParams();
+    const [offerings, setOfferings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("All");
+    const [selectedCourse, setSelectedCourse] = useState(null); // لتخزين بيانات المادة المختارة
+    const [students, setStudents] = useState([]); // لتخزين قائمة الطلبة
+    const [loadingStudents, setLoadingStudents] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [typeFilter, setTypeFilter] = useState("All");
+
+
+    const handleViewStudents = (courseId, courseName) => {
+        // هنبعت الـ courseName في الـ state عشان يظهر في العنوان هناك من غير ما نطلبه من الـ API تاني
+        navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/students`, {
+            state: { courseName }
+        });
+    };
+    // --- Fetch Data ---
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get(`/course-offerings?semesterId=${semesterId}`);
+            setOfferings(res.data || []);
+        } catch (err) {
+            console.error("Failed to fetch stats", err);
+            // تنبيه المستخدم بوجود مشكلة في الاتصال
+            swalService.error("Connection Error", "Could not load enrollment data.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (semesterId) fetchData();
+    }, [semesterId]);
+
+    // --- Actions ---
+    const handleToggleStatus = async (offeringId, currentStatus) => {
+        const offering = offerings.find(o => o._id === offeringId);
+        const enrolledCount = offering?.enrolledCount || 0;
+        const newStatus = currentStatus === "open" ? "closed" : "open";
+
+        // --- منطق التأكيد الاحترافي باستخدام SweetAlert ---
+        if (newStatus === "closed") {
+            let title = "Close Course?";
+            let text = "Are you sure you want to CLOSE this course? This will prevent any future enrollments.";
+            let icon = "warning";
+
+            // تحذير شديد اللهجة إذا كان هناك طلاب مسجلون
+            if (enrolledCount > 0) {
+                title = "⚠️ CRITICAL WARNING";
+                text = `This course has (${enrolledCount}) students enrolled. Closing it will PERMANENTLY block their registration!`;
+            }
+
+            const result = await swalService.confirm(title, text, "Yes, close it!");
+            if (!result.isConfirmed) return;
+        }
+
+        // --- تنفيذ التحديث ---
+        try {
+            // إظهار Loading بسيط أثناء تحديث السيرفر
+            swalService.showLoading("Updating course status...");
+
+            await api.put(`/course-offerings/${offeringId}`, { status: newStatus });
+
+            setOfferings(prev => prev.map(off =>
+                off._id === offeringId ? { ...off, status: newStatus } : off
+            ));
+
+            swalService.success(
+                "Status Updated",
+                `Course is now ${newStatus.toUpperCase()}`
+            );
+        } catch (err) {
+            console.error("Failed to update status", err);
+            swalService.error("Server Error", "Failed to update course status. Please try again.");
+        }
+    };
+
+    const handleCardClick = (filterName) => {
+        if (typeFilter === filterName) {
+            setTypeFilter("All");
+        } else {
+            setTypeFilter(filterName);
+        }
+    };
+
+    // --- Logic & Calculations ---
+    const stats = useMemo(() => {
+        const total = offerings.length;
+        const empty = offerings.filter(o => (o.enrolledCount || 0) === 0).length;
+        const withGrads = offerings.filter(o => (o.graduatingCount || 0) > 0).length;
+        const suggestions = offerings.filter(o => o.status === 'open' && (o.enrolledCount || 0) < 5 && (o.graduatingCount || 0) === 0).length;
+
+        return { total, empty, withGrads, suggestions };
+    }, [offerings]);
+
+    // منطق الفلترة المتقدم للجدول
+    const filteredData = useMemo(() => {
+        return offerings.filter(off => {
+            // حماية ضد البيانات الـ undefined لمنع الـ Runtime Error
+            const courseName = off.courseId?.courseName || "";
+            const courseCode = off.courseId?._id || "";
+            const currentSearch = searchTerm?.toLowerCase() || "";
+
+            const matchesSearch = courseName.toLowerCase().includes(currentSearch) ||
+                courseCode.toLowerCase().includes(currentSearch);
+
+            const matchesStatus = statusFilter === "All" || off.status === statusFilter;
+
+            let matchesType = true;
+            if (typeFilter === "Graduates") matchesType = (off.graduatingCount || 0) > 0;
+            if (typeFilter === "Empty") matchesType = (off.enrolledCount || 0) === 0;
+            if (typeFilter === "Suggestions") {
+                matchesType = off.status === 'open' && (off.enrolledCount || 0) < 5 && (off.graduatingCount || 0) === 0;
+            }
+
+            return matchesSearch && matchesStatus && matchesType;
+        });
+    }, [offerings, searchTerm, statusFilter, typeFilter]);
+
+    if (loading) return <div className="loading">Analyzing Enrollment Data...</div>;
+
+    return (
+        <div className="prereg-container">
+            {/* Header */}
+            <div className="prereg-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <button onClick={() => navigate(-1)} className="back-btn-round" >
+                        <FaArrowLeft />
+                    </button>
+                    <h2>Live Enrollment</h2>
+                </div>
+            </div>
+
+            {/* Statistics Cards (Clickable) */}
+            <div className="insights-grid">
+                <div
+                    className={`insight-card university-stats clickable-card`}
+                    onClick={() => setTypeFilter('All')}
+                >
+                    <div className="insight-header">
+                        <span className="insight-icon icon-blue"><BookOpen size={18} /></span>
+                        <span className="insight-label">Total Offerings</span>
+                    </div>
+                    <div className="insight-value-large">{stats.total}</div>
+                    <div className="insight-footer">Active Semester Courses</div>
+                </div>
+
+                {/* كارد الفاضي */}
+                <div
+                    className={`insight-card clickable-card ${typeFilter === 'Empty' ? 'active-card card-empty' : ''}`}
+                    onClick={() => handleCardClick('Empty')}
+                >
+                    <div className="insight-header">
+                        <span className="insight-icon icon-orange"><AlertCircle size={18} /></span>
+                        <span className="insight-label">Empty Courses</span>
+                    </div>
+                    <div className="insight-value">{stats.empty}</div>
+                    <div className="insight-footer">0 Students enrolled</div>
+                </div>
+
+                {/* كارد الخريجين */}
+                <div
+                    className={`insight-card clickable-card ${typeFilter === 'Graduates' ? 'active-card card-grads' : ''}`}
+                    onClick={() => handleCardClick('Graduates')}
+                >
+                    <div className="insight-header">
+                        <span className="insight-icon icon-green"><GraduationCap size={18} /></span>
+                        <span className="insight-label">Graduation Critical</span>
+                    </div>
+                    <div className="insight-value">{stats.withGrads}</div>
+                    <div className="insight-footer">Contains seniors</div>
+                </div>
+
+                {/* كارد اقتراحات السيستم */}
+                <div
+                    className={`insight-card clickable-card ${typeFilter === 'Suggestions' ? 'active-card card-suggestions' : ''}`}
+                    onClick={() => handleCardClick('Suggestions')}
+                >
+                    <div className="insight-header">
+                        <span className="insight-icon icon-red"><AlertCircle size={18} style={{ color: typeFilter === 'Suggestions' ? 'inherit' : '#ef4444' }} /></span>
+                        <span className="insight-label">Suggestions</span>
+                    </div>
+                    <div className="insight-value" style={{ color: typeFilter === 'Suggestions' ? 'inherit' : '#ef4444' }}>{stats.suggestions}</div>
+                    <div className="insight-footer">Recommended to close</div>
+                </div>
+            </div>
+
+            {/* Controls */}
+            <div className="table-controls">
+                <div className="search-in-prereg-box">
+                    <Search size={20} color="#9ca3af" />
+                    <input
+                        type="text"
+                        placeholder="Search by name or code..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="drop-filters-group">
+                    {/* فلتر الحالة يظل يعمل بالتوازي */}
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-dropdown">
+                        <option value="All">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    {/* فلتر النوع يظهر الحالة المختارة عبر الكروت */}
+                    <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="filter-dropdown">
+                        <option value="All">All Types</option>
+                        <option value="Graduates">With Graduates</option>
+                        <option value="Empty">Zero Enrollment</option>
+                        <option value="Suggestions">Suggestions</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Main Table */}
+            <div className="table-wrapper">
+                <table className="management-data-table">
+                    <thead>
+                        <tr>
+                            <th>Course Details</th>
+                            <th>Status</th>
+                            <th>Students</th>
+                            <th>Graduating</th>
+                            <th>System Hint</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredData.map(off => (
+                            <tr key={off._id}>
+                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off.courseId?.courseName)}>
+                                    <div className="c-name">{off.courseId?.courseName || "Unknown Course"}</div>
+                                    <div className="c-id">{off.courseId?._id || off.courseId}</div>
+                                </td>
+                                <td>
+                                    {/* status-badge live/draft معرف في السي اس اس الأصلي */}
+                                    <span className={`status-badge ${off.status === 'open' ? 'live' : 'draft'}`}>
+                                        {off.status ? off.status.toUpperCase() : 'N/A'}
+                                    </span>
+                                </td>
+                                <td className="text-center bold-value fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off.courseId?.courseName)}>
+                                    {off.enrolledCount || 0}
+                                </td>
+                                <td className="text-center">
+                                    <span className={(off.graduatingCount || 0) > 0 ? "g-critical" : "g-normal"}>
+                                        {off.graduatingCount || 0}
+                                    </span>
+                                </td>
+                                <td>
+                                    {(off.enrolledCount || 0) < 5 && off.status === 'open' && (off.graduatingCount || 0) === 0 ? (
+                                        <span className="h-low-demand">
+                                            <AlertCircle size={14} /> Low Demand
+                                        </span>
+                                    ) : (off.graduatingCount || 0) > 0 ? (
+                                        <span className="h-mandatory">
+                                            <CheckCircle2 size={14} /> Mandatory
+                                        </span>
+                                    ) : <span className="h-normal">Normal</span>}
+                                </td>
+                                <td className="text-center">
+                                    <button
+                                        className={`status-toggle-btn ${off.status === 'open' ? 'st-close' : 'st-open'}`}
+                                        onClick={() => handleToggleStatus(off._id, off.status)}
+                                    >
+                                        {off.status === 'open' ? <Lock size={14} /> : <Unlock size={14} />}
+                                        {off.status === 'open' ? 'Close' : 'Open'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {filteredData.length === 0 && (
+                    <div className="table-no-data">
+                        No courses found matching your criteria.
+                    </div>
+                )}
+
+            </div>
+            {/* Students Modal */}
+            {isModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Students Enrolled in: {selectedCourse}</h3>
+                            <button className="close-modal" onClick={() => setIsModalOpen(false)}>×</button>
+                        </div>
+
+                        <div className="modal-body">
+                            {loadingStudents ? (
+                                <div className="loader">Loading students list...</div>
+                            ) : students.length > 0 ? (
+                                <div className="table-wrapper">
+                                    <table className="students-list-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Student ID</th>
+                                                <th>Student Name</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {students.map((item) => (
+                                                <tr key={item.studentId?._id}>
+                                                    <td>{item.studentId?._id}</td>
+                                                    <td>{item.studentId?.studentName}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="no-data">No students enrolled in this course yet.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default EnrollmentStatsPage;

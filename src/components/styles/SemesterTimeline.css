@@ -1,0 +1,159 @@
+.timeline-wrapper{
+/* margin-top:30px;
+background:#f8f9ff;
+padding:25px;
+border-radius:12px; */
+margin-bottom: 30px !important;
+}
+
+.timeline-container{
+position:relative;
+}
+
+.timeline-line{
+position:relative;
+height:8px;
+    border-radius: 10px;
+background:#ddd;
+margin:30px 0;
+}
+
+.timeline-progress{
+position:absolute;
+height:8px;
+background:#4a6cf7;
+top:0;
+left:0;
+transition:0.5s;
+    border-radius: 10px;
+}
+
+.timeline-events{
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+}
+
+.timeline-point{
+text-align:center;
+position:relative;
+width:150px;
+}
+
+.timeline-point span{
+display:block;
+width:16px;
+height:16px;
+border-radius:50%;
+background:#bbb;
+margin:0 auto 10px auto;
+}
+
+.timeline-point.start span{
+background:#2ecc71;
+}
+
+.timeline-point.end span{
+background:#e74c3c;
+}
+
+.timeline-point.active span{
+background:#4a6cf7;
+box-shadow:0 0 0 6px rgba(74,108,247,0.2);
+}
+
+.timeline-point h4{
+font-size:14px;
+margin-bottom:15px;
+}
+
+.timeline-point p{
+font-size:12px;
+color:#666;
+}
+
+.timeline-point small{
+font-size:11px;
+color:#999;
+}
+
+.timeline-point {
+    position: relative;
+}
+
+.edit-timeline-btn {
+    position: absolute;
+    top: -20px;
+    right: 0;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 4px;
+    cursor: pointer;
+    color: #64748b;
+    opacity: 0; /* مخفي افتراضياً */
+    transition: all 0.2s;
+}
+
+.timeline-point:hover .edit-timeline-btn {
+    opacity: 1; /* يظهر لما تقفي بالماوس على النقطة */
+    transform: translateY(-5px);
+}
+
+.edit-timeline-btn:hover {
+    background: #1e293b;
+    color: white;
+}
+
+/* زرار الإيديت اللي فوق النقطة */
+.edit-timeline-btn {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    opacity: 0; /* مخفي وهنظهره بالـ hover */
+    transition: all 0.2s;
+    z-index: 5;
+}
+
+.timeline-point:hover .edit-timeline-btn {
+    opacity: 1;
+    top: -30px;
+}
+
+.edit-timeline-btn:hover {
+    background: #1e293b;
+    color: white;
+}
+
+/* ستايل المودال عشان ميتداخلش مع الصفحة */
+.cancel-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.timeline-wrapper .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
