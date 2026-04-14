@@ -21,18 +21,14 @@ const EditStaffModal = ({ isOpen, onClose, staffId, onUpdate }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Fetch staff data when modal opens
     useEffect(() => {
         if (isOpen && staffId) {
             const fetchStaff = async () => {
                 try {
                     setLoading(true);
-                    // ممكن هنا منظهرش Swal Loading عشان ميبقاش "زعاج" لليوزر في عملية الـ Fetch
-                    // ونكتفي بالـ loading state اللي بيشغل Spinner جوه المودال نفسه
 
                     const res = await api.get(`/staff/${staffId}`);
 
-                    // التعامل مع شكل الداتا (سواء جاية في data object أو مباشرة)
                     const data = res.data.data ? res.data.data : res.data;
 
                     setFormData({
@@ -43,15 +39,13 @@ const EditStaffModal = ({ isOpen, onClose, staffId, onUpdate }) => {
                         roles: data.roles || []
                     });
 
-                    // ريست لكل حالات المودال عشان ميبقاش فيه داتا قديمة من يوزر تاني
                     setChangePassword(false);
                     setConfirmPassword('');
                     setErrors({});
                 } catch (err) {
                     console.error("Fetch Error:", err);
-                    // هنا بقى لازم Swal عشان نعرف اليوزر إن فيه مشكلة في الاتصال
                     swalService.error("Fetch Failed", "Could not load staff data. Please try again.");
-                    onClose(); // يفضل نقفل المودال لو الداتا مجاتش أصلاً
+                    onClose();
                 } finally {
                     setLoading(false);
                 }
@@ -80,7 +74,6 @@ const EditStaffModal = ({ isOpen, onClose, staffId, onUpdate }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // 1. تحديث البيانات الأساسية فقط
 
     const handleUpdateBasicInfo = async (e) => {
         if (e) e.preventDefault();

@@ -40,7 +40,6 @@ const AppLayout = () => {
     const userType = Cookies.get("userType") || "student";
     const user = JSON.parse(Cookies.get("currentUser") || "{}");
 
-    // الرول الحالية محفوظة في كوكيز لتجنب إعادة التعيين على reload
     const initialRole = Cookies.get("activeRole") || user.roles?.[0] || userType;
 
     const [collapsed, setCollapsed] = useState(false);
@@ -64,20 +63,22 @@ const AppLayout = () => {
     };
     const handleRoleChange = (newRole) => {
         setActiveRole(newRole);
-        // رسالة نجاح سريعة توضح إن المنيو اتغيرت
+        const roleMenuItems = menuConfig[newRole];
+        const firstPath = roleMenuItems && roleMenuItems.length > 0
+            ? roleMenuItems[0].path
+            : "/";
+        navigate(firstPath);
         swalService.success(
             "Role Switched",
-            `You are now viewing the dashboard as ${newRole}`
+            `You are now viewing the dashboard as ${newRole.replace('-', ' ')}`
         );
     };
-
 
 
     const menuItems = userType === "student"
         ? menuConfig.student
         : menuConfig[activeRole] || [];
 
-    // فقط حفظ الرول في كوكيز بدون أي redirect
     useEffect(() => {
         if (userType === "staff" && activeRole) {
             Cookies.set("activeRole", activeRole, { expires: 1 });

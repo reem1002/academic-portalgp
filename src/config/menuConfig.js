@@ -39,11 +39,12 @@ export const menuConfig = {
             icon: <ScrollText size={iconSize} />
         },
         {
-            name: "Grades",
-            path: "/student/grades",
+            name: "Meetings",
+            path: "/student/meetings",
             icon: <Award size={iconSize} />
         }
     ],
+
 
     coordinator: [
         {
@@ -111,6 +112,17 @@ export const menuConfig = {
             name: "My Students",
             path: "/staff/academic-advisor/advise-students",
             icon: <GraduationCap size={iconSize} />
+        },
+        {
+            name: "Anouncements",
+            path: "/staff/academic-advisor/advising-anouncements",
+            icon: <Megaphone size={iconSize} />
+        },
+        ,
+        {
+            name: "Meetings",
+            path: "/staff/academic-advisor/ad-meetings",
+            icon: <Award size={iconSize} />
         }
     ],
 

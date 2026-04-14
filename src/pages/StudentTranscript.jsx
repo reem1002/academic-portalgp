@@ -8,6 +8,11 @@ import {
     FaEnvelope, FaSearch, FaFileDownload
 } from "react-icons/fa";
 
+import {
+    Trash2, GitBranch
+} from 'lucide-react';
+import TranscriptProgressMapModal from "../components/TranscriptProgressMapModal";
+
 const CREDIT_MAP = {
     total: { label: "Total Completed", key: "completedCredits" },
     allowed: { label: "Allowed (Next Reg.)", key: "allowedCredits" },
@@ -32,6 +37,17 @@ const StudentTranscript = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [creditType, setCreditType] = useState("total");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [allCourses, setAllCourses] = useState([]);
+
+    const fetchAllCourses = async () => {
+        try {
+            const res = await api.get("/student/me/courses");
+            setAllCourses(res.data.courses || []);
+        } catch (err) {
+            console.error("Failed to fetch courses", err);
+        }
+    };
 
 
     const fetchMyDetails = async () => {
@@ -62,7 +78,10 @@ const StudentTranscript = () => {
         };
     };
 
-    useEffect(() => { fetchMyDetails(); }, []);
+    useEffect(() => {
+        fetchMyDetails();
+        fetchAllCourses();
+    }, []);
 
     if (loading) return <div className="loading-container"><div className="loader"></div></div>;
     if (error) return <div className="error-container"><FaExclamationTriangle size={30} /> {error}</div>;
@@ -121,7 +140,6 @@ const StudentTranscript = () => {
 
 
 
-    // عدد المواد الراسبة بناءً على الـ status
     const failedCount = transcript.completedCourses?.filter(c => c.status === "failed").length || 0;
 
     return (
@@ -350,6 +368,13 @@ const StudentTranscript = () => {
                             <option value="passed">Passed Only</option>
                             <option value="failed">Failed Only</option>
                         </select>
+                        <button
+                            className="btn-1"
+                            onClick={() => setIsMapModalOpen(true)}
+
+                        >
+                            <GitBranch size={18} /> Progress Map
+                        </button>
                     </div>
                     <div className="table-wrapper">
                         <table className="modern-table">
@@ -397,6 +422,12 @@ const StudentTranscript = () => {
                     </div>
                 </div>
             </div>
+            <TranscriptProgressMapModal
+                isOpen={isMapModalOpen}
+                onClose={() => setIsMapModalOpen(false)}
+                studentData={data}
+                allCourses={allCourses}
+            />
         </div>
     );
 };

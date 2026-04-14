@@ -12,7 +12,6 @@ import StudentAddModal from '../../components/StudentAddModal';
 import StudentEditModal from '../../components/StudentEditModal';
 import StudentCSVModal from '../../components/StudentCSVModal';
 
-// استيراد الملف الجديد
 import '../styles/ProgramCourses.css';
 import "../styles/Students.css";
 

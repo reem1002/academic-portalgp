@@ -2,14 +2,13 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
 import { ArrowLeft, Search, Users, GraduationCap, Mail, Eye } from "lucide-react";
-import "../styles/StudentDetails.css"; // استخدمي ستايل مشابه لصفحة الطلاب
+import "../styles/StudentDetails.css";
 
 const CourseStudentsPage = () => {
     const { semesterId, courseId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
     const { role } = useParams();
-    // بناخد اسم المادة من الـ state اللي بعتناه، لو مش موجود بنكتب "Course Students"
     const courseName = location.state?.courseName || "Course Students";
 
     const [students, setStudents] = useState([]);
@@ -30,7 +29,7 @@ const CourseStudentsPage = () => {
         fetchStudents();
     }, [courseId]);
 
-    // فلترة البحث
+
     const filteredStudents = useMemo(() => {
         return students.filter(item =>
             item.studentId?.studentName?.toLowerCase().includes(searchTerm.toLowerCase()) ||

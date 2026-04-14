@@ -5,13 +5,14 @@ import swalService from "../../services/swal";
 import "../styles/StudentDetails.css";
 import {
     FaArrowLeft, FaPlus, FaUserTie,
-    FaExclamationTriangle, FaInfoCircle, FaEnvelope, FaPhoneAlt, FaSearch
+    FaExclamationTriangle, FaInfoCircle, FaEnvelope, FaPhoneAlt, FaMap, FaSearch
 } from "react-icons/fa";
 import {
-    Trash2,
+    Trash2, GitBranch
 } from 'lucide-react';
 
 import EditGradeModal from "../../components/EditGradeModal";
+import StudentProgressMapModal from "../../components/StudentProgressMap";
 import AddCompletedCourseModal from "../../components/AddCompletedCourseModal";
 
 const CREDIT_MAP = {
@@ -42,6 +43,17 @@ const StudentDetails = () => {
     const [filterType, setFilterType] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [creditType, setCreditType] = useState("total");
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [allCourses, setAllCourses] = useState([]);
+
+    const fetchAllCourses = async () => {
+        try {
+            const res = await api.get("/courses");
+            setAllCourses(res.data);
+        } catch (err) {
+            console.error("Failed to fetch courses", err);
+        }
+    };
 
     const fetchStudentDetails = async () => {
         try {
@@ -62,7 +74,10 @@ const StudentDetails = () => {
         return { letter: "F", class: "risk", status: "Failed" };
     };
 
-    useEffect(() => { fetchStudentDetails(); }, [id]);
+    useEffect(() => {
+        fetchStudentDetails();
+        fetchAllCourses();
+    }, [id]);
 
     if (loading) return <div className="loading-container"><div className="loader"></div></div>;
     if (error) return <div className="error-container"><FaExclamationTriangle size={30} /> {error}</div>;
@@ -76,7 +91,7 @@ const StudentDetails = () => {
         return transcript[apiKey] || 0;
     };
 
-    // تصفية البيانات للجدول (نوع المادة + كلمة البحث)
+
     const filteredCourses = transcript.completedCourses?.filter(c => {
         const matchesType = filterType === "all" || (filterType === "failed" ? c.grade < 60 : c.courseId?.courseType === filterType);
         const matchesSearch = c.courseId?.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,7 +114,6 @@ const StudentDetails = () => {
                 swalService.showLoading("Deleting course...");
                 await api.delete(`/transcripts/${transcript._id}/courses/${courseId}`);
 
-                // إعادة جلب البيانات لتحديث الـ GPA والـ Credits تلقائياً
                 await fetchStudentDetails();
 
                 swalService.success("Deleted", "The course has been removed and records updated.", 1500);
@@ -167,14 +181,12 @@ const StudentDetails = () => {
                 <div className={`dash-card primary ${transcript.GPA < 2 ? 'border-danger' : ''}`}>
                     <label>Cumulative GPA</label>
                     <div className="gpa-display">
-                        {/* إضافة Class 'text-danger' لو الـ GPA أقل من 2 */}
                         <span className={`gpa-value ${transcript.GPA < 2 ? 'text-danger' : ''}`}>
                             {transcript.GPA?.toFixed(2)}
                         </span>
                         <span className="gpa-max">/ 4.0</span>
                     </div>
                     <div className="mini-progress-bar">
-                        {/* تغيير لون الـ fill ليكون أحمر لو الـ GPA أقل من 2 */}
                         <div
                             className="fill"
                             style={{
@@ -288,7 +300,14 @@ const StudentDetails = () => {
                     <div className="data-section">
                         <div className="section-title-bar">
                             <h3>Academic Transcript</h3>
-                            <button className="add-action-btn" onClick={() => setIsAddModalOpen(true)}><FaPlus /> Add Completed Course</button>
+                            <button
+                                className="btn-1"
+                                onClick={() => setIsMapModalOpen(true)}
+
+                            >
+                                <GitBranch size={18} /> Progress Map
+                            </button>
+                            {/* <button className="add-action-btn" onClick={() => setIsAddModalOpen(true)}><FaPlus /> Add Completed Course</button> */}
                         </div>
 
                         <div className="filter-search-row">
@@ -353,7 +372,7 @@ const StudentDetails = () => {
             </div>
 
             <EditGradeModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={fetchStudentDetails} courseData={editingCourse} />
-            
+
             <AddCompletedCourseModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
@@ -363,6 +382,12 @@ const StudentDetails = () => {
                     swalService.success("Course Added", "The transcript has been updated successfully.");
                 }}
                 transcriptId={transcript._id}
+            />
+            <StudentProgressMapModal
+                isOpen={isMapModalOpen}
+                onClose={() => setIsMapModalOpen(false)}
+                studentData={data}
+                allCourses={allCourses}
             />
         </div>
     );

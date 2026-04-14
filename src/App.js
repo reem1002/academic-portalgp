@@ -6,7 +6,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
 import StudentTranscript from "./pages/StudentTranscript";
 import StudentDetails from "./pages/coordinator pages/StudentDetails";
-import Grades from "./pages/Grades";
+import StudentMeetings from "./pages/StudentMeetings";
 
 import PreRegistrationManagement from "./pages/coordinator pages/PreRegistrationManagementPage";
 import EnrollmentStatsPage from "./pages/coordinator pages/EnrollmentStatsPage";
@@ -17,7 +17,12 @@ import StaffManagement from "./pages/coordinator pages/StaffMnagement";
 import AdvisingManagementPage from "./pages/coordinator pages/AdvisingManagementPage";
 import AdvisingDetailsPage from "./pages/coordinator pages/AdvisingDetailsPage";
 import Announcements from "./pages/coordinator pages/Announcements";
+import UnassignedStudentsPage from "./pages/coordinator pages/UnassignedStudentsPage";
 
+import AdviseStudents from "./pages/academicAdvisor/AdviseStudents";
+import AdvisingAnnouncements from "./pages/academicAdvisor/AdvisingAnnouncements";
+import AdvisingMeetings from "./pages/academicAdvisor/AdvisingMeetings";
+import AdviserEnrollmentPage from "./pages/academicAdvisor/AdviserEnrollmentPage"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -52,7 +57,7 @@ function App() {
           <Route path="transcript" element={<StudentTranscript />} />
           {/* <Route path="courses" element={<Courses />} /> */}
 
-          <Route path="grades" element={<Grades />} />
+          <Route path="meetings" element={<StudentMeetings />} />
           <Route path="registration" element={<StudentCourseOfferingsPage />} />
         </Route>
 
@@ -77,11 +82,13 @@ function App() {
           <Route path=":role/Advising-management" element={<AdvisingManagementPage />} />
           <Route path=":role/advising/details/:advisorId" element={<AdvisingDetailsPage />} />
           <Route path=":role/Anouncements" element={<Announcements />} />
-          <Route path=":role/advise-students" element={<Announcements />} />
+          <Route path=":role/advising/unassigned" element={<UnassignedStudentsPage />} />
+          {/* _______________ */}
+          <Route path=":role/advise-students" element={<AdviseStudents />} />
+          <Route path=":role/advising-anouncements" element={<AdvisingAnnouncements />} />
+          <Route path=":role/ad-meetings" element={<AdvisingMeetings />} />
 
-         
-
-
+          <Route path=":role/advisor/enroll/:studentId" element={<AdviserEnrollmentPage />} />
         </Route>
 
 

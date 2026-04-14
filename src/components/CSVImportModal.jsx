@@ -5,7 +5,7 @@ import api from '../services/api'
 import swalService from "../services/swal";
 
 const VALID_TYPES = [
-    "core", "elective",
+    "Core", "elective",
     "General Elective 1", "General Elective 2", "General Elective 3",
     "Engineering Economy Elective", "Project Management Elective",
     "Engineering Physics Elective", "Engineering Mathematics Elective",
@@ -21,11 +21,13 @@ const TYPE_MAP = {
     elective3: "General Elective 3"
 };
 
+const COURSE_REGULATION = ["New", "Last"];
+
 const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
     const [data, setData] = useState([]);
     const [errors, setErrors] = useState([]);
     const [allCourses, setAllCourses] = useState([]);
-    const [editPrereq, setEditPrereq] = useState({}); // حفظ الـ string أثناء الكتابة
+    const [editPrereq, setEditPrereq] = useState({});
 
     useEffect(() => {
         if (!isOpen) {
@@ -48,9 +50,9 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
     if (!isOpen) return null;
 
     const downloadTemplate = () => {
-        const csv = `"_id","courseName","courseCredits","courseType","courseLevel","prerequisiteCourses"
-"CS101","Intro to CS",3,core,freshman,
-"CS102","Data Structures",3,core,sophomore,"CS101"`;
+        const csv = `"_id","courseName","courseCredits","courseType","courseLevel","courseRegulation","prerequisiteCourses"
+"CS101","Intro to CS",3,Core,freshman,New,
+"CS102","Data Structures",3,Core,sophomore,New,"CS101"`;
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -112,7 +114,10 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
                 rowErrors.courseLevel = "Invalid Level";
             }
 
-            // ✅ تحويل string أو array إلى array دائمًا
+            if (!COURSE_REGULATION.includes(row.courseRegulation)) {
+                rowErrors.courseRegulation = "Invalid Regulation";
+            }
+
             const prereqsRaw = row.prerequisiteCourses || [];
             const prereqs = Array.isArray(prereqsRaw)
                 ? prereqsRaw.map(s => s.trim()).filter(p => p !== "")
@@ -151,7 +156,6 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // ✅ مسح البيانات القديمة قبل import جديد
         setData([]);
         setErrors([]);
         setEditPrereq({});
@@ -167,7 +171,6 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
     const handleEdit = (rowIndex, field, value) => {
         const updated = [...data];
         if (field === "prerequisiteCourses") {
-            // نخليها string أثناء الكتابة
             setEditPrereq(prev => ({ ...prev, [rowIndex]: value }));
         } else {
             updated[rowIndex][field] = value;
@@ -180,9 +183,17 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
         return err?.fields?.[field];
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!hasErrors && data.length > 0) {
-            onUploadSuccess(data);
+
+            try {
+                console.log(JSON.stringify(data, null, 2));
+                await api.post("/courses/list", data);
+                swalService.success("Courses imported successfully");
+                onClose();
+            } catch (err) {
+                swalService.error(err.message || "Upload failed");
+            }
         }
     };
 
@@ -218,6 +229,7 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
                                         <th>Credits</th>
                                         <th>Type</th>
                                         <th>Level</th>
+                                        <th>Regulation</th>
                                         <th>Prerequisites</th>
                                     </tr>
                                 </thead>
@@ -239,7 +251,7 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
                                                     value={row.courseType}
                                                     onChange={(e) => handleEdit(i, "courseType", e.target.value)}
                                                 >
-                                                    {VALID_TYPES.map(t => <option key={t}>{t}</option>)}
+                                                    {VALID_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                                                 </select>
                                             </td>
 
@@ -248,21 +260,33 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
                                                     value={row.courseLevel}
                                                     onChange={(e) => handleEdit(i, "courseLevel", e.target.value)}
                                                 >
-                                                    {VALID_LEVELS.map(l => <option key={l}>{l}</option>)}
+                                                    {VALID_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                                                </select>
+                                            </td>
+
+                                            <td className={getError(i, "courseRegulation") ? "cell-error" : ""}>
+                                                <select
+                                                    value={row.courseRegulation}
+                                                    onChange={(e) => handleEdit(i, "courseRegulation", e.target.value)}
+                                                >
+                                                    <option value="">Select</option>
+                                                    {COURSE_REGULATION.map(r => <option key={r} value={r}>{r}</option>)}
                                                 </select>
                                             </td>
 
                                             <td className={getError(i, "prerequisiteCourses") ? "cell-error" : ""}>
-                                                {row.prerequisiteCourses.length > 0 ? (
-                                                    row.prerequisiteCourses.map((p, idx) => (
-                                                        <span key={idx} className="prereq-badge">{p}</span>
-                                                    ))
-                                                ) : (
-                                                    <span className="prereq-badge empty">—</span>
-                                                )}
+                                                <div className="prereq-container">
+                                                    {row.prerequisiteCourses.length > 0 ? (
+                                                        row.prerequisiteCourses.map((p, idx) => (
+                                                            <span key={idx} className="prereq-badge">{p}</span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="prereq-badge empty">—</span>
+                                                    )}
+                                                </div>
                                                 <input
                                                     type="text"
-                                                    placeholder="Add / edit"
+                                                    placeholder="Add / edit IDs"
                                                     value={editPrereq[i] ?? row.prerequisiteCourses.join(", ")}
                                                     onChange={(e) => handleEdit(i, "prerequisiteCourses", e.target.value)}
                                                     onBlur={() => {
@@ -287,12 +311,12 @@ const CSVImportModal = ({ isOpen, onClose, onUploadSuccess }) => {
                     {hasErrors && (
                         <div className="error-list">
                             <AlertCircle size={14} />
-                            Fix errors before import
+                            <span>Fix highlighted errors before import</span>
                         </div>
                     )}
 
                     <button
-                        disabled={hasErrors}
+                        disabled={hasErrors || data.length === 0}
                         className="btn-submit"
                         onClick={handleSubmit}
                     >

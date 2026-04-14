@@ -17,6 +17,7 @@ const VALID_TYPES = [
 ];
 
 const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior"];
+const VALID_Regulations = ["New", "Last"];
 
 const TYPE_COLORS = {
     "core": "#fdf2cb",
@@ -40,10 +41,9 @@ const ProgramCoursesManagement = () => {
     const [modalType, setModalType] = useState(null);
     const [editingCourse, setEditingCourse] = useState(null);
 
-    // States للكاردات الديناميكية
     const [insightLevel, setInsightLevel] = useState('freshman');
     const [insightType, setInsightType] = useState('core');
-    const [showDependencyMap, setShowDependencyMap] = useState(false); // حالة فتح الخريطة
+    const [showDependencyMap, setShowDependencyMap] = useState(false);
 
     const [filterLevel, setFilterLevel] = useState('');
     const [filterType, setFilterType] = useState('');
@@ -60,7 +60,7 @@ const ProgramCoursesManagement = () => {
 
     useEffect(() => { fetchCourses(); }, []);
 
-    // الحسابات الذكية
+
     const stats = {
         total: courses.length,
         prereqCount: courses.filter(c => c.prerequisiteCourses && c.prerequisiteCourses.length > 0).length,
@@ -266,7 +266,12 @@ const ProgramCoursesManagement = () => {
                             <tr key={course._id}>
                                 <td className="course-id-cell">{course._id}</td>
                                 <td style={{ fontWeight: '500' }}>{course.courseName}</td>
-                                <td>{course.courseLevel}</td>
+                                <td><div>{course.courseLevel}</div>
+                                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                                        {course.courseRegulation} Regulation
+                                    </div>
+
+                                </td>
                                 <td>
                                     <span
                                         className="type-badge"

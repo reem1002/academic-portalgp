@@ -153,7 +153,7 @@
 }
 
 .user-card {
-    background: var(--sidebar-bg);
+    background: #186F8F26;
     padding: 14px;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.03);
@@ -223,14 +223,16 @@
 /* Action Buttons */
 .footer-actions {
     display: flex;
+    justify-content: space-between;
     gap: 8px;
     margin-top: 12px;
 }
 
 .action-btn {
     flex: 1;
-    height: 38px;
-    border-radius: 10px;
+    height: 40px !important;
+    max-width:40px !important;
+    border-radius: 30px;
     background: rgba(255, 255, 255, 0.04);
     border: none;
     display: flex;

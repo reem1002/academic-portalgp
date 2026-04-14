@@ -1,6 +1,6 @@
 /* ===== Layout & Container ===== */
 .student-offerings-container {
-  padding: 0 30px;
+  padding: 0 2rem !important;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 

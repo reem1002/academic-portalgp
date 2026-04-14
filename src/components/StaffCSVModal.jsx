@@ -34,7 +34,7 @@ const StaffCSVModal = ({ isOpen, onClose, onUploadSuccess }) => {
 
     const downloadTemplate = () => {
         const csv = `"_id","staffName","username","email","phone","password","roles"
-"ST001","Ahmed Ali","ahmed.ali","ahmed@uni.edu","0100123456","1234","lecturer|admin"`;
+"ST001","Ahmed Ali","ahmed.ali","ahmed@uni.edu","0100123456","12345678","lecturer|admin"`;
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

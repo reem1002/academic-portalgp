@@ -1,45 +1,90 @@
 import { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import swalService from "../../services/swal";
 import {
     FaPlus,
     FaExclamationTriangle,
     FaCheckCircle,
-    FaInfoCircle
+    FaInfoCircle,
+    FaArrowLeft
 } from "react-icons/fa";
+import { Trash2, X } from 'lucide-react';
 import "../styles/StudentOfferings.css";
-import {
-    Trash2, X
-} from 'lucide-react';
 
-const StudentCourseOfferingsPage = () => {
+const AdviserEnrollmentPage = () => {
+    const { studentId } = useParams();
+    const navigate = useNavigate();
+
     const [availableCourses, setAvailableCourses] = useState([]);
-    const [enrolledCourses, setEnrolledCourses] = useState([]);
+    const [originalEnrolled, setOriginalEnrolled] = useState([]); // لحفظ الحالة الأصلية من السيرفر
     const [draftEnrolled, setDraftEnrolled] = useState([]);
     const [allowedCredits, setAllowedCredits] = useState(0);
     const [activeTab, setActiveTab] = useState("Freshman");
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
     const levels = ["Freshman", "Sophomore", "Junior", "Senior"];
 
+    // 1. Fetch Data on Mount
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [studentId]);
 
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            // جلب الكورسات المتاحة
+            const availableRes = await api.get(`/academic-advisors/me/students/available-courses/${studentId}`);
+            setAvailableCourses(availableRes.data.availableOfferings || []);
+            setAllowedCredits(availableRes.data.allowedCredits || 0);
+
+            // جلب التسجيل الحالي
+            const enrolledRes = await api.get(`/academic-advisors/me/students/current-enrollment/${studentId}`);
+            const currentIds = enrolledRes.data?.courses?.map((c) => c.courseOfferingId._id) || [];
+
+            setOriginalEnrolled(currentIds);
+
+            // تحقق من وجود مسودة قديمة لهذا الطالب تحديداً في الـ LocalStorage
+            const savedDraft = localStorage.getItem(`draft_${studentId}`);
+            if (savedDraft) {
+                setDraftEnrolled(JSON.parse(savedDraft));
+            } else {
+                setDraftEnrolled(currentIds);
+            }
+        } catch (err) {
+            console.error(err);
+            swalService.error("Error", "Failed to load student data");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 2. Persist Draft to LocalStorage
     useEffect(() => {
         if (!loading) {
-            localStorage.setItem("courseDraft", JSON.stringify(draftEnrolled));
+            localStorage.setItem(`draft_${studentId}`, JSON.stringify(draftEnrolled));
         }
-    }, [draftEnrolled, loading]);
+    }, [draftEnrolled, loading, studentId]);
 
+    // 3. Logic: Is Dirty & Credit Calculation
     const isDirty = useMemo(() => {
         if (loading) return false;
         const draftIds = [...draftEnrolled].sort().join(",");
-        const originalIds = [...enrolledCourses].sort().join(",");
+        const originalIds = [...originalEnrolled].sort().join(",");
         return draftIds !== originalIds;
-    }, [draftEnrolled, enrolledCourses, loading]);
+    }, [draftEnrolled, originalEnrolled, loading]);
 
+    const currentTotalCredits = useMemo(() => {
+        return draftEnrolled.reduce((sum, id) => {
+            const offering = availableCourses.find((o) => o._id === id);
+            return sum + (offering?.courseId?.courseCredits || 0);
+        }, 0);
+    }, [draftEnrolled, availableCourses]);
 
+    const isLimitReached = currentTotalCredits >= allowedCredits;
+
+    // 4. Prevent accidental navigation
     useEffect(() => {
         const handleBeforeUnload = (e) => {
             if (isDirty) {
@@ -51,77 +96,14 @@ const StudentCourseOfferingsPage = () => {
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, [isDirty]);
 
-    // const fetchData = async () => {
-    //     setLoading(true);
-    //     try {
-    //         const availableRes = await api.get("/student/me/available-courses");
-    //         setAvailableCourses(availableRes.data.availableOfferings || []);
-    //         setAllowedCredits(availableRes.data.allowedCredits || 18);
-
-    //         const enrolledRes = await api.get("/student/me/enrollments/current");
-    //         const data = enrolledRes.data || {};
-    //         const currentIds = data?.courses?.map((c) => c.courseOfferingId) || [];
-
-    //         setEnrolledCourses(currentIds);
-    //         setDraftEnrolled(currentIds);
-    //     } catch (err) {
-    //         console.error(err);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-    const fetchData = async () => {
-
-        setLoading(true);
-
-        try {
-
-            const availableRes = await api.get("/student/me/available-courses");
-
-            setAvailableCourses(availableRes.data.availableOfferings || []);
-
-            setAllowedCredits(availableRes.data.allowedCredits || 18);
-
-            const enrolledRes = await api.get("/student/me/enrollments/current");
-
-            const data = enrolledRes.data;
-            const currentIds = data?.courses?.map((c) => c.courseOfferingId) || [];
-
-            setEnrolledCourses(currentIds);
-            const savedDraft = localStorage.getItem("courseDraft");
-            setDraftEnrolled(currentIds);
-        } catch (err) {
-
-            console.error(err);
-
-        } finally {
-
-            setLoading(false);
-
-        }
-
-    };
-
-    const currentTotalCredits = useMemo(() => {
-        return draftEnrolled.reduce((sum, id) => {
-            const offering = availableCourses.find((o) => o._id === id);
-            return sum + (offering?.courseId?.courseCredits || 0);
-        }, 0);
-    }, [draftEnrolled, availableCourses]);
-
-    const isLimitReached = currentTotalCredits >= allowedCredits;
-
+    // 5. Actions
     const addCourse = (id) => {
         const courseToAdd = availableCourses.find(c => c._id === id);
         const creditsOfCourse = courseToAdd?.courseId?.courseCredits || 0;
 
         if (!draftEnrolled.includes(id)) {
             if (currentTotalCredits + creditsOfCourse > allowedCredits) {
-                swalService.error(
-                    "Limit Exceeded",
-                    `Your credit limit is ${allowedCredits}. This course exceeds it.`
-                );
+                swalService.error("Limit Exceeded", `Student credit limit is ${allowedCredits}.`);
                 return;
             }
             setDraftEnrolled([...draftEnrolled, id]);
@@ -133,97 +115,69 @@ const StudentCourseOfferingsPage = () => {
     };
 
     const saveEnrollment = async () => {
-        // 1. طلب التأكيد باستخدام الكومبوننت بتاعك
         const result = await swalService.confirm(
-            "Confirm Selection",
-            `Are you sure you want to enroll in ${draftEnrolled.length} courses? Total credits: ${currentTotalCredits}`,
-            "Confirm & Save"
+            "Confirm Enrollment",
+            `Are you sure you want to update enrollment for student #${studentId}? Total credits: ${currentTotalCredits}`,
+            "Confirm Changes"
         );
 
         if (!result.isConfirmed) return;
 
         setSaving(true);
-        swalService.showLoading("Registering your courses..."); // الـ Loading اللطيف بتاعك
+        swalService.showLoading("Updating student enrollment...");
 
         try {
             const payload = {
                 courses: draftEnrolled.map((id) => ({ courseOfferingId: id }))
             };
 
-            const res = await api.post("/student/me/enroll", payload);
+            await api.post(`/academic-advisors/me/students/enroll/${studentId}`, payload);
 
-            const newIds = res.data.enrollment.courses.map((c) => c.courseOfferingId);
-            setEnrolledCourses(newIds);
-            setDraftEnrolled(newIds);
-            localStorage.removeItem("courseDraft");
+            setOriginalEnrolled([...draftEnrolled]);
+            localStorage.removeItem(`draft_${studentId}`);
 
-            // نجاح العملية
-            swalService.success("Success!", "Your enrollment has been processed successfully.");
+            swalService.success("Updated!", "Student enrollment has been updated successfully.");
         } catch (err) {
-            console.error(err);
-            // عرض الخطأ اللي جاي من السيرفر
-            swalService.error("Registration Failed", err.response?.data?.error || "Something went wrong!");
+            swalService.error("Failed", err.response?.data?.error || "Enrollment update failed");
         } finally {
             setSaving(false);
         }
     };
 
-    // const saveEnrollment = async () => {
-    //     setSaving(true);
-
-    //     const payload = {
-    //         courses: draftEnrolled.map((id) => ({
-    //             courseOfferingId: id
-    //         }))
-    //     };
-
-    //     console.log("Sending payload:", payload);
-
-    //     try {
-    //         const res = await api.post("/student/me/enroll", payload);
-    //         console.log("Response:", res.data);
-
-    //         const newIds = res.data.enrollment.courses.map(
-    //             (c) => c.courseOfferingId
-    //         );
-
-    //         setEnrolledCourses(newIds);
-    //         setDraftEnrolled(newIds);
-    //         localStorage.removeItem("courseDraft");
-
-    //     } catch (err) {
-    //         console.log("ERROR FULL:", err.response);
-    //         swalService.error(
-    //             "Failed",
-    //             err.response?.data?.error || "Enrollment failed"
-    //         );
-    //     } finally {
-    //         setSaving(false);
-    //     }
-    // };
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div className="loading-container">Loading Student Data...</div>;
 
     return (
         <div className="student-offerings-container">
+            {/* Navigation Header */}
+
             <div className="title-section header">
-                <h1>Pre-registration Enrollment</h1>
-                {isDirty ? (
-                    <div className="status-alert warning"><FaExclamationTriangle /> Unsaved Changes</div>
-                ) : (
-                    <div className="status-alert success"><FaCheckCircle /> Everything is up to date</div>
-                )}
+                <div className="header-left">
+                    <button className="back-btn-round" onClick={() => window.history.back()}><FaArrowLeft /></button>
+                    <div className="title-info">
+                        <h1>Enroll: Student #{studentId}</h1>
+                    </div>
+                </div>
+                <div>
+                    {isDirty ? (
+                        <div className="status-alert warning"><FaExclamationTriangle /> Unsaved Changes</div>
+                    ) : (
+                        <div className="status-alert success"><FaCheckCircle /> Everything is Up to date</div>
+                    )}
+                </div>
             </div>
 
+            {/* Credit Progress Card */}
             <div className={`credit-info-card ${isLimitReached ? "limit-reached" : ""}`}>
                 <div className="credit-text">
                     <FaInfoCircle />
-                    <span>Credits: <strong>{currentTotalCredits}</strong> / {allowedCredits}</span>
+                    <span>Total Credits: <strong>{currentTotalCredits}</strong> / {allowedCredits}</span>
                 </div>
                 <div className="progress-bar">
                     <div className="progress-fill" style={{ width: `${Math.min((currentTotalCredits / allowedCredits) * 100, 100)}%` }}></div>
                 </div>
             </div>
 
+            {/* Available Offerings Section */}
             <div className="section">
                 <h3>Available Courses ({activeTab})</h3>
                 <div className="tabs-navigation">
@@ -237,6 +191,7 @@ const StudentCourseOfferingsPage = () => {
                         </button>
                     ))}
                 </div>
+
                 <div className="table-wrapper">
                     <table className="offerings-table">
                         <thead>
@@ -262,8 +217,8 @@ const StudentCourseOfferingsPage = () => {
                                             <td>{offering.courseId.courseName}</td>
                                             <td>{credits}</td>
                                             <td>
-                                                <span className={`status-badge ${offering.status.toLowerCase()}`}>
-                                                    {offering.status}
+                                                <span className={`status-badge ${offering.status?.toLowerCase() || 'open'}`}>
+                                                    {offering.status || "Open"}
                                                 </span>
                                             </td>
                                             <td>
@@ -289,8 +244,9 @@ const StudentCourseOfferingsPage = () => {
                 </div>
             </div>
 
+            {/* Draft / Current Selection Section */}
             <div className="section">
-                <h3>Current Selection</h3>
+                <h3>Current Enrollment</h3>
                 <div className="table-wrapper">
                     <table className="offerings-table">
                         <thead>
@@ -303,7 +259,13 @@ const StudentCourseOfferingsPage = () => {
                         </thead>
                         <tbody>
                             {draftEnrolled.length === 0 ? (
-                                <tr><td colSpan="4"><p className="empty-msg">No courses selected</p></td></tr>
+                                <tr>
+                                    <td colSpan="4">
+                                        <p className="empty-msg" style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                                            No courses selected for this student.
+                                        </p>
+                                    </td>
+                                </tr>
                             ) : (
                                 draftEnrolled.map((id) => {
                                     const offering = availableCourses.find(o => o._id === id);
@@ -325,16 +287,17 @@ const StudentCourseOfferingsPage = () => {
                         </tbody>
                     </table>
                 </div>
+
                 <button
                     className={`save-btn ${isDirty ? "active" : ""}`}
                     onClick={saveEnrollment}
                     disabled={!isDirty || saving}
                 >
-                    {saving ? "Saving..." : "Save Enrollment"}
+                    {saving ? "Saving Changes..." : "Confirm & Save Enrollment"}
                 </button>
             </div>
-        </div>
+        </div >
     );
 };
 
-export default StudentCourseOfferingsPage;
+export default AdviserEnrollmentPage;

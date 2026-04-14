@@ -5,7 +5,7 @@ import swalService from "../services/swal";
 import '../pages/styles/ProgramCourses.css';
 
 const COURSE_TYPES = [
-    "core", "elective",
+    "Core", "elective",
     "General Elective 1", "General Elective 2", "General Elective 3",
     "Engineering Economy Elective", "Project Management Elective",
     "Engineering Physics Elective", "Engineering Mathematics Elective",
@@ -15,13 +15,16 @@ const COURSE_TYPES = [
 
 const COURSE_LEVELS = ["freshman", "sophomore", "junior", "senior"];
 
+const COURSE_REGULATION = ["New", "Last"]
+
 const CourseModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     const [formData, setFormData] = useState({
         _id: '',
         courseName: '',
         courseCredits: 3,
         courseLevel: 'freshman',
-        courseType: 'core',
+        courseRegulation: 'New',
+        courseType: 'Core',
         prerequisiteCourses: []
     });
 
@@ -43,7 +46,8 @@ const CourseModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                     courseName: '',
                     courseCredits: 3,
                     courseLevel: 'freshman',
-                    courseType: 'core',
+                    courseRegulation: 'New',
+                    courseType: 'Core',
                     prerequisiteCourses: []
                 });
             }
@@ -151,6 +155,16 @@ const CourseModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                         </div>
                     </div>
 
+                    <div className="form-group">
+                        <label>Course Regulation</label>
+                        <select
+                            value={formData.courseRegulation}
+                            onChange={e => setFormData({ ...formData, courseRegulation: e.target.value })}
+                        >
+                            {COURSE_REGULATION.map(l => <option key={l}>{l}</option>)}
+                        </select>
+                    </div>
+
                     {/* 🔥 LEVEL */}
                     <div className="form-group">
                         <label>Course Level</label>
@@ -161,6 +175,7 @@ const CourseModal = ({ isOpen, onClose, onSave, initialData = null }) => {
                             {COURSE_LEVELS.map(l => <option key={l}>{l}</option>)}
                         </select>
                     </div>
+
 
                     {/* 🔥 PREREQUISITES (CHIPS UI) */}
                     <div className="form-group">

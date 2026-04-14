@@ -95,6 +95,7 @@ const AdvisingManagementPage = () => {
 
     const fetchUnassignedStudents = async () => {
         const res = await api.get("/advisors/advising-lists/unassigned-students");
+        console.log("unass:", res)
         setUnassignedStudents(res.data || []);
     };
 
@@ -155,26 +156,36 @@ const AdvisingManagementPage = () => {
         staffAvailable: nonAdvisors.length
     };
 
+    // 1. Filter for Current Advisors
     const filteredAdvisors = advisors.filter(a =>
-        a.staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        a._id.toLowerCase().includes(searchTerm.toLowerCase())
+        (a.staffName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (a._id?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
+    // 2. Filter for Advising Lists
     const filteredLists = allLists.filter(list =>
-        list.advisor?.staffName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        list._id.toLowerCase().includes(searchTerm.toLowerCase())
+        (list.advisor?.staffName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (list._id?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
+    // 3. Filter for Non-Advisors (Available Staff)
     const filteredNonAdvisors = nonAdvisors.filter(staff =>
-        staff.staffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        staff._id.toLowerCase().includes(searchTerm.toLowerCase())
+        (staff.staffName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+        (staff._id?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
-    const filteredUnassignedStudents = unassignedStudents.filter(s =>
-        (s.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
-            s._id.toLowerCase().includes(studentSearch.toLowerCase())) &&
-        !formData.selectedStudents.includes(s._id)
-    );
+
+    const filteredUnassignedStudents = unassignedStudents.filter(s => {
+        const studentId = s.studentId?._id;
+
+        return (
+            (
+                (s.studentId?.studentName?.toLowerCase() || "").includes(studentSearch.toLowerCase()) ||
+                (studentId?.toLowerCase() || "").includes(studentSearch.toLowerCase())
+            ) &&
+            !formData.selectedStudents.includes(studentId)
+        );
+    });
 
     return (
         <div className="advising-container">
@@ -195,13 +206,13 @@ const AdvisingManagementPage = () => {
                     <div className="insight-footer">Active Advisors</div>
                 </div>
 
-                <div className="insight-card clickable" onClick={() => setIsUnassignedModalOpen(true)}>
+                <div className="insight-card clickable" onClick={() => navigate(`/staff/${role}/advising/unassigned`)}>
                     <div className="insight-header">
                         <div className="insight-icon orange"><AlertCircle size={18} /></div>
                         <span className="insight-label">Unassigned Students</span>
                     </div>
                     <div className="insight-value">{stats.unassignedStudents}</div>
-                    <div className="insight-footer">Not in a list</div>
+                    <div className="insight-footer">Click to manage students</div>
                 </div>
 
                 <div className="insight-card clickable" onClick={() => setIsEmptyListsModalOpen(true)}>
@@ -463,14 +474,14 @@ const AdvisingManagementPage = () => {
                                                         key={s._id}
                                                         className="dropdown-item"
                                                         onClick={() => {
-                                                            toggleStudentSelection(s._id);
+                                                            toggleStudentSelection(s.studentId._id);
                                                             setStudentSearch("");
                                                             setIsDropdownOpen(false);
                                                         }}
                                                     >
                                                         <div className="item-info">
-                                                            <span className="name">{s.studentName}</span>
-                                                            <span className="id">#{s._id}</span>
+                                                            <span className="name">{s.studentId.studentName}</span>
+                                                            <span className="id">#{s.studentId._id}</span>
                                                         </div>
                                                         <PlusCircle size={14} className="add-icon" />
                                                     </div>
@@ -497,18 +508,24 @@ const AdvisingManagementPage = () => {
                                         </thead>
                                         <tbody>
                                             {formData.selectedStudents.map(id => {
-                                                const student = unassignedStudents.find(s => s._id === id);
+                                                const student = unassignedStudents.find(s => s.studentId?._id === id);
                                                 return (
                                                     <tr key={id}>
                                                         <td style={{ padding: '6px 12px' }}>
                                                             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <span style={{ fontWeight: '500' }}>{student?.studentName || 'Unknown'}</span>
-                                                                <span style={{ fontSize: '11px', color: '#64748b' }}>#{id}</span>
+                                                                <span style={{ fontWeight: '500' }}>
+                                                                    {student?.studentId.studentName || 'Unknown'}
+                                                                </span>
+                                                                <span style={{ fontSize: '11px', color: '#64748b' }}>
+                                                                    #{student?.studentId._id}
+                                                                </span>
                                                             </div>
                                                         </td>
                                                         <td style={{ padding: '6px 12px', textAlign: 'right' }}>
                                                             <button
-                                                                onClick={() => toggleStudentSelection(id)}
+                                                                onClick={() => {
+                                                                    toggleStudentSelection(id); // ✅ FIXED
+                                                                }}
                                                                 style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
                                                             >
                                                                 <X size={16} />
@@ -535,52 +552,6 @@ const AdvisingManagementPage = () => {
                                 {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                                 {isEditMode ? "Update List" : "Create List"}
                             </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* --- NEW MODAL: Unassigned Students Insights --- */}
-            {isUnassignedModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content modal-large">
-                        <div className="modal-header">
-                            <h3>Unassigned Students List</h3>
-                            <button className="close-btn" onClick={() => setIsUnassignedModalOpen(false)}><X size={20} /></button>
-                        </div>
-                        <div className="modal-body-ad">
-                            <div className="table-wrapper">
-                                <table className="advising-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Student ID</th>
-                                            <th>Name</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {unassignedStudents.length > 0 ? unassignedStudents.map(s => (
-                                            <tr key={s._id}>
-                                                <td className="course-id-cell">{s._id}</td>
-                                                <td>{s.studentName}</td>
-                                                <td><div className="action-btns">
-                                                    <button className="view-btn-transparent" title="View Profile"
-                                                        onClick={() => navigate(`/staff/${role}/students/${s._id}`)}>
-                                                        <Eye size={18} color="#3a86ff" />
-                                                    </button>
-                                                </div>
-                                                </td>
-                                            </tr>
-                                        )) : <tr><td colSpan="3" style={{ textAlign: 'center', padding: '20px' }}>All students are assigned!</td></tr>}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        <div className="modal-footer">
-                            <button className="btn-1" onClick={() => {
-                                setIsUnassignedModalOpen(false);
-                                setActiveTab("manage-lists");
-                            }}>Go to Manage Lists</button>
                         </div>
                     </div>
                 </div>

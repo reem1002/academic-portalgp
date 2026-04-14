@@ -1,7 +1,6 @@
 import Swal from 'sweetalert2';
 
 const swalService = {
-    // تنبيه النجاح - مع إضافة أنيميشن خفيف
     success: (title, text) => {
         return Swal.fire({
             icon: 'success',
@@ -9,10 +8,10 @@ const swalService = {
             text: text || '',
             timer: 2000,
             showConfirmButton: false,
-            iconColor: '#10b981', // لون أخضر حيوي مريح للعين
+            iconColor: '#10b981',
             padding: '2em',
             customClass: {
-                popup: 'rounded-2xl', // لجعل الزوايا ناعمة تماشياً مع الـ UI الحديث
+                popup: 'rounded-2xl',
             }
         });
     },
@@ -31,25 +30,23 @@ const swalService = {
         });
     },
 
-    // رسالة التأكيد (Confirm) - مخصصة للحذف أو الإجراءات الخطيرة
     confirm: async (title, text, confirmText = 'Yes, delete it!') => {
         return Swal.fire({
             title: title || 'Are you sure?',
             text: text || "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#94a3b8',
+            confirmButtonColor: '#1e293b',
+            cancelButtonColor: '#186F8F',
             confirmButtonText: confirmText,
             cancelButtonText: 'Cancel',
-            reverseButtons: true, // يضع زر التأكيد على اليمين (أفضل للـ UX)
+            reverseButtons: true,
             customClass: {
                 popup: 'rounded-2xl',
             }
         });
     },
 
-    // إضافة دالة Loading (مفيدة جداً عند انتظار الـ API)
     showLoading: (title = 'Processing...') => {
         Swal.fire({
             title: title,
