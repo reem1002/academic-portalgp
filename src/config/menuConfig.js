@@ -16,7 +16,8 @@ import {
     ScrollText,
     BookMarked,
     ShieldCheck,
-    UserCog
+    UserCog,
+    Calendar
 } from "lucide-react";
 
 const iconSize = 20;
@@ -41,7 +42,7 @@ export const menuConfig = {
         {
             name: "Meetings",
             path: "/student/meetings",
-            icon: <Award size={iconSize} />
+            icon: <Calendar size={iconSize} />
         }
     ],
 
@@ -122,7 +123,7 @@ export const menuConfig = {
         {
             name: "Meetings",
             path: "/staff/academic-advisor/ad-meetings",
-            icon: <Award size={iconSize} />
+            icon: <Calendar size={iconSize} />
         }
     ],
 

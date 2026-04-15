@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import '../pages/styles/ProgramCourses.css';
+const Student_REGULATION = ["New", "Last"]
 
 const StudentAddModal = ({ isOpen, onClose, onSave }) => {
     const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ const StudentAddModal = ({ isOpen, onClose, onSave }) => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [errors, setErrors] = useState({});
 
-    // إعادة تعيين الحقول عند فتح المودال
+
     useEffect(() => {
         if (isOpen) {
             setFormData({ academicId: '', studentName: '', username: '', email: '', phone: '', password: '' });
@@ -42,7 +43,6 @@ const StudentAddModal = ({ isOpen, onClose, onSave }) => {
         e.preventDefault();
         if (!validate()) return;
 
-        // Mapping البيانات للشكل اللي الـ API عايزه
         const payload = {
             _id: formData.academicId,
             studentName: formData.studentName,
@@ -135,7 +135,7 @@ const StudentAddModal = ({ isOpen, onClose, onSave }) => {
                             {errors.confirmPassword && <span className="error-msg">{errors.confirmPassword}</span>}
                         </div>
                     </div>
-                    <button type="submit" className="btn-submit">Create Student Account</button>
+                    <button type="submit" className="btn-1">Create Student Account</button>
                 </form>
             </div>
         </div>

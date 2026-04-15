@@ -5,7 +5,7 @@ import api from '../services/api'
 import swalService from "../services/swal";
 
 const VALID_TYPES = [
-    "Core", "elective",
+    "Core", "Program Elective",
     "General Elective 1", "General Elective 2", "General Elective 3",
     "Engineering Economy Elective", "Project Management Elective",
     "Engineering Physics Elective", "Engineering Mathematics Elective",

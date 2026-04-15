@@ -30,14 +30,13 @@ const SemesterModal = ({ show, onClose, onSuccess }) => {
     // --- Auto-fill Logic ---
     useEffect(() => {
         if (startDate) {
-            // حساب المواعيد الافتراضية بمجرد اختيار تاريخ البداية
             const pStart = startDate;
-            const pEnd = addDays(startDate, 14); // أسبوعين بريريجتريشن
+            const pEnd = addDays(startDate, 14);
 
-            const aStart = addDays(pEnd, 1);    // يبدأ بعد البريريجتريشن بيوم
-            const aEnd = addDays(aStart, 7);    // أسبوع أد أند دروب
+            const aStart = addDays(pEnd, 1);
+            const aEnd = addDays(aStart, 7);
 
-            const fStart = addDays(startDate, 100); // الفاينال بعد حوالي 3 شهور ونصف
+            const fStart = addDays(startDate, 100);
             const fEnd = addDays(fStart, 10);
 
             setPreReg({ start: pStart, end: pEnd });
@@ -103,87 +102,85 @@ const SemesterModal = ({ show, onClose, onSuccess }) => {
             <div className="modal-container">
                 <div className="modal-header">
                     <div className="header-title">
-                        <Calendar size={20} />
                         <h3>Start New Academic Semester</h3>
                     </div>
-                    <button className="close-btn" onClick={onClose}><X size={20} /></button>
+                    <button className="close-btn delete-btn" onClick={onClose}><X size={22} /></button>
                 </div>
+                <div className="modal-body">
+                    <form id="semesterForm" onSubmit={handleSubmit} className="semester-form">
+                        {/* Basic Info */}
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Academic Term</label>
+                                <select value={term} onChange={(e) => setTerm(e.target.value)}>
+                                    <option value="Spring">Spring</option>
+                                    <option value="Summer">Summer</option>
+                                    <option value="Fall">Fall</option>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Year</label>
+                                <select value={year} onChange={(e) => setYear(e.target.value)}>
+                                    {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                </select>
+                            </div>
+                        </div>
 
-                <form onSubmit={handleSubmit} className="semester-form">
-                    {/* Basic Info */}
-                    <div className="form-row">
                         <div className="form-group">
-                            <label>Academic Term</label>
-                            <select value={term} onChange={(e) => setTerm(e.target.value)}>
-                                <option value="Spring">Spring</option>
-                                <option value="Summer">Summer</option>
-                                <option value="Fall">Fall</option>
-                            </select>
+                            <label>Semester Official Start Date</label>
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
                         </div>
-                        <div className="form-group">
-                            <label>Year</label>
-                            <select value={year} onChange={(e) => setYear(e.target.value)}>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
-                            </select>
-                        </div>
-                    </div>
 
-                    <div className="form-group">
-                        <label>Semester Official Start Date</label>
-                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
-                    </div>
+                        {/* Timeline Configuration Section */}
+                        <div className="timeline-section">
+                            <h4><Clock size={16} /> Timeline Configuration</h4>
 
-                    <hr className="divider" />
-
-                    {/* Timeline Configuration Section */}
-                    <div className="timeline-section">
-                        <h4><Clock size={16} /> Timeline Configuration</h4>
-
-                        <div className="timeline-grid">
-                            {/* Pre-Registration */}
-                            <div className="timeline-item">
-                                <label>Pre-Registration Period</label>
-                                <div className="date-range-inputs">
-                                    <input type="date" value={preReg.start} onChange={(e) => setPreReg({ ...preReg, start: e.target.value })} required />
-                                    <span>to</span>
-                                    <input type="date" value={preReg.end} onChange={(e) => setPreReg({ ...preReg, end: e.target.value })} required />
+                            <div className="timeline-grid">
+                                {/* Pre-Registration */}
+                                <div className="timeline-item">
+                                    <label>Pre-Registration Period</label>
+                                    <div className="date-range-inputs">
+                                        <input type="date" value={preReg.start} onChange={(e) => setPreReg({ ...preReg, start: e.target.value })} required />
+                                        <span>to</span>
+                                        <input type="date" value={preReg.end} onChange={(e) => setPreReg({ ...preReg, end: e.target.value })} required />
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Add & Drop */}
-                            <div className="timeline-item">
-                                <label>Add & Drop Period</label>
-                                <div className="date-range-inputs">
-                                    <input type="date" value={addDrop.start} onChange={(e) => setAddDrop({ ...addDrop, start: e.target.value })} required />
-                                    <span>to</span>
-                                    <input type="date" value={addDrop.end} onChange={(e) => setAddDrop({ ...addDrop, end: e.target.value })} required />
+                                {/* Add & Drop */}
+                                <div className="timeline-item">
+                                    <label>Add & Drop Period</label>
+                                    <div className="date-range-inputs">
+                                        <input type="date" value={addDrop.start} onChange={(e) => setAddDrop({ ...addDrop, start: e.target.value })} required />
+                                        <span>to</span>
+                                        <input type="date" value={addDrop.end} onChange={(e) => setAddDrop({ ...addDrop, end: e.target.value })} required />
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Final Exams */}
-                            <div className="timeline-item">
-                                <label>Final Exams Period</label>
-                                <div className="date-range-inputs">
-                                    <input type="date" value={finalExams.start} onChange={(e) => setFinalExams({ ...finalExams, start: e.target.value })} required />
-                                    <span>to</span>
-                                    <input type="date" value={finalExams.end} onChange={(e) => setFinalExams({ ...finalExams, end: e.target.value })} required />
+                                {/* Final Exams */}
+                                <div className="timeline-item">
+                                    <label>Final Exams Period</label>
+                                    <div className="date-range-inputs">
+                                        <input type="date" value={finalExams.start} onChange={(e) => setFinalExams({ ...finalExams, start: e.target.value })} required />
+                                        <span>to</span>
+                                        <input type="date" value={finalExams.end} onChange={(e) => setFinalExams({ ...finalExams, end: e.target.value })} required />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="form-group mt-10">
-                        <label>Expected Semester End Date</label>
-                        <input type="date" className="readonly-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
-                    </div>
+                        <div className="form-group mt-10">
+                            <label>Expected Semester End Date</label>
+                            <input type="date" className="readonly-input" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
+                        </div>
 
-                    <div className="modal-footer">
-                        <button className="cancel-btn" type="button" onClick={onClose}>Cancel</button>
-                        <button className="create-btn" type="submit">
-                            Launch Semester
-                        </button>
-                    </div>
-                </form>
+                        <div className="modal-footer">
+                            <button className="cancel-btn " type="button" onClick={onClose}>Cancel</button>
+                            <button className="create-btn" type="submit">
+                                Launch Semester
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

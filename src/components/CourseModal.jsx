@@ -5,7 +5,7 @@ import swalService from "../services/swal";
 import '../pages/styles/ProgramCourses.css';
 
 const COURSE_TYPES = [
-    "Core", "elective",
+    "Core", "Program Elective",
     "General Elective 1", "General Elective 2", "General Elective 3",
     "Engineering Economy Elective", "Project Management Elective",
     "Engineering Physics Elective", "Engineering Mathematics Elective",
@@ -106,120 +106,128 @@ const CourseModal = ({ isOpen, onClose, onSave, initialData = null }) => {
     return (
         <div className="modal-overlay">
             <div className="modal-card">
+
                 <div className="modal-head">
                     <h3>{initialData ? 'Edit Course' : 'Add Course'}</h3>
                     <X onClick={onClose} style={{ cursor: 'pointer' }} />
                 </div>
 
-                <form onSubmit={handleSubmit} className="modal-body">
+                <div className="modal-body">
+                    <form id="courseForm" onSubmit={handleSubmit}>
 
-                    {/* ID */}
-                    <div className="form-group">
-                        <label>Course ID</label>
-                        <input
-                            required
-                            value={formData._id}
-                            onChange={e => setFormData({ ...formData, _id: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Name */}
-                    <div className="form-group">
-                        <label>Course Name</label>
-                        <input
-                            required
-                            value={formData.courseName}
-                            onChange={e => setFormData({ ...formData, courseName: e.target.value })}
-                        />
-                    </div>
-
-                    {/* Credits + Type */}
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div className="form-group" style={{ flex: 1 }}>
-                            <label>Credits</label>
+                        {/* ID */}
+                        <div className="form-group">
+                            <label>Course ID</label>
                             <input
-                                type="number"
-                                value={formData.courseCredits}
-                                onChange={e => setFormData({ ...formData, courseCredits: e.target.value })}
+                                required
+                                value={formData._id}
+                                onChange={e => setFormData({ ...formData, _id: e.target.value })}
                             />
                         </div>
 
-                        <div className="form-group" style={{ flex: 1 }}>
-                            <label>Type</label>
+                        {/* Name */}
+                        <div className="form-group">
+                            <label>Course Name</label>
+                            <input
+                                required
+                                value={formData.courseName}
+                                onChange={e => setFormData({ ...formData, courseName: e.target.value })}
+                            />
+                        </div>
+
+                        {/* Credits + Type */}
+                        <div style={{ gap: '10px' }}>
+                            <div className="form-group" style={{ flex: 1 }}>
+                                <label>Credits</label>
+                                <input
+                                    type="number"
+                                    value={formData.courseCredits}
+                                    onChange={e => setFormData({ ...formData, courseCredits: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="form-group" style={{ flex: 1 }}>
+                                <label>Type</label>
+                                <select
+                                    value={formData.courseType}
+                                    onChange={e => setFormData({ ...formData, courseType: e.target.value })}
+                                >
+                                    {COURSE_TYPES.map(t => <option key={t}>{t}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label>Course Regulation</label>
                             <select
-                                value={formData.courseType}
-                                onChange={e => setFormData({ ...formData, courseType: e.target.value })}
+                                value={formData.courseRegulation}
+                                onChange={e => setFormData({ ...formData, courseRegulation: e.target.value })}
                             >
-                                {COURSE_TYPES.map(t => <option key={t}>{t}</option>)}
+                                {COURSE_REGULATION.map(l => <option key={l}>{l}</option>)}
                             </select>
                         </div>
-                    </div>
 
-                    <div className="form-group">
-                        <label>Course Regulation</label>
-                        <select
-                            value={formData.courseRegulation}
-                            onChange={e => setFormData({ ...formData, courseRegulation: e.target.value })}
-                        >
-                            {COURSE_REGULATION.map(l => <option key={l}>{l}</option>)}
-                        </select>
-                    </div>
-
-                    {/* 🔥 LEVEL */}
-                    <div className="form-group">
-                        <label>Course Level</label>
-                        <select
-                            value={formData.courseLevel}
-                            onChange={e => setFormData({ ...formData, courseLevel: e.target.value })}
-                        >
-                            {COURSE_LEVELS.map(l => <option key={l}>{l}</option>)}
-                        </select>
-                    </div>
-
-
-                    {/* 🔥 PREREQUISITES (CHIPS UI) */}
-                    <div className="form-group">
-                        <label>Prerequisites</label>
-
-                        {/* Selected Chips */}
-                        <div className="chips-container">
-                            {formData.prerequisiteCourses.map(id => (
-                                <span key={id} className="chip">
-                                    {id}
-                                    <button type="button" onClick={() => removePrereq(id)}>×</button>
-                                </span>
-                            ))}
+                        {/* 🔥 LEVEL */}
+                        <div className="form-group">
+                            <label>Course Level</label>
+                            <select
+                                value={formData.courseLevel}
+                                onChange={e => setFormData({ ...formData, courseLevel: e.target.value })}
+                            >
+                                {COURSE_LEVELS.map(l => <option key={l}>{l}</option>)}
+                            </select>
                         </div>
 
-                        {/* Search */}
-                        <input
-                            placeholder="Search course..."
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                        />
 
-                        {/* Dropdown */}
-                        {search && (
-                            <div className="dropdown-list">
-                                {filteredCourses.map(c => (
-                                    <div
-                                        key={c._id}
-                                        className="dropdown-item"
-                                        onClick={() => addPrereq(c._id)}
-                                    >
-                                        {c._id} - {c.courseName}
-                                    </div>
+                        {/* 🔥 PREREQUISITES (CHIPS UI) */}
+                        <div className="form-group">
+                            <label>Prerequisites</label>
+
+                            {/* Selected Chips */}
+                            <div className="chips-container">
+                                {formData.prerequisiteCourses.map(id => (
+                                    <span key={id} className="chip">
+                                        {id}
+                                        <button type="button" onClick={() => removePrereq(id)}>×</button>
+                                    </span>
                                 ))}
                             </div>
-                        )}
-                    </div>
 
-                    <button className="btn-submit">
+                            {/* Search */}
+                            <input
+                                placeholder="Search course..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                            />
+
+                            {/* Dropdown */}
+                            {search && (
+                                <div className="dropdown-list">
+                                    {filteredCourses.map(c => (
+                                        <div
+                                            key={c._id}
+                                            className="dropdown-item"
+                                            onClick={() => addPrereq(c._id)}
+                                        >
+                                            {c._id} - {c.courseName}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                    </form>
+                </div>
+                <div className="modal-footer">
+                    <button type="button" className="btn-cancel" onClick={onClose}>
+                        Cancel
+                    </button>
+                    <button type="submit" form="courseForm" className="btn-1">
                         {initialData ? 'Update' : 'Create'}
                     </button>
-                </form>
+                </div>
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -163,7 +163,7 @@ const AddStaffModal = ({ isOpen, onClose, onSave }) => {
                         </select>
                         {errors.roles && <span className="error-msg">{errors.roles}</span>}
                     </div>
-                    <button type="submit" className="btn-submit">Create Staff</button>
+                    <button type="submit" className="btn-1">Create Staff</button>
                 </form>
             </div>
         </div>

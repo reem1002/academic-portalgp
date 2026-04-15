@@ -19,20 +19,19 @@ const EnrollmentStatsPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
-    const [selectedCourse, setSelectedCourse] = useState(null); // لتخزين بيانات المادة المختارة
-    const [students, setStudents] = useState([]); // لتخزين قائمة الطلبة
+    const [selectedCourse, setSelectedCourse] = useState(null);
+    const [students, setStudents] = useState([]);
     const [loadingStudents, setLoadingStudents] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [typeFilter, setTypeFilter] = useState("All");
 
 
     const handleViewStudents = (courseId, courseName) => {
-        // هنبعت الـ courseName في الـ state عشان يظهر في العنوان هناك من غير ما نطلبه من الـ API تاني
         navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/students`, {
             state: { courseName }
         });
     };
-    // --- Fetch Data ---
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -40,7 +39,7 @@ const EnrollmentStatsPage = () => {
             setOfferings(res.data || []);
         } catch (err) {
             console.error("Failed to fetch stats", err);
-            // تنبيه المستخدم بوجود مشكلة في الاتصال
+
             swalService.error("Connection Error", "Could not load enrollment data.");
         } finally {
             setLoading(false);
@@ -51,21 +50,18 @@ const EnrollmentStatsPage = () => {
         if (semesterId) fetchData();
     }, [semesterId]);
 
-    // --- Actions ---
     const handleToggleStatus = async (offeringId, currentStatus) => {
         const offering = offerings.find(o => o._id === offeringId);
         const enrolledCount = offering?.enrolledCount || 0;
         const newStatus = currentStatus === "open" ? "closed" : "open";
 
-        // --- منطق التأكيد الاحترافي باستخدام SweetAlert ---
         if (newStatus === "closed") {
             let title = "Close Course?";
             let text = "Are you sure you want to CLOSE this course? This will prevent any future enrollments.";
             let icon = "warning";
 
-            // تحذير شديد اللهجة إذا كان هناك طلاب مسجلون
             if (enrolledCount > 0) {
-                title = "⚠️ CRITICAL WARNING";
+                title = "CRITICAL WARNING";
                 text = `This course has (${enrolledCount}) students enrolled. Closing it will PERMANENTLY block their registration!`;
             }
 
@@ -73,12 +69,10 @@ const EnrollmentStatsPage = () => {
             if (!result.isConfirmed) return;
         }
 
-        // --- تنفيذ التحديث ---
         try {
-            // إظهار Loading بسيط أثناء تحديث السيرفر
             swalService.showLoading("Updating course status...");
 
-            await api.put(`/course-offerings/${offeringId}`, { status: newStatus });
+            await api.put(`/course-offerings/${offeringId}/status`, { status: newStatus });
 
             setOfferings(prev => prev.map(off =>
                 off._id === offeringId ? { ...off, status: newStatus } : off
@@ -112,10 +106,9 @@ const EnrollmentStatsPage = () => {
         return { total, empty, withGrads, suggestions };
     }, [offerings]);
 
-    // منطق الفلترة المتقدم للجدول
+
     const filteredData = useMemo(() => {
         return offerings.filter(off => {
-            // حماية ضد البيانات الـ undefined لمنع الـ Runtime Error
             const courseName = off.courseId?.courseName || "";
             const courseCode = off.courseId?._id || "";
             const currentSearch = searchTerm?.toLowerCase() || "";
@@ -253,7 +246,6 @@ const EnrollmentStatsPage = () => {
                                     <div className="c-id">{off.courseId?._id || off.courseId}</div>
                                 </td>
                                 <td>
-                                    {/* status-badge live/draft معرف في السي اس اس الأصلي */}
                                     <span className={`status-badge ${off.status === 'open' ? 'live' : 'draft'}`}>
                                         {off.status ? off.status.toUpperCase() : 'N/A'}
                                     </span>

@@ -228,7 +228,7 @@ const AdvisingMeetings = () => {
                     <div className="m_insight-icon total"><History size={20} /></div>
                     <div className="m_insight-info">
                         <span className="m_insight-label">History</span>
-                        <h3 className="m_insight-value text-muted">{stats.history}</h3>
+                        <h3 className="m_insight-value text-muted">{stats.History}</h3>
                     </div>
                 </div>
             </div>
