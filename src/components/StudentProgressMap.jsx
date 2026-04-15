@@ -95,13 +95,20 @@ const StudentProgressMapModal = ({ isOpen, onClose, allCourses = [], studentData
                             className="modern-node"
                             style={{ opacity: style.opacity || 1 }}
                         >
-                            <div
-                                className="node-id-tag"
-                                style={{ backgroundColor: style.border }}
-                            >
-                                {course._id}
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <span
+                                    className="node-id-tag"
+                                    style={{ backgroundColor: style.border }}
+                                >
+                                    {course._id}
+                                </span>
+                                <span
+                                    className="node-id-tag"
+                                    style={{ backgroundColor: style.border }}
+                                >
+                                    {course.courseType}
+                                </span>
                             </div>
-
                             <div
                                 className="node-status-badge"
                                 style={{ color: style.text }}
@@ -143,9 +150,12 @@ const StudentProgressMapModal = ({ isOpen, onClose, allCourses = [], studentData
                     id: `${id}-${course._id}`,
                     source: id,
                     target: course._id,
+                    type: 'smoothstep',
                     markerEnd: {
                         type: MarkerType.ArrowClosed,
-                        color: style.border
+                        color: style.border,
+                        width: 20,
+                        height: 20
                     },
                     style: {
                         stroke: style.border,

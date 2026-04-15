@@ -280,8 +280,8 @@ const Students = () => {
                     <option value="sophomore">Sophomore</option>
                     <option value="junior">Junior</option>
                     <option value="senior">Senior</option>
-                    <option value="senior-1">Senior 1</option>
-                    <option value="senior-2">Senior 2</option>
+                    <option value="senior-1">Senior-1</option>
+                    <option value="senior-2">Senior-2</option>
                     <option value="graduated">Graduated</option>
                 </select>
 

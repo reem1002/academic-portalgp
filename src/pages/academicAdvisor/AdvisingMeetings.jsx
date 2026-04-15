@@ -118,19 +118,16 @@ const AdvisingMeetings = () => {
     };
 
     const renderCalendar = () => {
-        // 1. تعريف المتغيرات الأساسية داخل الدالة
         const year = currentMonth.getFullYear();
         const month = currentMonth.getMonth();
         const totalDays = daysInMonth(month, year);
         const startDay = firstDayOfMonth(month, year);
-        const days = []; // مصفوفة الأيام التي كانت تسبب خطأ no-undef
+        const days = [];
 
-        // 2. بناء المربعات الفارغة (قبل بداية الشهر)
         for (let i = 0; i < startDay; i++) {
             days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
         }
 
-        // 3. بناء أيام الشهر
         for (let d = 1; d <= totalDays; d++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
@@ -184,7 +181,7 @@ const AdvisingMeetings = () => {
     };
 
     return (
-        <div className="advising-container">
+        <div className="advising-container advising-meet">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
                     <div className="title-section">
@@ -193,7 +190,6 @@ const AdvisingMeetings = () => {
                 </div>
             </header>
 
-            {/* Tabs Navigation */}
             {/* Tabs Navigation */}
             <div className="m_insights-grid">
                 {/* 1. Meeting Requests - Pending Style */}
@@ -227,7 +223,7 @@ const AdvisingMeetings = () => {
                 >
                     <div className="m_insight-icon total"><History size={20} /></div>
                     <div className="m_insight-info">
-                        <span className="m_insight-label">History</span>
+                        <span className="m_insight-label">History / Declined</span>
                         <h3 className="m_insight-value text-muted">{stats.History}</h3>
                     </div>
                 </div>

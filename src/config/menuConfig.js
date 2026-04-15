@@ -40,7 +40,7 @@ export const menuConfig = {
             icon: <ScrollText size={iconSize} />
         },
         {
-            name: "Meetings",
+            name: "Meet Advisor",
             path: "/student/meetings",
             icon: <Calendar size={iconSize} />
         }

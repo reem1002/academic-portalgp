@@ -13,7 +13,7 @@ const VALID_TYPES = [
     "training",
 ];
 
-const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior"];
+const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior-1", "senior-2", "senior"];
 
 const TYPE_MAP = {
     elective1: "General Elective 1",

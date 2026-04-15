@@ -37,7 +37,6 @@ const LoginPage = () => {
             Cookies.set("currentUser", JSON.stringify(user), { expires: 1 });
 
             if (roleType === "student") {
-                // مهم لل AppLayout عشان يعرف النوع
                 Cookies.set("userType", "student", { expires: 1 });
                 navigate("/student/dashboard", { replace: true });
             } else {
@@ -112,7 +111,7 @@ const LoginPage = () => {
 
                     {error && <p className="error">{error}</p>}
 
-                    <button type="submit" className="login-button" disabled={loading}>
+                    <button type="submit" className="btn-1" disabled={loading}>
                         {loading ? "Logging in..." : "Login"}
                     </button>
                 </form>

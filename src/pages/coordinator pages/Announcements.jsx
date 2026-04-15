@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
     Megaphone, Users, Plus, Search, Edit3, Trash2,
     Calendar, Globe, ArrowUpRight, TrendingUp, X,
-    LayoutGrid, List 
+    LayoutGrid, List
 } from "lucide-react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import swalService from "../../services/swal";
@@ -21,11 +21,31 @@ const Announcements = () => {
     const [formData, setFormData] = useState({ title: "", content: "" });
     const [editingAnn, setEditingAnn] = useState(null);
     const [viewMode, setViewMode] = useState("week");
+    const [advisingLists, setAdvisingLists] = useState([]);
+    const [selectedAdvId, setSelectedAdvId] = useState("");
 
     const getDateKey = (date) => {
         const d = new Date(date);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
+
+    const fetchAdvisingLists = async () => {
+        try {
+            const res = await api.get("/advisors/advising-lists/all");
+            setAdvisingLists(res.data);
+            if (res.data.length > 0 && !selectedAdvId) {
+                setSelectedAdvId(res.data[0]._id); // اختيار أول واحدة تلقائياً
+            }
+        } catch (err) {
+            console.error("Error fetching advising lists:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === "advising") {
+            fetchAdvisingLists();
+        }
+    }, [activeTab]);
 
     const fetchAnnouncements = async () => {
         try {
@@ -34,12 +54,18 @@ const Announcements = () => {
             if (activeTab === "department") {
                 res = await api.get("/announcements/");
             } else {
-                const advId = "adv1";
-                res = await api.get(`/announcements/advising-list/${advId}`);
+                // لو مفيش ID مختار لسه، متبعثش الريكويست
+                if (!selectedAdvId) {
+                    setAnnouncements([]);
+                    setLoading(false);
+                    return;
+                }
+                res = await api.get(`/announcements/advising-list/${selectedAdvId}`);
             }
             setAnnouncements(res.data);
         } catch (err) {
             console.error("Error fetching data:", err);
+            setAnnouncements([]);
         } finally {
             setLoading(false);
         }
@@ -47,7 +73,7 @@ const Announcements = () => {
 
     useEffect(() => {
         fetchAnnouncements();
-    }, [activeTab]);
+    }, [activeTab, selectedAdvId]);
 
     const chartData = useMemo(() => {
         const range = viewMode === "week" ? 7 : 30;
@@ -199,11 +225,28 @@ const Announcements = () => {
                 </div>
 
                 <div className="filters-group">
+                    {activeTab === "advising" && (
+                        <div className="select-box-modern">
+                            <Users size={18} />
+                            <select
+                                value={selectedAdvId}
+                                onChange={(e) => setSelectedAdvId(e.target.value)}
+                                className="adv-select"
+                            >
+                                <option value="">Select Advising List...</option>
+                                {advisingLists.map(list => (
+                                    <option key={list._id} value={list._id}>
+                                        {list.advisor?.staffName || `List ${list._id}`} ({list.studentsCount} Students)
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
-                    <div className="search-box-modern">
+                    {/* <div className="search-box-modern">
                         <Search size={18} />
                         <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div>
+                    </div> */}
                     <div className="date-filter-box">
                         <Calendar size={18} />
                         <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />

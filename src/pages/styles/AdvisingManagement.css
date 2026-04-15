@@ -42,7 +42,7 @@
 .advising-container .advising-tabs {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
+  /* margin-bottom: 24px; */
   padding-bottom: 12px;
   border-bottom: 1px solid #e2e8f0;
 }

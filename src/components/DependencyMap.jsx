@@ -5,7 +5,6 @@ import '@xyflow/react/dist/style.css';
 import { X } from 'lucide-react';
 import swalService from "../services/swal";
 
-// الألوان الهادئة لكل مستوى دراسي
 const LEVEL_STYLES = {
     freshman: { bg: '#eff6ff', border: '#3b82f6', text: '#1e40af' },
     sophomore: { bg: '#f0fdf4', border: '#22c55e', text: '#166534' },
@@ -16,9 +15,6 @@ const LEVEL_STYLES = {
 const getLayoutedElements = (nodes, edges) => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-    // nodesep: المسافة الأفقية بين المربعات (زودناها لـ 250 عشان نمنع تداخل الأسهم)
-    // ranksep: المسافة الرأسية بين المستويات (150 بكسل مسافة مريحة للعين)
     dagreGraph.setGraph({ rankdir: 'TB', nodesep: 250, ranksep: 150 });
 
     nodes.forEach((node) => {
@@ -56,7 +52,20 @@ const DependencyMap = ({ courses, onClose }) => {
                 data: {
                     label: (
                         <div className="modern-node">
-                            <div className="node-id-tag" style={{ backgroundColor: style.border }}>{course._id}</div>
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                                <span
+                                    className="node-id-tag"
+                                    style={{ backgroundColor: style.border }}
+                                >
+                                    {course._id}
+                                </span>
+                                <span
+                                    className="node-id-tag"
+                                    style={{ backgroundColor: style.border }}
+                                >
+                                    {course.courseType}
+                                </span>
+                            </div>
                             <div className="node-title" style={{ color: style.text }}>{course.courseName}</div>
                             <div className="node-footer">{course.courseLevel} • {course.courseCredits} Cr.</div>
                         </div>
@@ -81,11 +90,11 @@ const DependencyMap = ({ courses, onClose }) => {
                             id: `e-${prereqId}-${course._id}`,
                             source: prereqId,
                             target: course._id,
-                            type: 'smoothstep', // خطوط منحنية تمنع الإحساس بالزحمة
-                            pathOptions: { borderRadius: 30 }, // انحناء واسع للخط
+                            type: 'smoothstep',
+                            pathOptions: { borderRadius: 30 },
                             markerEnd: {
                                 type: MarkerType.ArrowClosed,
-                                color: style.border, // السهم لونه يتبع لون المادة اللي رايح لها
+                                color: style.border,
                                 width: 20,
                                 height: 20
                             },

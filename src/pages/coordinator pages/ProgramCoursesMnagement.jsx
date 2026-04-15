@@ -16,7 +16,7 @@ const VALID_TYPES = [
     "training",
 ];
 
-const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior"];
+const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior-1", "senior-2", "senior"];
 const VALID_Regulations = ["New", "Last"];
 
 const TYPE_COLORS = {

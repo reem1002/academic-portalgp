@@ -307,6 +307,8 @@ const PreRegistrationManagementPage = () => {
                                 <option value="freshman">Freshman</option>
                                 <option value="sophomore">Sophomore</option>
                                 <option value="junior">Junior</option>
+                                <option value="senior-1">senior-1</option>
+                                <option value="senior-2">senior-2</option>
                                 <option value="senior">Senior</option>
                             </select>
                             <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">

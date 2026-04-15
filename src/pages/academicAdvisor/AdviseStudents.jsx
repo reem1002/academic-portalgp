@@ -181,7 +181,7 @@ const AdviseStudents = () => {
                 <div style={{ display: 'flex', gap: '12px' }}>
                     <select className="adv-filter-select" onChange={(e) => setFilterLevel(e.target.value)}>
                         <option value="All">All Levels</option>
-                        {['Freshman', 'Sophomore', 'Junior', 'Senior'].map(l => (
+                        {['Freshman', 'Sophomore', 'Junior', "senior-1", "senior-2", 'Senior'].map(l => (
                             <option key={l} value={l}>{l}</option>
                         ))}
                     </select>
