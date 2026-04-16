@@ -12,7 +12,7 @@
   margin-top: 20px;
 }
 
-/* ===== Tabs Navigation (الستايل الجديد للفلترة) ===== */
+
 .tabs-navigation {
   display: flex;
   justify-content: center;
@@ -44,7 +44,6 @@
  background: #e0f2fe; color: #075985; border: 1px solid #bae6fd;   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== Credit Info Card (تعديل الألوان للأزرق الهادي) ===== */
 .credit-info-card {
   background: #fff;
   padding: 20px;

@@ -30,7 +30,7 @@ const swalService = {
         });
     },
 
-    confirm: async (title, text, confirmText = 'Yes, delete it!') => {
+    confirm: async (title, text, confirmText = 'Yes, I confirm!') => {
         return Swal.fire({
             title: title || 'Are you sure?',
             text: text || "You won't be able to revert this!",

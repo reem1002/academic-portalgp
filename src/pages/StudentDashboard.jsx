@@ -3,6 +3,7 @@ import {
     Megaphone, Calendar, User, Video,
     ArrowRight, Clock, Bell, CalendarCheck
 } from "lucide-react";
+import { CalendarDays, CalendarPlus, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./styles/StudentDashboard.css";
@@ -51,7 +52,10 @@ const StudentDashboard = () => {
             if (tabType === "advisingList") {
                 endpoint = "/student/me/advising-list-announcements";
             } else if (tabType === "department") {
-                endpoint = "/student/me/department-announcements";
+                const publicOnly = announcements.filter(a => a.target === "specificStudents");
+                setFilteredAnnouncements(publicOnly);
+                setLoading(false);
+                return;
             } else if (tabType === "all-public") {
                 const publicOnly = announcements.filter(a => a.target === "all");
                 setFilteredAnnouncements(publicOnly);
@@ -81,6 +85,14 @@ const StudentDashboard = () => {
         if (target === "advisingList") return "sd-tag-academic";
         if (target === "all") return "sd-tag-public";
         return "sd-tag-dept";
+    };
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        return new Date(dateString).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+        });
     };
 
     return (
@@ -127,7 +139,7 @@ const StudentDashboard = () => {
                                         className={`sd-tab-item ${activeTab === tab ? "is-active" : ""}`}
                                         onClick={() => handleTabChange(tab)}
                                     >
-                                        {tab === "all" ? "All" : tab === "all-public" ? "Public" : tab === "advisingList" ? "Academic" : "Dept"}
+                                        {tab === "all" ? "All" : tab === "all-public" ? "Public" : tab === "advisingList" ? "Advising" : "Private"}
                                     </button>
                                 ))}
                             </div>
@@ -148,21 +160,34 @@ const StudentDashboard = () => {
                                     <div key={ann._id} className="sd-ann-item">
                                         <div className="sd-ann-header">
                                             <span className={`sd-pill-tag ${getTagClass(ann.target)}`}>
-                                                {ann.target === "advisingList" ? "Academic" : ann.target === "all" ? "Public" : "Department"}
+                                                {ann.target === "advisingList" ? "Advising" : ann.target === "all" ? "Public" : "Private"}
                                             </span>
                                             <span className="sd-semester-text">{ann.semesterId}</span>
                                         </div>
                                         <h3 className="sd-ann-title">{ann.title}</h3>
                                         <p className="sd-ann-content">{ann.content}</p>
-                                        <div className="sd-ann-footer">
-                                            <div className="sd-meta-item">
-                                                <Calendar size={14} />
-                                                <span>{new Date(ann.createdAt).toLocaleDateString()}</span>
+                                        <div className="sd-ann-footer flex flex-wrap items-center gap-4 mt-4 pt-3 border-t border-gray-100 text-slate-500">
+
+                                            {/* تاريخ النشر */}
+                                            <div className="sd-meta-item flex items-center gap-1.5 text-xs font-medium">
+                                                <CalendarPlus size={14} className="text-blue-500" />
+                                                <span>Published: {formatDate(ann.createdAt)}</span>
                                             </div>
-                                            <div className="sd-meta-item">
-                                                <User size={14} />
-                                                <span>{ann.staffId?.staffName || "Admin"}</span>
+
+                                            {/* تاريخ الانتهاء */}
+                                            <div className="sd-meta-item flex items-center gap-1.5 text-xs font-medium">
+                                                <Clock size={14} className="text-amber-500" />
+                                                <span>Expires: {formatDate(ann.expiresAt)}</span>
                                             </div>
+
+                                            {/* الناشر */}
+                                            <div className="sd-meta-item flex items-center gap-1.5 text-xs font-medium ml-auto">
+                                                <User size={14} className="text-slate-400" />
+                                                <span className="bg-slate-100 px-2 py-0.5 rounded-full">
+                                                    {ann.staffId?.staffName || "Admin"}
+                                                </span>
+                                            </div>
+
                                         </div>
                                     </div>
                                 ))}
