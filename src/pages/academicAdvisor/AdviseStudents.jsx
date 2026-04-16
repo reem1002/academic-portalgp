@@ -219,7 +219,7 @@ const AdviseStudents = () => {
                             <tr key={s.id} className={s.atRisk ? "row-at-risk" : ""}>
                                 <td className="adv-student-id">#{s.id}</td>
                                 <td>{s.name}</td>
-                                <td className={s.GPA < 2 ? "gpa-badge low" : "gpa-badge high"}>{s.GPA}
+                                <td className={s.GPA < 2 ? "gpa-badge low" : "gpa-badge high"} ><span style={{ marginRight: '5px' }}>{s.GPA}</span>
                                     {s.atRisk
                                         ? <span className="type-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>At Risk</span>
                                         : <span className="type-badge" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Good</span>

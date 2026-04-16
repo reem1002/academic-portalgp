@@ -2,37 +2,58 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
     Megaphone, Plus, Search, Edit3, Trash2,
     Calendar, ArrowUpRight, TrendingUp, X,
-    LayoutGrid, List
+    LayoutGrid, List, UserCheck, Check, ChevronDown, User, Filter
 } from "lucide-react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import swalService from "../../services/swal";
 import api from "../../services/api";
 import "../styles/Announcements.css";
+import "./styles/AdviseAnnouncements.css";
 
 const AdvisingAnnouncements = () => {
+    // --- States ---
     const [layout, setLayout] = useState("table");
     const [announcements, setAnnouncements] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFilter, setDateFilter] = useState("");
+    const [typeFilter, setTypeFilter] = useState("all");
+    const [targetFilter, setTargetFilter] = useState("all");
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [formData, setFormData] = useState({ title: "", content: "" });
     const [editingAnn, setEditingAnn] = useState(null);
     const [viewMode, setViewMode] = useState("week");
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    // مساعد لجلب التاريخ بصيغة YYYY-MM-DD
+    const [studentSearch, setStudentSearch] = useState("");
+    const [myStudents, setMyStudents] = useState([]);
+    const [formData, setFormData] = useState({
+        title: "",
+        content: "",
+        type: "general",
+        expiresAt: "",
+        studentsIds: []
+    });
+
+    const types = ["general", "urgent", "event", "deadline", "warning"];
+
     const getDateKey = (date) => {
+        if (!date) return "";
         const d = new Date(date);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
 
-    const fetchAnnouncements = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            // الـ Endpoint الجديد الخاص بالأدفايزر
-            const res = await api.get("/academic-advisors/me/advising-list/announcements");
-            setAnnouncements(res.data);
+            const [annRes, studentsRes] = await Promise.all([
+                api.get("/academic-advisors/me/advising-list/announcements"),
+                api.get("/academic-advisors/me/list")
+            ]);
+            setAnnouncements(annRes.data);
+            const allStudents = studentsRes.data.flatMap(list => list.students.map(s => s.student));
+            setMyStudents(allStudents);
         } catch (err) {
             console.error("Error fetching data:", err);
             swalService.error("Error", "Failed to load announcements.");
@@ -41,11 +62,9 @@ const AdvisingAnnouncements = () => {
         }
     };
 
-    useEffect(() => {
-        fetchAnnouncements();
-    }, []);
+    useEffect(() => { fetchData(); }, []);
 
-    // داتا التشارت
+    // --- Chart Logic ---
     const chartData = useMemo(() => {
         const range = viewMode === "week" ? 7 : 30;
         const days = [...Array(range)].map((_, i) => {
@@ -68,84 +87,88 @@ const AdvisingAnnouncements = () => {
         });
     }, [announcements, viewMode]);
 
+
+    const filteredData = useMemo(() => {
+        return announcements.filter((ann) => {
+            const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                ann.content.toLowerCase().includes(searchTerm.toLowerCase());
+            const annDate = ann.createdAt ? getDateKey(ann.createdAt) : "";
+            const matchesDate = dateFilter ? annDate === dateFilter : true;
+            const matchesType = typeFilter === "all" ? true : ann.type === typeFilter;
+
+            let matchesTarget = true;
+            if (targetFilter === "everyone") {
+                matchesTarget = ann.target !== "specificStudents";
+            } else if (targetFilter !== "all") {
+                matchesTarget = ann.targetIds?.includes(targetFilter);
+            }
+
+            return matchesSearch && matchesDate && matchesType && matchesTarget;
+        });
+    }, [announcements, searchTerm, dateFilter, typeFilter, targetFilter]);
+
+
     const handleEdit = (ann) => {
         setEditingAnn(ann);
-        setFormData({ title: ann.title, content: ann.content });
+        setFormData({
+            title: ann.title,
+            content: ann.content,
+            type: ann.type || "general",
+            expiresAt: ann.expiresAt ? getDateKey(ann.expiresAt) : "",
+            studentsIds: ann.targetIds || []
+        });
         setIsModalOpen(true);
     };
 
     const handleDelete = async (id) => {
-        const result = await swalService.confirm(
-            "Delete Announcement?",
-            "This will remove the announcement for all students in your list."
-        );
-
+        const result = await swalService.confirm("Delete Announcement?", "This action cannot be undone.");
         if (result.isConfirmed) {
             try {
                 await api.delete(`/academic-advisors/me/advising-list/announcement/${id}`);
-                swalService.success("Deleted!", "Announcement has been removed.");
-                fetchAnnouncements();
-            } catch (err) {
-                swalService.error("Error", "Failed to delete the announcement.");
-            }
+                swalService.success("Deleted!", "Announcement removed.");
+                fetchData();
+            } catch (err) { swalService.error("Error", "Failed to delete."); }
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (submitting) return;
-
         try {
             setSubmitting(true);
+            const isSpecific = formData.studentsIds.length > 0;
             if (editingAnn) {
-                // Update - لاحظ استخدام الـ _id في الـ URL
-                await api.put(`/academic-advisors/me/advising-list/announcement/${editingAnn._id}`, {
-                    ...formData,
-                    semesterId: editingAnn.semesterId // الحفاظ على السيمستر
-                });
-                swalService.success("Updated!", "Announcement updated successfully.");
+                await api.put(`/academic-advisors/me/advising-list/announcement/${editingAnn._id}`, formData);
             } else {
-                // Create - الباكيند غالباً بيضيف السيمستر تلقائياً لكن لو محتاج تبعته ممكن تضيفه هنا
-                await api.post("/academic-advisors/me/advising-list/announcement", {
-                    ...formData,
-                    semesterId: "fall-2035" // يفضل طبعاً يكون ديناميكي من الـ Context لو متاح
-                });
-                swalService.success("Created!", "Announcement sent to your students.");
+                const endpoint = isSpecific ? "/academic-advisors/me/advising-list/announcement/specific-students" : "/academic-advisors/me/advising-list/announcement";
+                await api.post(endpoint, formData);
             }
-
             setIsModalOpen(false);
-            setEditingAnn(null);
-            setFormData({ title: "", content: "" });
-            fetchAnnouncements();
-        } catch (err) {
-            swalService.error("Save Error", err.response?.data?.message || "Something went wrong.");
-        } finally {
-            setSubmitting(false);
-        }
+            fetchData();
+            setFormData({ title: "", content: "", type: "general", expiresAt: "", studentsIds: [] });
+        } catch (err) { swalService.error("Save Error", "Failed to save."); } finally { setSubmitting(false); }
     };
 
-    const filteredData = useMemo(() => {
-        return announcements.filter((ann) => {
-            const matchesSearch = ann.title.toLowerCase().includes(searchTerm.toLowerCase());
-            const annDate = ann.createdAt ? getDateKey(ann.createdAt) : "";
-            const matchesDate = dateFilter ? annDate === dateFilter : true;
-            return matchesSearch && matchesDate;
-        });
-    }, [announcements, searchTerm, dateFilter]);
+    const toggleStudentSelection = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            studentsIds: prev.studentsIds.includes(id) ? prev.studentsIds.filter(sid => sid !== id) : [...prev.studentsIds, id]
+        }));
+    };
 
     return (
-        <div className="advising-container">
+        <div className="advising-ann-container">
             {/* Header */}
             <div className="page-header-section">
                 <div className="title-section">
                     <h1>Advising Announcements</h1>
                 </div>
-                <button className="btn-1" onClick={() => { setEditingAnn(null); setFormData({ title: "", content: "" }); setIsModalOpen(true); }}>
+                <button className="btn-1" onClick={() => { setEditingAnn(null); setIsModalOpen(true); }}>
                     <Plus size={18} /> New Announcement
                 </button>
             </div>
 
-            {/* Stats & Chart */}
+            {/* Insights Section */}
             <div className="insights-grid">
                 <div className="stat-card">
                     <div className="stat-icon"><Megaphone size={24} /></div>
@@ -172,43 +195,63 @@ const AdvisingAnnouncements = () => {
                                     <stop offset="95%" stopColor="#3a86ff" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <Tooltip
-                                labelFormatter={(value, payload) => payload[0]?.payload?.fullDate || value}
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                            />
-                            <Area type="monotone" dataKey="posts" stroke="#3a86ff" strokeWidth={2} fillOpacity={1} fill="url(#colorPosts)" />
+                            <Tooltip labelFormatter={(v, p) => p[0]?.payload?.fullDate || v} />
+                            <Area type="monotone" dataKey="posts" stroke="#3a86ff" fill="url(#colorPosts)" strokeWidth={2} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
             </div>
 
-            {/* Search & Filters */}
-            <div className="controls-row">
-                <div className="filters-group" style={{ flex: 1 }}>
-                    <div className="search-box-modern">
+            {/* Comprehensive Filters Row */}
+            <div className="filters-bar-modern">
+                <div className="filters-upper-row">
+                    {/* <div className="search-box-modern">
                         <Search size={18} />
-                        <input type="text" placeholder="Search by title..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                        <input type="text" placeholder="Search announcements..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div> */}
+
+                    <div className="filter-group-horizontal">
+                        <div className="filter-item">
+                            <Filter size={16} />
+                            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                                <option value="all">All Types</option>
+                                {types.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="filter-item">
+                            <User size={16} />
+                            <select value={targetFilter} onChange={(e) => setTargetFilter(e.target.value)}>
+                                <option value="all">All Targets</option>
+                                <option value="everyone">General (Everyone)</option>
+                                <optgroup label="Specific Students">
+                                    {myStudents.map(s => <option key={s.id} value={s.id}>{s.studentName}</option>)}
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div className="filter-item date">
+                            <Calendar size={16} />
+                            <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
+                            {dateFilter && <X size={14} className="clear-icon" onClick={() => setDateFilter("")} />}
+                        </div>
                     </div>
-                    <div className="date-filter-box">
-                        <Calendar size={18} />
-                        <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
-                        {dateFilter && <X size={14} className="clear-date" onClick={() => setDateFilter("")} />}
+
+                    <div className="layout-toggle">
+                        <button className={layout === "table" ? "active" : ""} onClick={() => setLayout("table")}><List size={20} /></button>
+                        <button className={layout === "grid" ? "active" : ""} onClick={() => setLayout("grid")}><LayoutGrid size={20} /></button>
                     </div>
                 </div>
 
-                <div className="layout-toggle">
-                    <button className={layout === "table" ? "active" : ""} onClick={() => setLayout("table")}>
-                        <List size={20} />
-                    </button>
-                    <button className={layout === "grid" ? "active" : ""} onClick={() => setLayout("grid")}>
-                        <LayoutGrid size={20} />
-                    </button>
+                <div className="filter-summary">
+                    Showing <strong>{filteredData.length}</strong> announcements
+                    {(typeFilter !== "all" || targetFilter !== "all" || dateFilter) && " based on your filters"}
                 </div>
             </div>
 
             {/* List Display */}
             {loading ? (
-                <div className="loading-state">Loading announcements...</div>
+                <div className="loading-state">Loading...</div>
             ) : filteredData.length > 0 ? (
                 layout === "table" ? (
                     <div className="table-wrapper">
@@ -216,9 +259,10 @@ const AdvisingAnnouncements = () => {
                             <thead>
                                 <tr>
                                     <th>Title</th>
+                                    <th>Type</th>
                                     <th>Content Preview</th>
-                                    <th>Date</th>
-                                    <th>Semester</th>
+                                    <th>Expiry Date</th>
+                                    <th>Target Recipient</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -226,9 +270,19 @@ const AdvisingAnnouncements = () => {
                                 {filteredData.map(ann => (
                                     <tr key={ann._id}>
                                         <td style={{ fontWeight: '600' }}>{ann.title}</td>
+                                        <td><span className={`badge-type ${ann.type}`}>{ann.type}</span></td>
                                         <td className="content-cell">{ann.content}</td>
-                                        <td>{new Date(ann.createdAt).toLocaleDateString()}</td>
-                                        <td><span className="badge-semester">{ann.semesterId}</span></td>
+                                        <td>{ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "No Expiry"}</td>
+                                        <td>
+                                            {ann.target === "specificStudents" ? (
+                                                <div className="target-info-cell">
+                                                    <div className="student-name-main">{myStudents.find(s => ann.targetIds?.includes(s.id))?.studentName || "Selected Students"}</div>
+                                                    <div className="student-id-sub">{ann.targetIds?.length > 1 ? `+${ann.targetIds.length - 1} more` : ann.targetIds?.[0]}</div>
+                                                </div>
+                                            ) : (
+                                                <span className="badge-all">All Students</span>
+                                            )}
+                                        </td>
                                         <td>
                                             <div className="action-btns">
                                                 <button onClick={() => handleEdit(ann)} className="btn-edit"><Edit3 size={18} /></button>
@@ -243,59 +297,169 @@ const AdvisingAnnouncements = () => {
                 ) : (
                     <div className="announcements-grid">
                         {filteredData.map(ann => (
-                            <div key={ann._id} className="announcement-card">
-                                <div className="card-header">
-                                    <div className="card-badge">{ann.semesterId}</div>
-                                    <div className="card-actions">
-                                        <button onClick={() => handleEdit(ann)} className="btn-edit"><Edit3 size={16} /></button>
-                                        <button onClick={() => handleDelete(ann._id)} className="btn-delete"><Trash2 size={16} /></button>
+                            <div key={ann._id} className={`announcement-card border-${ann.type}`}>
+                                <div className="card-top">
+                                    <span className={`badge-type ${ann.type}`}>{ann.type}</span>
+                                    <div className="action-btns">
+                                        <button onClick={() => handleEdit(ann)} className="btn-edit-small"><Edit3 size={16} /></button>
+                                        <button onClick={() => handleDelete(ann._id)} className="btn-delete-small"><Trash2 size={16} /></button>
                                     </div>
                                 </div>
+
                                 <h3 className="card-title">{ann.title}</h3>
                                 <p className="card-content">{ann.content}</p>
-                                <div className="card-footer">
-                                    <span className="date-text">{new Date(ann.createdAt).toLocaleDateString()}</span>
+
+                                <div className="card-meta-info">
+                                    <div className="meta-row">
+                                        <Calendar size={14} />
+                                        <span>Expires: {ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "No Expiry"}</span>
+                                    </div>
+                                    <div className="meta-row">
+                                        <User size={14} />
+                                        {ann.target === "specificStudents" ? (
+                                            <div className="target-info-cell">
+                                                <div className="student-name-main">{myStudents.find(s => ann.targetIds?.includes(s.id))?.studentName || "Selected Students"}</div>
+                                                <div className="student-id-sub">{ann.targetIds?.length > 1 ? `+${ann.targetIds.length - 1} more` : ann.targetIds?.[0]}</div>
+                                            </div>
+                                        ) : (
+                                            <span className="badge-all">All Students</span>
+                                        )}
+                                    </div>
+                                    <div className="meta-row" style={{ marginTop: '4px', fontWeight: '500' }}>
+                                        <span className="date-text">Created: {new Date(ann.createdAt).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )
             ) : (
-                <div className="no-data">No advising announcements found.</div>
+                <div className="no-data">No announcements match your criteria.</div>
             )}
 
-            {/* Form Modal */}
+            {/* Form Modal with Dropdown Selector */}
             {isModalOpen && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="modal-content large">
                         <div className="modal-header">
                             <h3>{editingAnn ? "Edit Announcement" : "Create New Announcement"}</h3>
-                            <button className="close-btn" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+                            <button className="close-btn" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}><X size={20} /></button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Title</label>
-                                <input
-                                    required
-                                    placeholder="Enter a clear title"
-                                    value={formData.title}
-                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Message Content</label>
-                                <textarea
-                                    required
-                                    rows="5"
-                                    placeholder="Write your message here..."
-                                    value={formData.content}
-                                    onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                />
+                            <div className="form-main-layout">
+                                <div className="form-left">
+                                    <div className="form-group">
+                                        <label>Title</label>
+                                        <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="e.g., Registration Deadline" />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Type</label>
+                                            <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                                                {types.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Expiry Date</label>
+                                            <input type="date" value={formData.expiresAt} onChange={e => setFormData({ ...formData, expiresAt: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Message Content</label>
+                                        <textarea required rows="5" value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} placeholder="Write your message here..." />
+                                    </div>
+                                </div>
+
+                                {!editingAnn && (
+                                    <div className="form-right student-selection-area">
+                                        <label><UserCheck size={16} /> Target Recipient</label>
+                                        <div className="custom-multiselect">
+                                            <div className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                                                <span>
+                                                    {formData.studentsIds.length === 0
+                                                        ? "All Students (Default)"
+                                                        : `${formData.studentsIds.length} Student(s) Selected`}
+                                                </span>
+                                                <ChevronDown size={18} />
+                                            </div>
+
+                                            {isDropdownOpen && (
+                                                <div className="dropdown-panel">
+                                                    <div className="dropdown-search">
+                                                        <Search size={14} />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search student name or ID..."
+                                                            value={studentSearch} // ربط القيمة بالـ state
+                                                            onChange={(e) => setStudentSearch(e.target.value)} // تحديث الـ state عند الكتابة
+                                                            onClick={(e) => e.stopPropagation()} // منع إغلاق الدروب داون عند الضغط على الـ input
+                                                        />
+                                                    </div>
+                                                    <div className="dropdown-options">
+                                                        {myStudents
+                                                            // إضافة الفلترة هنا
+                                                            .filter(student =>
+                                                                student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                                student.id.toLowerCase().includes(studentSearch.toLowerCase())
+                                                            )
+                                                            .map(student => (
+                                                                <div
+                                                                    key={student.id}
+                                                                    className={`option-item ${formData.studentsIds.includes(student.id) ? 'selected' : ''}`}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation(); // منع إغلاق القائمة عند اختيار طالب
+                                                                        toggleStudentSelection(student.id);
+                                                                    }}
+                                                                >
+                                                                    <div className="check-box">
+                                                                        {formData.studentsIds.includes(student.id) && <Check size={12} />}
+                                                                    </div>
+                                                                    <div className="option-info">
+                                                                        <p>{student.studentName}</p>
+                                                                        <span>{student.id}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        {/* رسالة في حالة عدم وجود نتائج */}
+                                                        {myStudents.filter(student =>
+                                                            student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                            student.id.toLowerCase().includes(studentSearch.toLowerCase())
+                                                        ).length === 0 && (
+                                                                <div className="no-results">No students found</div>
+                                                            )}
+                                                    </div>
+                                                    <div className="dropdown-footer">
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setFormData({ ...formData, studentsIds: [] });
+                                                            }}
+                                                        >
+                                                            Clear All
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn-done"
+                                                            onClick={() => {
+                                                                setIsDropdownOpen(false);
+                                                                setStudentSearch(""); // تصفير البحث عند الانتهاء (اختياري)
+                                                            }}
+                                                        >
+                                                            Done
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="selection-hint">Leave empty to send to your entire advising list.</p>
+                                    </div>
+                                )}
                             </div>
                             <div className="modal-footer">
-                                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                                <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}>Cancel</button>
                                 <button type="submit" disabled={submitting} className="btn-1">
-                                    {submitting ? "Processing..." : editingAnn ? "Save Changes" : "Post Announcement"}
+                                    {submitting ? "Processing..." : editingAnn ? "Update" : "Publish Now"}
                                 </button>
                             </div>
                         </form>

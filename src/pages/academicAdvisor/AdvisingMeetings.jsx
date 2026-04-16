@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import swalService from "../../services/swal";
-// import {
-//     Calendar, Clock, Loader2, Info,
-//     CheckCircle, CalendarClock, User,
-//     Check, X, MessageSquare, ListTodo, History
-// } from 'lucide-react';
 import {
     Calendar, Clock, Loader2, Info,
     CheckCircle, CalendarClock, User,
@@ -19,17 +14,14 @@ import "./styles/Ad-meet.css";
 const AdvisingMeetings = () => {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [meetings, setMeetings] = useState([]);
-    const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(false);
     const [actionLoading, setActionLoading] = useState(null);
     const [activeTab, setActiveTab] = useState('Meeting Requests');
-    const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
-    const firstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
-    // ... داخل المكون
     const [selectedDate, setSelectedDate] = useState(null);
     const [highlightedMeetingId, setHighlightedMeetingId] = useState(null);
 
-
+    const daysInMonth = (month, year) => new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = (month, year) => new Date(year, month, 1).getDay();
 
     useEffect(() => {
         fetchAllData();
@@ -43,10 +35,15 @@ const AdvisingMeetings = () => {
                 api.get("/academic-advisors/me/meetings/requests")
             ]);
 
-            setMeetings(requestsRes.data || []);
-            console.log("m====", meetingsRes.data);
-            setRequests(requestsRes.data || []);
-            console.log("r====", requestsRes.data);
+            // دمج البيانات من الـ 2 endpoints لضمان شمولية كل الحالات (Pending, Approved, Declined)
+            const combinedData = [...(meetingsRes.data || []), ...(requestsRes.data || [])];
+
+            // إزالة التكرار بناءً على الـ _id
+            const uniqueMeetings = Array.from(
+                new Map(combinedData.map(item => [item._id, item])).values()
+            );
+
+            setMeetings(uniqueMeetings);
         } catch (err) {
             swalService.error("Error", "Failed to load data from server.");
         } finally {
@@ -64,7 +61,7 @@ const AdvisingMeetings = () => {
         try {
             await api.post(`/academic-advisors/me/meetings/respond/${meetingId}`, { status });
             swalService.success("Success", `Meeting ${status} successfully.`);
-            fetchAllData(); // تحديث الكل عشان البيانات تتنقل بين التابز
+            fetchAllData();
         } catch (err) {
             swalService.error("Failed", err.response?.data?.message || "Could not update status.");
         } finally {
@@ -81,16 +78,15 @@ const AdvisingMeetings = () => {
         }
     };
 
-    // فلترة البيانات بناءً على التاب النشطة
     const getDisplayData = () => {
-        let filtered = meetings;
+        let filtered = [...meetings];
 
         // 1. الفلترة حسب التاب النشطة
         if (activeTab === 'Meeting Requests') {
             filtered = filtered.filter(m => m.meetingStatus === 'pending');
         } else if (activeTab === 'Upcoming Meetings') {
             filtered = filtered.filter(m => m.meetingStatus === 'approved');
-        } else {
+        } else if (activeTab === 'History') {
             filtered = filtered.filter(m => m.meetingStatus === 'declined');
         }
 
@@ -101,7 +97,7 @@ const AdvisingMeetings = () => {
             );
         }
 
-        // 3. الفلترة لو ميتنج محدد تم اختياره
+        // 3. الفلترة لو ميتنج محدد تم اختياره من الكاليندر مباشرة
         if (highlightedMeetingId) {
             filtered = filtered.filter(m => m._id === highlightedMeetingId);
         }
@@ -159,11 +155,14 @@ const AdvisingMeetings = () => {
                                     e.stopPropagation();
                                     setSelectedDate(dateStr);
                                     setHighlightedMeetingId(m._id);
-                                    setActiveTab('Upcoming Meetings')
+                                    setActiveTab('Upcoming Meetings');
                                 }}
                             >
                                 <span className="event-time">{m.meetingTime}</span>
-                                <span className="event-title">{m.studentId?.substring(0, 5)}...</span>
+                                {/* هنا التعديل المهم: استخدام الاسم بدل الـ substring للـ ID */}
+                                <span className="event-title">
+                                    {m.studentId?.studentName?.split(' ')[0] || "Student"}
+                                </span>
                             </div>
                         ))}
                         {dayMeetings.length > 3 && (
@@ -190,9 +189,7 @@ const AdvisingMeetings = () => {
                 </div>
             </header>
 
-            {/* Tabs Navigation */}
             <div className="m_insights-grid">
-                {/* 1. Meeting Requests - Pending Style */}
                 <div
                     className={`m_insight-card clickable ${activeTab === 'Meeting Requests' ? 'active-tab pending-border' : ''}`}
                     onClick={() => { setActiveTab('Meeting Requests'); setHighlightedMeetingId(null); }}
@@ -204,7 +201,6 @@ const AdvisingMeetings = () => {
                     </div>
                 </div>
 
-                {/* 2. Upcoming Meetings - Success/Approved Style */}
                 <div
                     className={`m_insight-card clickable ${activeTab === 'Upcoming Meetings' ? 'active-tab approved-border' : ''}`}
                     onClick={() => { setActiveTab('Upcoming Meetings'); setHighlightedMeetingId(null); }}
@@ -216,7 +212,6 @@ const AdvisingMeetings = () => {
                     </div>
                 </div>
 
-                {/* 3. History - Neutral/Muted Style */}
                 <div
                     className={`m_insight-card clickable ${activeTab === 'History' ? 'active-tab declined-border' : ''}`}
                     onClick={() => { setActiveTab('History'); setHighlightedMeetingId(null); }}
@@ -228,7 +223,7 @@ const AdvisingMeetings = () => {
                     </div>
                 </div>
             </div>
-            {/* Visual Calendar Section */}
+
             <div className="calendar-section-wrapper" style={{ marginBottom: '30px' }}>
                 <div className="calendar-card">
                     <div className="calendar-header">
@@ -255,105 +250,105 @@ const AdvisingMeetings = () => {
             </div>
 
             <div className="advising-content">
-                <div >
-                    {loading ? (
-                        <div className="loading-state">
-                            <Loader2 className="animate-spin" />
-                            <p>Fetching data...</p>
-                        </div>
-                    ) : (
-                        <div className="maiin_table_contebt">
-                            <div className="management-header meeting-header">
-                                <div className="title-section">
-                                    <h1>{activeTab}</h1>
-                                </div>
+                {loading ? (
+                    <div className="loading-state">
+                        <Loader2 className="animate-spin" />
+                        <p>Fetching data...</p>
+                    </div>
+                ) : (
+                    <div className="maiin_table_contebt">
+                        <div className="management-header meeting-header">
+                            <div className="title-section">
+                                <h1>{activeTab}</h1>
                             </div>
-                            {(selectedDate || highlightedMeetingId) && (
-                                <div className="filter-info-bar">
-                                    <span>Showing results for: <strong>{selectedDate}</strong> {highlightedMeetingId && "(Specific Meeting)"}</span>
-                                    <button onClick={() => { setSelectedDate(null); setHighlightedMeetingId(null); }}>Reset Filters</button>
-                                </div>
-                            )}
-                            <div className="table-wrapper">
-                                <table className="advising-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Student</th>
-                                            <th>Date & Time</th>
-                                            <th>Notes</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {displayData.length > 0 ? displayData.map(meeting => (
-                                            <tr key={meeting._id}>
-                                                <td>
+                        </div>
+                        {(selectedDate || highlightedMeetingId) && (
+                            <div className="filter-info-bar">
+                                <span>Showing results for: <strong>{selectedDate}</strong> {highlightedMeetingId && "(Specific Meeting)"}</span>
+                                <button onClick={() => { setSelectedDate(null); setHighlightedMeetingId(null); }}>Reset Filters</button>
+                            </div>
+                        )}
+                        <div className="table-wrapper">
+                            <table className="advising-table">
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Date & Time</th>
+                                        <th>Notes</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {displayData.length > 0 ? displayData.map(meeting => (
+                                        <tr key={meeting._id}>
+                                            <td>
+                                                <div className="cell-with-icon">
+                                                    {/* <div className="author-avatar" style={{ width: '32px', height: '32px', fontSize: '12px' }}>
+                                                        {meeting.studentId?.studentName?.charAt(0) || "S"}
+                                                    </div> */}
+                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                        <span style={{ fontWeight: '600' }}>{meeting.studentId?.studentName || "N/A"}</span>
+                                                        <span style={{ fontSize: '11px', color: '#666' }}>ID: {meeting.studentId?.id || meeting.studentId?._id}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="date-time-cell">
                                                     <div className="cell-with-icon">
-                                                        <div className="author-avatar" style={{ width: '24px', height: '24px', fontSize: '10px' }}>
-                                                            {meeting.studentId?.charAt(0) || "S"}
-                                                        </div>
-                                                        <span style={{ fontWeight: '500' }}>ID: {meeting.studentId}</span>
+                                                        <Calendar size={13} className="cell-icon" />
+                                                        {new Date(meeting.meetingDate).toLocaleDateString()}
                                                     </div>
-                                                </td>
-                                                <td>
-                                                    <div className="date-time-cell">
-                                                        <div className="cell-with-icon">
-                                                            <Calendar size={13} className="cell-icon" />
-                                                            {new Date(meeting.meetingDate).toLocaleDateString()}
-                                                        </div>
-                                                        <div className="cell-with-icon subtitle-text">
-                                                            <Clock size={13} className="cell-icon" />
-                                                            {meeting.meetingTime}
-                                                        </div>
+                                                    <div className="cell-with-icon subtitle-text">
+                                                        <Clock size={13} className="cell-icon" />
+                                                        {meeting.meetingTime}
                                                     </div>
-                                                </td>
-                                                <td className="notes-cell">
-                                                    <span>{meeting.meetingNotes || "No details provided"}</span>
-                                                </td>
-                                                <td>{getStatusBadge(meeting.meetingStatus)}</td>
-                                                <td>
-                                                    {meeting.meetingStatus === 'pending' ? (
-                                                        <div className="action-btns">
-                                                            <button
-                                                                className="btn-approve-circle"
-                                                                title="Approve"
-                                                                disabled={actionLoading === meeting._id}
-                                                                onClick={() => handleRespond(meeting._id, 'approved')}
-                                                            >
-                                                                {actionLoading === meeting._id ? <Loader2 size={16} className="animate-spin" /> : <Check size={18} />}
-                                                            </button>
-                                                            <button
-                                                                className="btn-decline-circle"
-                                                                title="Decline"
-                                                                disabled={actionLoading === meeting._id}
-                                                                onClick={() => handleRespond(meeting._id, 'declined')}
-                                                            >
-                                                                <X size={18} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-muted small">
-                                                            {meeting.meetingStatus === 'approved' ? "Confirmed" : "Archived"}
-                                                        </span>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        )) : (
-                                            <tr>
-                                                <td colSpan="5" className="empty-table-msg">
-                                                    <Info size={40} />
-                                                    <p>No {activeTab} found.</p>
-                                                </td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                                </div>
+                                            </td>
+                                            <td className="notes-cell">
+                                                <span>{meeting.meetingNotes || "No details provided"}</span>
+                                            </td>
+                                            <td>{getStatusBadge(meeting.meetingStatus)}</td>
+                                            <td>
+                                                {meeting.meetingStatus === 'pending' ? (
+                                                    <div className="action-btns">
+                                                        <button
+                                                            className="btn-approve-circle"
+                                                            title="Approve"
+                                                            disabled={actionLoading === meeting._id}
+                                                            onClick={() => handleRespond(meeting._id, 'approved')}
+                                                        >
+                                                            {actionLoading === meeting._id ? <Loader2 size={16} className="animate-spin" /> : <Check size={18} />}
+                                                        </button>
+                                                        <button
+                                                            className="btn-decline-circle"
+                                                            title="Decline"
+                                                            disabled={actionLoading === meeting._id}
+                                                            onClick={() => handleRespond(meeting._id, 'declined')}
+                                                        >
+                                                            <X size={18} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted small">
+                                                        {meeting.meetingStatus === 'approved' ? "Confirmed" : "Archived"}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="5" className="empty-table-msg">
+                                                <Info size={40} />
+                                                <p>No {activeTab} found.</p>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
-                    )}
-                </div>
-
+                    </div>
+                )}
             </div>
         </div>
     );
