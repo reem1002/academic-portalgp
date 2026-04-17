@@ -21,7 +21,7 @@ const AdviseStudents = () => {
     const [modalLoading, setModalLoading] = useState(false);
 
     const [filterReg, setFilterReg] = useState("All");
-    const [filterStatus, setFilterStatus] = useState("All"); // ✅ FIX
+    const [filterStatus, setFilterStatus] = useState("All");
 
     useEffect(() => {
         fetchAdvisingList();
@@ -237,7 +237,7 @@ const AdviseStudents = () => {
                                 </td>
                                 <td>{s.registeredCredits} / {s.allowedCredits}</td>
                                 <td className="adv-actions">
-                                    <button onClick={() => navigate(`/staff/${role}/students/${s.id}`)}><Eye size={18} color="#3a86ff" /></button>
+                                    <button onClick={() => navigate(`/staff/${role}/student/${s.id}`)}><Eye size={18} color="#3a86ff" /></button>
                                     <button onClick={() => navigate(`/staff/${role}/advisor/enroll/${s.id}`)}>
 
 

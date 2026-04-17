@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save } from 'lucide-react';
 import swalService from "../services/swal";
-// import '../styles/Modals.css';
 
 const EditGradeModal = ({ isOpen, onClose, onSave, courseData }) => {
-    // الستيت المحلية للدرجة
     const [grade, setGrade] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // تحديث الستيت لما الـ courseData تتغير (لما نفتح المودال لمادة جديدة)
     useEffect(() => {
         if (courseData) {
-            setGrade(courseData.grade || '');
-            setError(''); // رسالة الخطأ القديمة
+            // التعامل مع الـ grade سواء كان رقم مباشر أو object (في حالة semester works)
+            const currentGrade = typeof courseData.grade === 'object'
+                ? courseData.grade.totalGrade
+                : courseData.grade;
+
+            setGrade(currentGrade || '');
+            setError('');
         }
     }, [courseData]);
 
@@ -21,7 +23,6 @@ const EditGradeModal = ({ isOpen, onClose, onSave, courseData }) => {
         e.preventDefault();
         setError('');
 
-        // التحقق من الدرجة
         const gradeNum = parseFloat(grade);
         if (isNaN(gradeNum) || gradeNum < 0 || gradeNum > 100) {
             setError('Please enter a valid grade between 0 and 100.');
@@ -30,9 +31,11 @@ const EditGradeModal = ({ isOpen, onClose, onSave, courseData }) => {
 
         setLoading(true);
         try {
-            // نبعت الدرجة الجديدة للأب (StudentDetails) عشان ينفذ الـ API
-            await onSave(courseData.courseId._id, gradeNum);
-            onClose(); // نقفل المودال بعد النجاح
+            const courseId = courseData.courseId?._id;
+            await onSave(courseId, gradeNum);
+
+            swalService.success("Updated", "Grade has been updated successfully.");
+            onClose();
         } catch (err) {
             setError(err.message || 'Failed to update grade. Please try again.');
         } finally {
@@ -53,7 +56,6 @@ const EditGradeModal = ({ isOpen, onClose, onSave, courseData }) => {
                 <form onSubmit={handleSubmit}>
                     <div className="modal-body">
                         <div className="course-info-display">
-                            <p className="label">Course Name</p>
                             <p className="value">{courseData.courseId?.courseName}</p>
                             <p className="sub-value">{courseData.courseId?._id}</p>
                         </div>
@@ -74,14 +76,14 @@ const EditGradeModal = ({ isOpen, onClose, onSave, courseData }) => {
                             />
                         </div>
 
-                        {error && <p className="error-message-inline">{error}</p>}
+                        {error && <p className="error-message-inline" style={{ color: 'red', fontSize: '0.85rem' }}>{error}</p>}
                     </div>
 
                     <footer className="modal-footer">
                         <button type="button" className="btn-secondary" onClick={onClose} disabled={loading}>
                             Cancel
                         </button>
-                        <button type="submit" className="btn-primary" disabled={loading}>
+                        <button type="submit" className="btn-1" disabled={loading}>
                             {loading ? (
                                 <span className="spinner-border spinner-border-sm"></span>
                             ) : (

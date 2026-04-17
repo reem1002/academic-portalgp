@@ -18,11 +18,13 @@ import AdvisingManagementPage from "./pages/coordinator pages/AdvisingManagement
 import AdvisingDetailsPage from "./pages/coordinator pages/AdvisingDetailsPage";
 import Announcements from "./pages/coordinator pages/Announcements";
 import UnassignedStudentsPage from "./pages/coordinator pages/UnassignedStudentsPage";
+import CooEnrollmentPage from "./pages/coordinator pages/CooEnrollmentPage"
 
 import AdviseStudents from "./pages/academicAdvisor/AdviseStudents";
 import AdvisingAnnouncements from "./pages/academicAdvisor/AdvisingAnnouncements";
 import AdvisingMeetings from "./pages/academicAdvisor/AdvisingMeetings";
-import AdviserEnrollmentPage from "./pages/academicAdvisor/AdviserEnrollmentPage"
+import AdviserEnrollmentPage from "./pages/academicAdvisor/AdviserEnrollmentPage";
+import AdvisedStudentDetails from "./pages/academicAdvisor/AdvisedStudentDetails"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -83,12 +85,15 @@ function App() {
           <Route path=":role/advising/details/:advisorId" element={<AdvisingDetailsPage />} />
           <Route path=":role/Anouncements" element={<Announcements />} />
           <Route path=":role/advising/unassigned" element={<UnassignedStudentsPage />} />
+          <Route path=":role/coordinator/enroll/:studentId" element={<CooEnrollmentPage />} />
+
           {/* _______________ */}
           <Route path=":role/advise-students" element={<AdviseStudents />} />
           <Route path=":role/advising-anouncements" element={<AdvisingAnnouncements />} />
           <Route path=":role/ad-meetings" element={<AdvisingMeetings />} />
 
           <Route path=":role/advisor/enroll/:studentId" element={<AdviserEnrollmentPage />} />
+          <Route path=":role/student/:id" element={<AdvisedStudentDetails />} />
         </Route>
 
 

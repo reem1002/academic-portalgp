@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import swalService from "../../services/swal";
 import "../styles/StudentDetails.css";
 import {
     FaArrowLeft, FaPlus, FaUserTie,
-    FaExclamationTriangle, FaInfoCircle, FaEnvelope, FaPhoneAlt, FaMap, FaSearch
+    FaExclamationTriangle, FaInfoCircle, FaEnvelope, FaPhoneAlt, FaSearch
 } from "react-icons/fa";
 import {
-    Trash2, GitBranch
+    Trash2, GitBranch, Edit
 } from 'lucide-react';
 
 import EditGradeModal from "../../components/EditGradeModal";
@@ -31,11 +31,12 @@ const CREDIT_MAP = {
 };
 
 const StudentDetails = () => {
+    const navigate = useNavigate();
     const { id } = useParams();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
+    const { role } = useParams();
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
@@ -66,6 +67,36 @@ const StudentDetails = () => {
             setLoading(false);
         }
     };
+
+    // دالة تحديث اللائحة (Regulation)
+    const handleUpdateRegulation = async (newRegulation) => {
+        try {
+            swalService.showLoading("Updating Regulation...");
+            await api.put(`/transcripts/${data.transcript._id}`, {
+                regulation: newRegulation
+            });
+            await fetchStudentDetails();
+            swalService.success("Success", `Regulation updated to ${newRegulation}`);
+        } catch (err) {
+            console.error(err);
+            swalService.error("Error", "Failed to update regulation.");
+        }
+    };
+
+    // دالة تحديث درجة مادة (Grade)
+    const handleUpdateGrade = async (courseId, newGrade) => {
+        try {
+            // ملاحظة: الـ endpoint يستخدم transcriptId و courseId
+            await api.put(`/transcripts/${data.transcript._id}/courses/${courseId}`, {
+                grade: newGrade
+            });
+            await fetchStudentDetails();
+            return true;
+        } catch (err) {
+            throw new Error(err.response?.data?.message || "Failed to update grade.");
+        }
+    };
+
     const getGradeInfo = (grade) => {
         if (grade >= 90) return { letter: "A", class: "safe", status: "Passed" };
         if (grade >= 80) return { letter: "B", class: "safe", status: "Passed" };
@@ -91,7 +122,6 @@ const StudentDetails = () => {
         return transcript[apiKey] || 0;
     };
 
-
     const filteredCourses = transcript.completedCourses?.filter(c => {
         const matchesType = filterType === "all" || (filterType === "failed" ? c.grade < 60 : c.courseId?.courseType === filterType);
         const matchesSearch = c.courseId?.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,13 +143,11 @@ const StudentDetails = () => {
             try {
                 swalService.showLoading("Deleting course...");
                 await api.delete(`/transcripts/${transcript._id}/courses/${courseId}`);
-
                 await fetchStudentDetails();
-
                 swalService.success("Deleted", "The course has been removed and records updated.", 1500);
             } catch (err) {
                 console.error(err);
-                swalService.error("Error", "Failed to delete the course. It might be a required prerequisite.");
+                swalService.error("Error", "Failed to delete the course.");
             }
         }
     };
@@ -139,12 +167,20 @@ const StudentDetails = () => {
                             <span className={`badge ${transcript.atRisk ? 'risk' : 'safe'}`}>{transcript.atRisk ? "At Risk" : "Good Standing"}</span>
                             <span className="badge dept">{transcript.department}</span>
                             <span className={`badge level-${transcript.level}`}>{transcript.level}</span>
-                            <span className={`badge reg-${transcript.regulation?.toLowerCase()}`}>{transcript.regulation} Regulation</span>
+
+                            {/* تعديل اللائحة - Select Box */}
+                            <select
+                                className="regulation-select-badge badge-select"
+                                value={transcript.regulation}
+                                onChange={(e) => handleUpdateRegulation(e.target.value)}
+                            >
+                                <option value="New">New Regulation</option>
+                                <option value="last">Last Regulation</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                {/* Academic Advisor Card المحدثة */}
                 <div className="academic-profile-card">
                     <div className="advisor-info-row">
                         <div className="icon-circle"><FaUserTie /></div>
@@ -153,7 +189,6 @@ const StudentDetails = () => {
                             <p className="name">{advisor?.staffName || "Not Assigned"}</p>
                         </div>
                     </div>
-                    {/* عرض بيانات تواصل الأدفايزور إذا وجدت */}
                     {advisor && (
                         <div className="advisor-contact-minimal">
                             {advisor.staffEmail && <span><FaEnvelope /> {advisor.staffEmail}</span>}
@@ -163,7 +198,6 @@ const StudentDetails = () => {
                 </div>
             </div>
 
-            {/* صف تواصل الطالب - يظهر قبل الـ Dashboard Grid */}
             <div className="student-contact-bar">
                 <div className="contact-item">
                     <FaEnvelope className="icon" />
@@ -239,81 +273,77 @@ const StudentDetails = () => {
             </div>
 
             <div className="details-content-sections">
-
-                {/* Section 1: Semester Works */}
-
                 <div className="data-section">
-
                     <div className="section-title-bar">
-
                         <h3>Current Semester Works</h3>
-
                         <span className="badge dept">{semester?._id}</span>
-
+                        <button
+                            className="enroll-btn-icon"
+                            onClick={() => navigate(`/staff/${role}/coordinator/enroll/${data.transcript.studentId?._id}`)}
+                            title="Enroll in Courses"
+                        >
+                            <FaPlus size={18} color="#10b981" />
+                        </button>
                     </div>
-
                     <div className="table-responsive table-wrapper">
-
                         <table className="modern-table">
-
                             <thead>
-
                                 <tr>
-
                                     <th>Code</th>
-
                                     <th>Course Name</th>
-
                                     <th>Grade</th>
-
+                                    {/* <th>Actions</th> */}
                                 </tr>
-
                             </thead>
-
                             <tbody>
-
                                 {semesterWorks?.length > 0 ? (
                                     semesterWorks.map((work) => (
                                         <tr key={work._id}>
                                             <td className="bold">{work.courseId?._id}</td>
                                             <td>{work.courseId?.courseName}</td>
                                             <td>
-                                                {/* التعديل هنا: بدل work.grade فقط */}
                                                 <span className="grade-pill">
-                                                    {typeof work.grade === 'object' ? work.grade.totalGrade : work.grade}
+                                                    {typeof work.grade === 'object' ? work.grade.totalGrade : work.grade}/50
                                                 </span>
                                             </td>
+                                            {/* <td>
+                                                <button
+                                                    className="edit-btn-table"
+                                                    title="Edit Grade"
+                                                    onClick={() => {
+                                                        setEditingCourse(work);
+                                                        setIsEditModalOpen(true);
+                                                    }}
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                            </td> */}
                                         </tr>
                                     ))
                                 ) : (
-
                                     <tr><td colSpan="4" className="empty-msg">No courses enrolled this semester</td></tr>
-
                                 )}
-
                             </tbody>
-
                         </table>
-
                     </div>
 
-                    <div className="data-section">
+                    <div className="data-section" style={{ marginTop: '2rem' }}>
                         <div className="section-title-bar">
                             <h3>Academic Transcript</h3>
-                            <button
-                                className="btn-1"
-                                onClick={() => setIsMapModalOpen(true)}
-
-                            >
-                                <GitBranch size={18} /> Progress Map
-                            </button>
-                            {/* <button className="add-action-btn" onClick={() => setIsAddModalOpen(true)}><FaPlus /> Add Completed Course</button> */}
+                            <div className="action-group" style={{ display: 'flex', gap: '10px' }}>
+                                <button className="btn-1" onClick={() => setIsMapModalOpen(true)}>
+                                    <GitBranch size={18} /> Progress Map
+                                </button>
+                                <button className="btn-1" onClick={() => setIsAddModalOpen(true)}>
+                                    <FaPlus /> Add Completed Course
+                                </button>
+                            </div>
                         </div>
 
                         <div className="filter-search-row">
                             <div className="search-box">
                                 <FaSearch />
-                                <input type="text" placeholder="Search by course name or code..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                                <input type="text" placeholder="Search course..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                             </div>
                             <select className="filter-dropdown" value={filterType} onChange={(e) => setFilterType(e.target.value)}>
                                 <option value="all">All Courses</option>
@@ -324,54 +354,103 @@ const StudentDetails = () => {
                         </div>
 
                         <div className="table-wrapper">
-                            <table className="modern-table">
-                                <thead><tr><th>Code</th><th>Course Name</th><th>Status</th><th>Grade</th>
-                                    <th>Actions</th>
-                                </tr></thead>
+                            <table className="modern-table dynamic-table">
+                                <thead>
+                                    <tr>
+                                        <th>Course Info</th> {/* يدمج الكود والاسم */}
+                                        <th>Academic Level</th>
+                                        <th>Type & Credits</th>
+                                        <th>Status & Grade</th>
+                                        <th>Regulation</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     {filteredCourses && filteredCourses.length > 0 ? (
                                         filteredCourses.map((course, index) => {
                                             const info = getGradeInfo(course.grade);
+                                            // استخراج البيانات من الصورة
+                                            const courseDetails = course.courseId || {};
+
                                             return (
                                                 <tr key={index}>
-                                                    <td className="bold">{course.courseId?._id}</td>
-                                                    <td>{course.courseId?.courseName}</td>
+                                                    {/* عمود معلومات المادة: يدمج الكود والاسم بشكل رأسي لتوفير مساحة أفقية */}
+                                                    <td className="course-main-td">
+                                                        <div className="course-code">{courseDetails._id}</div>
+                                                        <div className="course-name-sub">{courseDetails.courseName}</div>
+                                                    </td>
+
+                                                    {/* عمود المستوى */}
+                                                    <td>
+                                                        <span className={`level-pill ${courseDetails.courseLevel}`}>
+                                                            {courseDetails.courseLevel}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* عمود النوع والساعات */}
+                                                    <td>
+                                                        <div className="type-tag">{courseDetails.courseType}</div>
+                                                        <div className="credits-sub">{courseDetails.courseCredits} Credits</div>
+                                                    </td>
+
+                                                    {/* عمود الحالة والدرجة */}
                                                     <td>
                                                         <span className={`status-pill ${info.class}`}>
                                                             {info.status}
                                                         </span>
+                                                        <div className="grade-display" style={{ marginTop: '5px' }}>
+                                                            {course.grade} <span className="letter-grade">({info.letter})</span>
+                                                        </div>
                                                     </td>
-                                                    <td className="bold">
-                                                        {course.grade} <small>[{info.letter}]</small>
-                                                    </td>
+
+                                                    {/* عمود اللائحة */}
                                                     <td>
-                                                        <button
-                                                            className="delete-btn-table"
-                                                            onClick={() => handleDeleteCourse(course._id)}
-                                                            title="Delete Course"
-                                                        >
-                                                            <Trash2 size={18} style={{ color: '#e74c3c' }} />
-                                                        </button>
+                                                        <span className="reg-badge">
+                                                            {courseDetails.courseRegulation}
+                                                        </span>
+                                                    </td>
+
+                                                    {/* عمود الأزرار */}
+                                                    <td className="action-cell">
+                                                        <div className="action-flex">
+                                                            <button
+                                                                className="btn-edit"
+                                                                onClick={() => {
+                                                                    setEditingCourse(course);
+                                                                    setIsEditModalOpen(true);
+                                                                }}
+                                                                title="Edit Grade"
+                                                            >
+                                                                <Edit size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="btn-delete"
+                                                                onClick={() => handleDeleteCourse(course._id)}
+                                                                title="Remove Course"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );
                                         })
                                     ) : (
-                                        <tr>
-                                            <td colSpan="4" className="empty-msg">
-                                                No courses completed yet
-                                            </td>
-                                        </tr>
+                                        <tr><td colSpan="6" className="empty-msg">No courses found</td></tr>
                                     )}
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
             </div>
 
-            <EditGradeModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={fetchStudentDetails} courseData={editingCourse} />
+            <EditGradeModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSave={handleUpdateGrade}
+                courseData={editingCourse}
+            />
 
             <AddCompletedCourseModal
                 isOpen={isAddModalOpen}
@@ -383,6 +462,7 @@ const StudentDetails = () => {
                 }}
                 transcriptId={transcript._id}
             />
+
             <StudentProgressMapModal
                 isOpen={isMapModalOpen}
                 onClose={() => setIsMapModalOpen(false)}

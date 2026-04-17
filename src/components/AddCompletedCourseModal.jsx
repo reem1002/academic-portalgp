@@ -112,8 +112,8 @@ const AddCompletedCourseModal = ({ isOpen, onClose, onSave, transcriptId }) => {
                     </div>
 
                     <footer className="modal-footer">
-                        <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn-primary" disabled={loading}>
+                        <button type="button" className="btn-cancel" onClick={onClose}>Cancel</button>
+                        <button type="submit" className="btn-1" disabled={loading}>
                             {loading ? "Adding..." : <><PlusCircle size={16} /> Add to Transcript</>}
                         </button>
                     </footer>
