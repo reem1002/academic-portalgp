@@ -24,7 +24,11 @@ import AdviseStudents from "./pages/academicAdvisor/AdviseStudents";
 import AdvisingAnnouncements from "./pages/academicAdvisor/AdvisingAnnouncements";
 import AdvisingMeetings from "./pages/academicAdvisor/AdvisingMeetings";
 import AdviserEnrollmentPage from "./pages/academicAdvisor/AdviserEnrollmentPage";
-import AdvisedStudentDetails from "./pages/academicAdvisor/AdvisedStudentDetails"
+import AdvisedStudentDetails from "./pages/academicAdvisor/AdvisedStudentDetails";
+
+import MyCourses from "./pages/lecturer/MyCourses";
+import CourseGrading from "./pages/lecturer/CourseGrading";
+import CourseDetails from "./pages/lecturer/CourseDetails"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -80,7 +84,8 @@ function App() {
           <Route path=":role/students/:id" element={<StudentDetails />} />
           <Route path=":role/program-courses" element={<ProgramCoursesManagement />} />
           <Route path=":role/ece-staff" element={<StaffManagement />} />
-          <Route path=":role/semester/:semesterId/course/:courseId/students" element={<CourseStudentsPage />} />
+          <Route path=":role/semester/:semesterId/course/:courseId/:offeringId/students" element={<CourseStudentsPage />} />
+
           <Route path=":role/Advising-management" element={<AdvisingManagementPage />} />
           <Route path=":role/advising/details/:advisorId" element={<AdvisingDetailsPage />} />
           <Route path=":role/Anouncements" element={<Announcements />} />
@@ -94,6 +99,11 @@ function App() {
 
           <Route path=":role/advisor/enroll/:studentId" element={<AdviserEnrollmentPage />} />
           <Route path=":role/student/:id" element={<AdvisedStudentDetails />} />
+          {/* _______________ */}
+          <Route path=":role/lec-courses" element={<MyCourses />} />
+          <Route path=":role/grading/:id/:courseId" element={<CourseGrading />} />
+          <Route path=":role/courses/:courseId" element={<CourseDetails />} />
+
         </Route>
 
 

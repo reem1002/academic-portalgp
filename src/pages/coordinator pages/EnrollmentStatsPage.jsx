@@ -26,12 +26,12 @@ const EnrollmentStatsPage = () => {
     const [typeFilter, setTypeFilter] = useState("All");
 
 
-    const handleViewStudents = (courseId, courseName) => {
-        navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/students`, {
+    const handleViewStudents = (courseId, offeringId, courseName) => {
+        // هنضيف الـ offeringId في الـ URL
+        navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/${offeringId}/students`, {
             state: { courseName }
         });
     };
-
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -241,7 +241,7 @@ const EnrollmentStatsPage = () => {
                     <tbody>
                         {filteredData.map(off => (
                             <tr key={off._id}>
-                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off.courseId?.courseName)}>
+                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName)}>
                                     <div className="c-name">{off.courseId?.courseName || "Unknown Course"}</div>
                                     <div className="c-id">{off.courseId?._id || off.courseId}</div>
                                 </td>
@@ -250,7 +250,7 @@ const EnrollmentStatsPage = () => {
                                         {off.status ? off.status.toUpperCase() : 'N/A'}
                                     </span>
                                 </td>
-                                <td className="text-center bold-value fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off.courseId?.courseName)}>
+                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName)}>
                                     {off.enrolledCount || 0}
                                 </td>
                                 <td className="text-center">

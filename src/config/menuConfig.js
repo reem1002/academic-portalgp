@@ -98,7 +98,7 @@ export const menuConfig = {
         },
         {
             name: "My Courses",
-            path: "/staff/lecturer/courses",
+            path: "/staff/lecturer/lec-courses",
             icon: <BookMarked size={iconSize} />
         }
     ],
