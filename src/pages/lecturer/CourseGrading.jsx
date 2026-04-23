@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     Save, Search, TrendingUp, Award, AlertCircle,
-    Calendar, CheckSquare, Square, X, Filter, Users
+    Calendar, CheckSquare, Square, X, Filter, Users, Trash2, Check, Minus
 } from 'lucide-react';
 import { FaArrowLeft } from "react-icons/fa";
 import api from "../../services/api";
@@ -10,6 +10,7 @@ import swalService from "../../services/swal";
 import '../styles/ProgramCourses.css';
 
 const CourseGrading = () => {
+    const { role } = useParams();
     const { id, courseId } = useParams();
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
@@ -25,12 +26,19 @@ const CourseGrading = () => {
     // State للتحكم في الصف المفتوح (التفاصيل)
     const [expandedStudentId, setExpandedStudentId] = useState(null);
 
+    const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+    const [attendanceData, setAttendanceData] = useState([]);
+    const [lecDates, setLecDates] = useState([]);
+
+    const today = new Date().toISOString().split('T')[0];
+
     // States للتحضير والتاريخ
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
     const [presentStudents, setPresentStudents] = useState([]);
 
     useEffect(() => {
         loadData();
+        fetchAttendanceOnly(); // لجلب التواريخ المسجلة مسبقاً عند التحميل
     }, [id]);
 
     const loadData = async () => {
@@ -51,11 +59,40 @@ const CourseGrading = () => {
         }
     };
 
+    const fetchAttendanceOnly = async () => {
+        try {
+            const res = await api.get(`/lecturers/me/courses/${id}/attendance`);
+            setLecDates(res.data.lecDates);
+            setAttendanceData(res.data.attendanceData);
+        } catch (err) {
+            console.error("Attendance fetch error", err);
+        }
+    };
+
+    // Load attendance matrix for modal
+    const loadAttendanceMatrix = async () => {
+        try {
+            swalService.showLoading("Loading Matrix...");
+            const res = await api.get(`/lecturers/me/courses/${id}/attendance`);
+            setAttendanceData(res.data.attendanceData);
+            setLecDates(res.data.lecDates);
+            setShowAttendanceModal(true);
+            swalService.close();
+        } catch {
+            swalService.error("Error", "Failed to load attendance");
+        }
+    };
+
     const hasUnsavedChanges = useMemo(() => {
         return JSON.stringify(localGrades) !== JSON.stringify(originalGrades);
     }, [localGrades, originalGrades]);
 
     const hasAttendanceToSave = presentStudents.length > 0;
+
+    // تشيك لو التاريخ المختار موجود فعلاً في قاعدة البيانات (تم تحضيره مسبقاً)
+    const isTodayAttendanceTaken = useMemo(() => {
+        return lecDates.some(d => new Date(d).toISOString().split("T")[0] === selectedDate);
+    }, [lecDates, selectedDate]);
 
     const handleGradeChange = (studentId, field, value) => {
         const numValue = Number(value);
@@ -73,6 +110,7 @@ const CourseGrading = () => {
     };
 
     const toggleAttendance = (studentId) => {
+        if (isTodayAttendanceTaken) return; // منع التعديل لو التاريخ متسجل
         setPresentStudents(prev =>
             prev.includes(studentId)
                 ? prev.filter(id => id !== studentId)
@@ -99,16 +137,48 @@ const CourseGrading = () => {
             }
 
             if (hasAttendanceToSave) {
-                await api.put(`/lecturers/me/courses/${id}/lecture-dates`, { lecDate: selectedDate });
-                await api.put(`/lecturers/me/courses/${id}/attendance`, { students: presentStudents });
+                // تعديل بناءً على الـ API Request format الجديد
+                const attendancePayload = {
+                    lecDate: selectedDate,
+                    students: presentStudents
+                };
+                await api.put(`/lecturers/me/courses/${id}/attendance`, attendancePayload);
             }
 
             swalService.success("Success", "All changes saved successfully!");
             setOriginalGrades(JSON.parse(JSON.stringify(localGrades)));
             setPresentStudents([]);
+            fetchAttendanceOnly(); // تحديث التواريخ لمنع تكرار التحضير
         } catch (err) {
             console.error(err);
             swalService.error("Save Failed", err.response?.data?.message || "Error syncing with server.");
+        }
+    };
+
+    const deleteLecture = async (date) => {
+        const result = await swalService.confirm("Are you sure?", `This will delete all attendance records for ${new Date(date).toLocaleDateString()}`);
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/lecturers/me/courses/${id}/lecture-dates`, { data: { lecDate: date } });
+                swalService.success("Deleted", "Lecture records removed.");
+                loadAttendanceMatrix(); // إعادة تحميل الماتريكس
+                fetchAttendanceOnly();   // تحديث الحالة العامة
+            } catch (err) {
+                swalService.error("Error", "Failed to delete lecture.");
+            }
+        }
+    };
+
+    const updateStudentAttendance = async (studentId, lectureIndex, currentStatus) => {
+        try {
+            // status: 0 for absent, 1 for present
+            await api.put(`/lecturers/me/courses/${id}/attendance/${studentId}`, {
+                lectureIndex,
+                status: currentStatus ? 0 : 1
+            });
+            loadAttendanceMatrix(); // Refresh matrix
+        } catch {
+            swalService.error("Error", "Update failed");
         }
     };
 
@@ -141,14 +211,23 @@ const CourseGrading = () => {
                 </div>
 
                 <div className="split-button-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#f8fafc', padding: '5px 15px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                        <Calendar size={16} color="#64748b" />
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        background: isTodayAttendanceTaken ? '#fee2e2' : '#f8fafc',
+                        padding: '5px 15px',
+                        borderRadius: '10px',
+                        border: isTodayAttendanceTaken ? '1px solid #ef4444' : '1px solid #e2e8f0'
+                    }}>
+                        <Calendar size={16} color={isTodayAttendanceTaken ? "#ef4444" : "#64748b"} />
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
                             style={{ border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 'bold', outline: 'none' }}
                         />
+                        {isTodayAttendanceTaken && <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 'bold' }}>TAKEN</span>}
                     </div>
 
                     <button
@@ -157,6 +236,16 @@ const CourseGrading = () => {
                         disabled={!hasUnsavedChanges && !hasAttendanceToSave}
                     >
                         <Save size={18} /> {(hasUnsavedChanges || hasAttendanceToSave) ? "Save Everything" : "Up to date"}
+                    </button>
+                    {/* <button className="btn-1" onClick={loadAttendanceMatrix} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Users size={18} /> Manage Attendance
+                    </button> */}
+                    <button
+                        className="btn-1"
+                        onClick={() => navigate(`/staff/${role}/grading/${id}/attendance`)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <Users size={18} /> Manage Attendance
                     </button>
                 </div>
             </header>
@@ -188,28 +277,19 @@ const CourseGrading = () => {
             </div>
 
             <div className="filters-wrapper" >
-                {/* خانة البحث */}
                 <Search size={20} color="#94a3b8" />
                 <input
                     type="text"
                     placeholder="Search name or ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-
                 />
-                {/* الـ Counter هنا بجانب البحث مباشرة */}
                 <div style={{ padding: '4px 10px', background: '#f1f5f9', borderRadius: '8px', fontSize: '12px', fontWeight: 'bold', color: '#64748b', whiteSpace: 'nowrap', marginLeft: '10px' }}>
                     {filteredStudents.length} / {localGrades.length} Students
                 </div>
 
-
-                {/* فلاتر الـ Level و Regulation كما هي */}
                 <div className="drop-filters" >
-                    <select
-                        value={levelFilter}
-                        onChange={(e) => setLevelFilter(e.target.value)}
-
-                    >
+                    <select value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}>
                         <option value="all">All Levels</option>
                         <option value="freshman">Freshman</option>
                         <option value="sophomore">Sophomore</option>
@@ -219,10 +299,7 @@ const CourseGrading = () => {
                 </div>
 
                 <div className="filter-group" >
-                    <select
-                        value={regFilter}
-                        onChange={(e) => setRegFilter(e.target.value)}
-                    >
+                    <select value={regFilter} onChange={(e) => setRegFilter(e.target.value)}>
                         <option value="all">All Regulations</option>
                         <option value="New">New</option>
                         <option value="last">Last</option>
@@ -256,11 +333,15 @@ const CourseGrading = () => {
                                     <tr
                                         style={{
                                             backgroundColor: isPresent ? '#f0f9ff' : (isExpanded ? '#f8fafc' : 'inherit'),
-                                            borderLeft: isExpanded ? '4px solid #3b82f6' : 'none'
+                                            borderLeft: isExpanded ? '4px solid #3b82f6' : 'none',
+                                            opacity: isTodayAttendanceTaken ? 0.8 : 1
                                         }}
                                     >
                                         <td style={{ textAlign: 'center' }}>
-                                            <button onClick={() => toggleAttendance(s.studentId._id)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                            <button onClick={() => toggleAttendance(s.studentId._id)}
+                                                disabled={isTodayAttendanceTaken}
+                                                style={{ background: 'none', border: 'none', cursor: isTodayAttendanceTaken ? 'not-allowed' : 'pointer' }}
+                                            >
                                                 {isPresent ? <CheckSquare size={20} color="#2563eb" fill="#eff6ff" /> : <Square size={20} color="#cbd5e1" />}
                                             </button>
                                         </td>
@@ -307,7 +388,6 @@ const CourseGrading = () => {
                                         </td>
                                     </tr>
 
-                                    {/* صف التفاصيل الموسع (Transcript Data) */}
                                     {isExpanded && (
                                         <tr>
                                             <td colSpan="8" style={{ padding: '0' }}>
@@ -335,10 +415,7 @@ const CourseGrading = () => {
                                                             <span style={{ fontSize: '12px', color: '#64748b' }}>{s.studentId.studentPhone}</span>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        onClick={() => setExpandedStudentId(null)}
-                                                        style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', p: '5px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}
-                                                    >
+                                                    <button onClick={() => setExpandedStudentId(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>
                                                         <X size={14} color="#64748b" />
                                                     </button>
                                                 </div>
@@ -352,14 +429,74 @@ const CourseGrading = () => {
                 </table>
             </div>
 
-            {
-                (hasUnsavedChanges || hasAttendanceToSave) && (
-                    <div className="unsaved-alert" style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '12px 24px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '15px', zIndex: 1000 }}>
-                        <span style={{ fontSize: '13px' }}>You have unsaved data (Grades/Attendance)</span>
-                        <button onClick={saveEverything} style={{ background: '#3b82f6', border: 'none', color: 'white', padding: '6px 18px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Save Changes</button>
+            {(hasUnsavedChanges || hasAttendanceToSave) && (
+                <div className="unsaved-alert" style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '12px 24px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '15px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                    <AlertCircle size={20} color="#f59e0b" />
+                    <span style={{ fontSize: '13px' }}>Unsaved {hasUnsavedChanges ? "Grades" : ""} {hasUnsavedChanges && hasAttendanceToSave ? "&" : ""} {hasAttendanceToSave ? "Attendance" : ""}</span>
+                    <button onClick={saveEverything} style={{ background: '#3b82f6', border: 'none', color: 'white', padding: '6px 18px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Save Changes</button>
+                </div>
+            )}
+
+            {/* 🔥 Enhanced Attendance Modal */}
+            {showAttendanceModal && (
+                <div className="modal-overlay">
+                    <div className="modal-card" style={{ width: '95%', maxWidth: '1200px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                        <div className="modal-head" style={{ padding: '20px', borderBottom: '1px solid #e2e8f0', background: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <h3 style={{ margin: 0 }}>Attendance Matrix</h3>
+                                <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>View and modify historical attendance records</p>
+                            </div>
+                            <button className="close-btn" onClick={() => setShowAttendanceModal(false)}><X /></button>
+                        </div>
+
+                        <div style={{ overflow: 'auto', flex: 1, padding: '10px' }}>
+                            <table className="management-table" style={{ fontSize: '13px' }}>
+                                <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: '#f8fafc' }}>
+                                    <tr>
+                                        <th style={{ minWidth: '200px' }}>Student Name</th>
+                                        {lecDates.map((d, i) => (
+                                            <th key={i} style={{ textAlign: 'center', minWidth: '100px' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                                                    <span style={{ fontSize: '11px' }}>{new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                                                    <button
+                                                        onClick={() => deleteLecture(d)}
+                                                        style={{ background: '#fee2e2', border: 'none', color: '#ef4444', padding: '4px', borderRadius: '4px', cursor: 'pointer' }}
+                                                        title="Delete this lecture"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </div>
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {attendanceData.map(s => (
+                                        <tr key={s.studentId}>
+                                            <td style={{ fontWeight: '600' }}>{s.studentName}</td>
+                                            {s.attendanceTimes.map((val, i) => (
+                                                <td key={i} style={{ textAlign: 'center' }}>
+                                                    <button
+                                                        onClick={() => updateStudentAttendance(s.studentId, i, val)}
+                                                        style={{
+                                                            width: '32px', height: '32px', borderRadius: '6px', border: '1px solid #e2e8f0',
+                                                            background: val ? '#dcfce7' : '#fff',
+                                                            color: val ? '#166534' : '#cbd5e1',
+                                                            cursor: 'pointer', transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {val ? <Check size={16} /> : <Minus size={16} />}
+                                                    </button>
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                )
-            }
+                </div>
+            )}
         </div >
     );
 };

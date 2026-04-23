@@ -28,7 +28,8 @@ import AdvisedStudentDetails from "./pages/academicAdvisor/AdvisedStudentDetails
 
 import MyCourses from "./pages/lecturer/MyCourses";
 import CourseGrading from "./pages/lecturer/CourseGrading";
-import CourseDetails from "./pages/lecturer/CourseDetails"
+import CourseDetails from "./pages/lecturer/CourseDetails";
+import AttendanceManagement from "./pages/lecturer/AttendanceManagement"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -103,7 +104,7 @@ function App() {
           <Route path=":role/lec-courses" element={<MyCourses />} />
           <Route path=":role/grading/:id/:courseId" element={<CourseGrading />} />
           <Route path=":role/courses/:courseId" element={<CourseDetails />} />
-
+          <Route path=":role/grading/:id/attendance" element={<AttendanceManagement />} />
         </Route>
 
 

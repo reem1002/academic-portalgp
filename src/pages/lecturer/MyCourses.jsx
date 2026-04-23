@@ -59,7 +59,7 @@ const MyCourses = () => {
     };
 
     const filteredCourses = courses.filter(c =>
-        c.courseId.toLowerCase().includes(searchTerm.toLowerCase())
+        c.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // حساب الإحصائيات للكروت
@@ -140,11 +140,11 @@ const MyCourses = () => {
                                         to={`/staff/${role}/courses/${course._id}`}
                                         style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
                                     >
-                                        {course.courseId}
+                                        {course.courseId?._id}
                                     </Link>
                                 </td>
-                                <td className="course-id-cell" style={{ fontWeight: '700' }}>
-                                    {course.courseName}
+                                <td  >
+                                    {course.courseId?.courseName}
                                 </td>
                                 <td style={{ textTransform: 'capitalize' }}>
                                     {course.semesterId ? course.semesterId.replace('-', ' ') : 'N/A'}
@@ -167,7 +167,7 @@ const MyCourses = () => {
                                         </button>
                                         <button
 
-                                            onClick={() => navigate(`/staff/${role}/grading/${course._id}/${course.courseId}`)}
+                                            onClick={() => navigate(`/staff/${role}/grading/${course._id}/${course.courseId?._id}`)}
                                         >
                                             <Users size={18} color='#62b986' />
                                         </button>
