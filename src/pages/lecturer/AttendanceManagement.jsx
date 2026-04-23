@@ -176,15 +176,18 @@ const AttendanceManagement = () => {
                             <th className="sticky-col" >
                                 Student Information
                             </th>
-                            {/* داخل الـ table head */}
                             {lecDates.map((d, i) => (
-                                <th key={i} style={{ textAlign: 'center', minWidth: '100px' }}>
-                                    <div className="lec-header">
+                                <th key={i} className="lec-column-header">
+                                    <div className="lec-header-content">
                                         <span className="lec-date">
                                             {new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                                         </span>
-                                        <button className="lec-delete-btn" onClick={() => deleteLecture(d)}>
-                                            <Trash2 size={12} />
+                                        <button
+                                            className="lec-delete-btn-overlay"
+                                            onClick={() => deleteLecture(d)}
+                                            title="Delete Lecture"
+                                        >
+                                            <Trash2 size={10} />
                                         </button>
                                     </div>
                                 </th>
@@ -244,23 +247,47 @@ const AttendanceManagement = () => {
         border-right: 2px solid #e2e8f0 !important;
         padding: 12px 20px;
     }
-                .lec-header {
-                    display: flex;
-                    justify-content:center;
-                    align-items: center;
-                    gap: 10px;
-                }
+            .lec-column-header {
+        position: relative; /* عشان نثبت الزرار جواه */
+        transition: background 0.3s;
+    }
+                    .lec-header-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
 
-                .lec-delete-btn {
-                    background: #fee2e2;
-                    border: none;
-                    color: #ef4444;
-                    padding: 5px;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    transition: 0.2s;
-                }
-                .lec-delete-btn:hover { background: #fecaca; }
+
+    .lec-delete-btn-overlay {
+        position: absolute;
+        top: -15px; 
+        right: -12px;
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        padding: 4px;
+        width:25px;
+        height:25px;
+        border-radius: 40px;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+        transform: scale(0.8);
+    }
+
+    /* يظهر فقط عند الوقوف على رأس العمود */
+    .lec-column-header:hover .lec-delete-btn-overlay {
+        opacity: 1;
+        top: -8px;
+        transform: scale(1);
+    }
+
+    .lec-delete-btn-overlay:hover {
+        background: #ef4444;
+        color: white;
+    }
                 
                 .att-toggle-btn.present {
                     background: #dcfce7;
