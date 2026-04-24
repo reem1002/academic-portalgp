@@ -186,7 +186,7 @@ const MyCourses = () => {
                                             {course.courseId?._id}
                                         </div>
                                     </td>
-                                    <td>{course.courseId?.courseName}</td>
+                                    <td style={{ fontWeight: '500' }}> {course.courseId?.courseName}</td>
                                     <td style={{ textTransform: 'capitalize' }}>
                                         {course.semesterId ? course.semesterId.replace('-', ' ') : 'N/A'}
                                     </td>
@@ -273,46 +273,48 @@ const MyCourses = () => {
                 </table>
             </div>
 
-            {showSchemaModal && (
-                <div className="modal-overlay">
-                    <div className="modal-card">
-                        <div className="modal-head">
-                            <h3>Grading Schema</h3>
-                            <button className="close-x-btn" onClick={() => setShowSchemaModal(false)}>
-                                <X size={20} />
-                            </button>
-                        </div>
+            {
+                showSchemaModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-card">
+                            <div className="modal-head">
+                                <h3>Grading Schema</h3>
+                                <button className="close-x-btn" onClick={() => setShowSchemaModal(false)}>
+                                    <X size={20} />
+                                </button>
+                            </div>
 
-                        <div className="modal-body">
-                            <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>
-                                Total distribution must equal <b>50 marks</b> (excluding bonus).
-                            </p>
+                            <div className="modal-body">
+                                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>
+                                    Total distribution must equal <b>50 marks</b> (excluding bonus).
+                                </p>
 
-                            {['midTerm', 'attendance', 'lab', 'practical', 'bonus'].map(key => (
-                                <div key={key} className="form-group">
-                                    <label className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
-                                    <input
-                                        type="number"
-                                        value={schema[key]}
-                                        onChange={(e) => setSchema({ ...schema, [key]: Number(e.target.value) })}
-                                        placeholder={`Enter ${key} marks`}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                                {['midTerm', 'attendance', 'lab', 'practical', 'bonus'].map(key => (
+                                    <div key={key} className="form-group">
+                                        <label className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+                                        <input
+                                            type="number"
+                                            value={schema[key]}
+                                            onChange={(e) => setSchema({ ...schema, [key]: Number(e.target.value) })}
+                                            placeholder={`Enter ${key} marks`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
 
-                        <div className="modal-footer">
-                            <button className="btn-cancel" onClick={() => setShowSchemaModal(false)}>
-                                Cancel
-                            </button>
-                            <button className="btn-1" onClick={updateSchema} style={{ marginTop: 0 }}>
-                                Save Changes
-                            </button>
+                            <div className="modal-footer">
+                                <button className="btn-cancel" onClick={() => setShowSchemaModal(false)}>
+                                    Cancel
+                                </button>
+                                <button className="btn-1" onClick={updateSchema} style={{ marginTop: 0 }}>
+                                    Save Changes
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 
