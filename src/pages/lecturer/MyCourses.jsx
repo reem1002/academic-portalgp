@@ -1,9 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, Settings, X, Search, Clock, GraduationCap } from 'lucide-react';
+import {
+    BookOpen,
+    Users,
+    Settings,
+    X,
+    Search,
+    Clock,
+    GraduationCap,
+    ChevronDown,
+    ChevronUp,
+    Info,
+    Layout
+} from 'lucide-react';
 import api from "../../services/api";
-import '../styles/ProgramCourses.css'; // التأكد من مسار ملف الـ CSS الجديد
+import '../styles/ProgramCourses.css';
+import './LecturerStyle.css';
 
 const MyCourses = () => {
     const { role } = useParams();
@@ -12,6 +25,11 @@ const MyCourses = () => {
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [showSchemaModal, setShowSchemaModal] = useState(false);
     const navigate = useNavigate();
+
+    // States جديدة لعرض التفاصيل
+    const [expandedCourseId, setExpandedCourseId] = useState(null);
+    const [courseDetails, setCourseDetails] = useState(null);
+    const [loadingDetails, setLoadingDetails] = useState(false);
 
     const [schema, setSchema] = useState({
         midTerm: 0, attendance: 0, lab: 0, practical: 0, bonus: 0
@@ -27,6 +45,26 @@ const MyCourses = () => {
             setCourses(res.data);
         } catch (err) {
             console.error("Error fetching courses", err);
+        }
+    };
+
+    // فنكشن جلب التفاصيل والتحكم في فتح/غلق الصف
+    const toggleCourseDetails = async (courseId) => {
+        if (expandedCourseId === courseId) {
+            setExpandedCourseId(null);
+            setCourseDetails(null);
+            return;
+        }
+
+        setExpandedCourseId(courseId);
+        setLoadingDetails(true);
+        try {
+            const res = await api.get(`/lecturers/me/courses/${courseId}`);
+            setCourseDetails(res.data.course);
+        } catch (err) {
+            console.error("Error fetching course details", err);
+        } finally {
+            setLoadingDetails(false);
         }
     };
 
@@ -62,7 +100,6 @@ const MyCourses = () => {
         c.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // حساب الإحصائيات للكروت
     const stats = {
         active: courses.length,
         enrollment: courses.reduce((a, b) => a + (b.enrolledCount || 0), 0),
@@ -77,7 +114,6 @@ const MyCourses = () => {
                 </div>
             </header>
 
-            {/* Insights Grid - نفس ستايل الكومبوننت الأول */}
             <div className="insights-grid">
                 <div className="insight-card">
                     <div className="insight-header">
@@ -107,7 +143,6 @@ const MyCourses = () => {
                 </div>
             </div>
 
-            {/* Filters Area */}
             <div className="filters-wrapper">
                 <Search size={22} color="#9ca3af" />
                 <input
@@ -119,7 +154,6 @@ const MyCourses = () => {
                 />
             </div>
 
-            {/* Table Section */}
             <div className="table-wrapper">
                 <table className="management-table">
                     <thead>
@@ -134,52 +168,111 @@ const MyCourses = () => {
                     </thead>
                     <tbody>
                         {filteredCourses.map(course => (
-                            <tr key={course._id}>
-                                <td className="course-id-cell" style={{ fontWeight: '700' }}>
-                                    <Link
-                                        to={`/staff/${role}/courses/${course._id}`}
-                                        style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }}
-                                    >
-                                        {course.courseId?._id}
-                                    </Link>
-                                </td>
-                                <td  >
-                                    {course.courseId?.courseName}
-                                </td>
-                                <td style={{ textTransform: 'capitalize' }}>
-                                    {course.semesterId ? course.semesterId.replace('-', ' ') : 'N/A'}
-                                </td>
-                                <td style={{ textAlign: 'center' }}>
-                                    <span className="type-badge" style={{ backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
-                                        {course.enrolledCount || 0} Students
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`type-badge ${course.status === 'proposed' ? 'icon-orange' : 'icon-green'}`}
-                                        style={{ textTransform: 'capitalize' }}>
-                                        {course.status}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div className="action-btns">
-                                        <button className="btn-icon btn-edit" title="Settings" onClick={() => handleOpenSchema(course)}>
-                                            <Settings size={18} color='#6486ee' />
-                                        </button>
-                                        <button
-
-                                            onClick={() => navigate(`/staff/${role}/grading/${course._id}/${course.courseId?._id}`)}
+                            <React.Fragment key={course._id}>
+                                <tr className={expandedCourseId === course._id ? 'selected-row' : ''}>
+                                    <td className="course-id-cell">
+                                        <div
+                                            onClick={() => toggleCourseDetails(course._id)}
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                cursor: 'pointer',
+                                                color: '#2563eb',
+                                                fontWeight: '700'
+                                            }}
                                         >
-                                            <Users size={18} color='#62b986' />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                                            {expandedCourseId === course._id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            {course.courseId?._id}
+                                        </div>
+                                    </td>
+                                    <td>{course.courseId?.courseName}</td>
+                                    <td style={{ textTransform: 'capitalize' }}>
+                                        {course.semesterId ? course.semesterId.replace('-', ' ') : 'N/A'}
+                                    </td>
+                                    <td style={{ textAlign: 'center' }}>
+                                        <span className="type-badge" style={{ backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
+                                            {course.enrolledCount || 0} Students
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span className={`type-badge ${course.status === 'proposed' ? 'icon-orange' : 'icon-green'}`}
+                                            style={{ textTransform: 'capitalize' }}>
+                                            {course.status}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="action-btns">
+                                            <button className="btn-icon btn-edit" title="Settings" onClick={() => handleOpenSchema(course)}>
+                                                <Settings size={18} color='#6486ee' />
+                                            </button>
+                                            <button
+                                                className="btn-icon"
+                                                onClick={() => navigate(`/staff/${role}/grading/${course._id}/${course.courseId?._id}`)}
+                                            >
+                                                <Users size={18} color='#62b986' />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                {/* Expanded Details Row */}
+                                {expandedCourseId === course._id && (
+                                    <tr className="details-expanded-row">
+                                        <td colSpan="6">
+                                            {loadingDetails ? (
+                                                <div className="details-loader">Fetching course data...</div>
+                                            ) : (
+                                                <div className="course-details-container">
+                                                    <div className="details-grid">
+                                                        {/* Section 1: Basic Stats */}
+                                                        <div className="details-col">
+                                                            <h4 className="details-title"><Info size={16} /> Course Info</h4>
+                                                            <div className="details-info-list">
+                                                                <div className="info-item"><span>Credits:</span> <strong>{courseDetails?.courseId?.courseCredits}</strong></div>
+                                                                <div className="info-item"><span>Level:</span> <strong className="capitalize">{courseDetails?.courseId?.courseLevel}</strong></div>
+                                                                <div className="info-item"><span>Type:</span> <strong className="capitalize">{courseDetails?.courseId?.courseType}</strong></div>
+                                                                <div className="info-item"><span>Regulation:</span> <strong>{courseDetails?.courseId?.courseRegulation}</strong></div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 2: Grading Schema */}
+                                                        <div className="details-col">
+                                                            <h4 className="details-title"><Layout size={16} /> Grading Schema</h4>
+                                                            <div className="schema-visualizer">
+                                                                {courseDetails?.gradingSchema && Object.entries(courseDetails.gradingSchema).map(([key, val]) => (
+                                                                    key !== '_id' && key !== '__v' && (
+                                                                        <div key={key} className="schema-pill">
+                                                                            <span className="pill-key">{key.replace(/([A-Z])/g, ' $1')}</span>
+                                                                            <span className="pill-val">{val}</span>
+                                                                        </div>
+                                                                    )
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 3: Academic Setup */}
+                                                        <div className="details-col">
+                                                            <h4 className="details-title"><GraduationCap size={16} /> Academic Setup</h4>
+                                                            <div className="details-info-list">
+                                                                <div className="info-item"><span>Instructor ID:</span> <strong>{courseDetails?.instructorId}</strong></div>
+                                                                <div className="info-item"><span>Lec / Lab:</span> <strong>{courseDetails?.lecNum} / {courseDetails?.labNum}</strong></div>
+                                                                <div className="info-item"><span>Enrolled:</span> <strong>{courseDetails?.enrolledCount}</strong></div>
+                                                                <div className="info-item"><span>Graduates:</span> <strong>{courseDetails?.graduatesEnrolledCount}</strong></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
                         ))}
                     </tbody>
                 </table>
             </div>
 
-            {/* Grading Schema Modal - متوافق مع .modal-overlay و .modal-card */}
             {showSchemaModal && (
                 <div className="modal-overlay">
                     <div className="modal-card">
