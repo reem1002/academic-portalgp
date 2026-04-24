@@ -95,10 +95,18 @@ const CourseGrading = () => {
     }, [lecDates, selectedDate]);
 
     const handleGradeChange = (studentId, field, value) => {
+        // 1. منع تعديل درجة الغياب يدوياً لأنها بتيجي من الباك إند
+        if (field === 'attendanceGrade') return;
+
         const numValue = Number(value);
+
+        // 2. منع الأرقام السالبة
+        if (numValue < 0) return;
+
         const schemaField = field.replace('Grade', '');
         const maxAllowed = course.gradingSchema[schemaField] || 0;
 
+        // 3. منع تخطي الدرجة النهائية
         if (numValue > maxAllowed) return;
 
         setLocalGrades(prev => prev.map(s =>
@@ -110,7 +118,7 @@ const CourseGrading = () => {
     };
 
     const toggleAttendance = (studentId) => {
-        if (isTodayAttendanceTaken) return; // منع التعديل لو التاريخ متسجل
+        if (isTodayAttendanceTaken) return;
         setPresentStudents(prev =>
             prev.includes(studentId)
                 ? prev.filter(id => id !== studentId)
@@ -148,7 +156,7 @@ const CourseGrading = () => {
             swalService.success("Success", "All changes saved successfully!");
             setOriginalGrades(JSON.parse(JSON.stringify(localGrades)));
             setPresentStudents([]);
-            fetchAttendanceOnly(); // تحديث التواريخ لمنع تكرار التحضير
+            fetchAttendanceOnly();
         } catch (err) {
             console.error(err);
             swalService.error("Save Failed", err.response?.data?.message || "Error syncing with server.");
@@ -176,13 +184,13 @@ const CourseGrading = () => {
                 lectureIndex,
                 status: currentStatus ? 0 : 1
             });
-            loadAttendanceMatrix(); // Refresh matrix
+            loadAttendanceMatrix();
         } catch {
             swalService.error("Error", "Update failed");
         }
     };
 
-    // منطق الفلترة المركب
+
     const filteredStudents = useMemo(() => {
         return localGrades.filter(s => {
             const matchesSearch = s.studentId.studentName.toLowerCase().includes(searchTerm.toLowerCase()) || s.studentId._id.includes(searchTerm);
@@ -363,26 +371,36 @@ const CourseGrading = () => {
                                         {[
                                             { key: 'midTermGrade', max: course.gradingSchema.midTerm },
                                             { key: 'labGrade', max: course.gradingSchema.lab },
-                                            { key: 'attendanceGrade', max: course.gradingSchema.attendance },
+                                            { key: 'attendanceGrade', max: course.gradingSchema.attendance }, // ده اللي هيقفل
                                             { key: 'practicalGrade', max: course.gradingSchema.practical },
                                             { key: 'bonusGrade', max: 10 }
                                         ].map(field => {
                                             const isChanged = originalStudent && s.grade[field.key] !== originalStudent.grade[field.key];
+                                            const isAttendance = field.key === 'attendanceGrade';
+
                                             return (
                                                 <td key={field.key} style={{ textAlign: 'center' }}>
                                                     <input
                                                         type="number"
+                                                        min="0" // حماية إضافية على مستوى HTML
                                                         value={s.grade[field.key]}
+                                                        readOnly={isAttendance} // القفل هنا
                                                         onChange={(e) => handleGradeChange(s.studentId._id, field.key, e.target.value)}
                                                         style={{
-                                                            width: '45px', padding: '4px', borderRadius: '4px', textAlign: 'center', border: isChanged ? '1px solid #f59e0b' : '1px solid #e2e8f0',
-                                                            backgroundColor: isChanged ? '#fffbeb' : 'white'
+                                                            width: '45px',
+                                                            padding: '4px',
+                                                            borderRadius: '4px',
+                                                            textAlign: 'center',
+                                                            // ستايل مختلف لو هو حقل غياب عشان اليوزر يعرف إنه ممنوع
+                                                            border: isAttendance ? '1px solid #cbd5e1' : (isChanged ? '1px solid #f59e0b' : '1px solid #e2e8f0'),
+                                                            backgroundColor: isAttendance ? '#f1f5f9' : (isChanged ? '#fffbeb' : 'white'),
+                                                            color: isAttendance ? '#64748b' : '#1e293b',
+                                                            cursor: isAttendance ? 'not-allowed' : 'text'
                                                         }}
                                                     />
                                                 </td>
                                             );
                                         })}
-
                                         <td style={{ textAlign: 'center' }}>
                                             <span style={{ fontWeight: 'bold', color: '#2563eb' }}>{total}</span>
                                         </td>

@@ -20,7 +20,7 @@ const VALID_LEVELS = ["freshman", "sophomore", "junior", "senior-1", "senior-2",
 const VALID_Regulations = ["New", "Last"];
 
 const TYPE_COLORS = {
-    "core": "#fdf2cb",
+    "Core": "#fdf2cb",
     "elective": "#ffe1e1",
     "General Elective 1": "#f5f2ff",
     "General Elective 2": "#edfcf1",

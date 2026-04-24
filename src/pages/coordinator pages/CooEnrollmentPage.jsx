@@ -250,7 +250,7 @@ const CooEnrollmentPage = () => {
             </div>
 
             <div className="section">
-                <h3>Draft Selection</h3>
+                <h3>Current Enrollment</h3>
                 <div className="table-wrapper">
                     <table className="offerings-table">
                         <thead>

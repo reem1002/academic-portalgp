@@ -83,10 +83,9 @@ const StudentDetails = () => {
         }
     };
 
-    // دالة تحديث درجة مادة (Grade)
     const handleUpdateGrade = async (courseId, newGrade) => {
         try {
-            // ملاحظة: الـ endpoint يستخدم transcriptId و courseId
+
             await api.put(`/transcripts/${data.transcript._id}/courses/${courseId}`, {
                 grade: newGrade
             });
@@ -276,14 +275,22 @@ const StudentDetails = () => {
                 <div className="data-section">
                     <div className="section-title-bar">
                         <h3>Current Semester Works</h3>
-                        <span className="badge dept">{semester?._id}</span>
-                        <button
-                            className="enroll-btn-icon"
-                            onClick={() => navigate(`/staff/${role}/coordinator/enroll/${data.transcript.studentId?._id}`)}
-                            title="Enroll in Courses"
-                        >
-                            <FaPlus size={18} color="#10b981" />
-                        </button>
+                        <div className="right-sind">
+                            <span className="badge dept">{semester?._id}</span>
+                            <button
+                                className="enroll-btn-icon"
+                                onClick={() => navigate(`/staff/${role}/coordinator/enroll/${data.transcript.studentId?._id}`)}
+                                title="Enroll in Courses"
+                                style={{
+                                    background: '#dcfce7',
+                                    color: '#166534',
+                                    borderColor: '#bbf7d0',
+                                    marginLeft: '5px'
+                                }}
+                            >
+                                <FaPlus size={18} color="#10b981" />
+                            </button>
+                        </div>
                     </div>
                     <div className="table-responsive table-wrapper">
                         <table className="modern-table">
@@ -357,7 +364,7 @@ const StudentDetails = () => {
                             <table className="modern-table dynamic-table">
                                 <thead>
                                     <tr>
-                                        <th>Course Info</th> {/* يدمج الكود والاسم */}
+                                        <th>Course Info</th>
                                         <th>Academic Level</th>
                                         <th>Type & Credits</th>
                                         <th>Status & Grade</th>
@@ -369,25 +376,21 @@ const StudentDetails = () => {
                                     {filteredCourses && filteredCourses.length > 0 ? (
                                         filteredCourses.map((course, index) => {
                                             const info = getGradeInfo(course.grade);
-                                            // استخراج البيانات من الصورة
                                             const courseDetails = course.courseId || {};
 
                                             return (
                                                 <tr key={index}>
-                                                    {/* عمود معلومات المادة: يدمج الكود والاسم بشكل رأسي لتوفير مساحة أفقية */}
                                                     <td className="course-main-td">
                                                         <div className="course-code">{courseDetails._id}</div>
                                                         <div className="course-name-sub">{courseDetails.courseName}</div>
                                                     </td>
 
-                                                    {/* عمود المستوى */}
                                                     <td>
                                                         <span className={`level-pill ${courseDetails.courseLevel}`}>
                                                             {courseDetails.courseLevel}
                                                         </span>
                                                     </td>
 
-                                                    {/* عمود النوع والساعات */}
                                                     <td>
                                                         <div className="type-tag">{courseDetails.courseType}</div>
                                                         <div className="credits-sub">{courseDetails.courseCredits} Credits</div>
