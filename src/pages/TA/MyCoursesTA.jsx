@@ -12,14 +12,13 @@ import {
     ChevronDown,
     ChevronUp,
     Info,
-    Layout,
-    AlertCircle
+    Layout
 } from 'lucide-react';
 import api from "../../services/api";
 import '../styles/ProgramCourses.css';
 import './LecturerStyle.css';
 
-const MyCourses = () => {
+const MyCoursesTA = () => {
     const { role } = useParams();
     const [courses, setCourses] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -27,16 +26,21 @@ const MyCourses = () => {
     const [showSchemaModal, setShowSchemaModal] = useState(false);
     const navigate = useNavigate();
 
-    // States جديدة لعرض التفاصيل
+    // States لعرض التفاصيل (Expanded Row)
     const [expandedCourseId, setExpandedCourseId] = useState(null);
     const [courseDetails, setCourseDetails] = useState(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
 
-    // State لفلترة إجمالي الطلاب في الكارد الثاني
+    // State لفلترة الإحصائيات (كارد 2)
     const [statsCourseFilter, setStatsCourseFilter] = useState("all");
 
     const [schema, setSchema] = useState({
-        midTerm: 0, attendance: 0, lab: 0, practical: 0, bonus: 0
+        midTerm: 0,
+        attendance: 0,
+        lab: 0,
+        practical: 0,
+        bonus: 0,
+        final: 0
     });
 
     useEffect(() => {
@@ -45,10 +49,11 @@ const MyCourses = () => {
 
     const fetchCourses = async () => {
         try {
-            const res = await api.get("/lecturers/me/courses");
+            // الـ Endpoint الخاص بالـ TA
+            const res = await api.get("/tas/me/courses");
             setCourses(res.data);
         } catch (err) {
-            console.error("Error fetching courses", err);
+            console.error("Error fetching TA courses", err);
         }
     };
 
@@ -63,7 +68,8 @@ const MyCourses = () => {
         setExpandedCourseId(courseId);
         setLoadingDetails(true);
         try {
-            const res = await api.get(`/lecturers/me/courses/${courseId}`);
+            // جلب تفاصيل الكورس بناءً على الـ API الخاص بالـ TA
+            const res = await api.get(`/tas/me/courses/${courseId}`);
             setCourseDetails(res.data.course);
         } catch (err) {
             console.error("Error fetching course details", err);
@@ -79,19 +85,21 @@ const MyCourses = () => {
             attendance: course.gradingSchema?.attendance || 0,
             lab: course.gradingSchema?.lab || 0,
             practical: course.gradingSchema?.practical || 0,
-            bonus: course.gradingSchema?.bonus || 0
+            bonus: course.gradingSchema?.bonus || 0,
+            final: course.gradingSchema?.final || 0
         });
         setShowSchemaModal(true);
     };
 
     const updateSchema = async () => {
-        const total = schema.midTerm + schema.attendance + schema.lab + schema.practical;
-        if (total !== 50) {
-            alert(`Total (excluding bonus) must be exactly 50. Current total: ${total}`);
-            return;
+        const total = schema.midTerm + schema.attendance + schema.lab + schema.practical + schema.final;
+
+        if (total !== 100 && total !== 50) {
+            if (!window.confirm(`Total marks are ${total}. Are you sure you want to save?`)) return;
         }
+
         try {
-            await api.put(`/lecturers/me/courses/${selectedCourse._id}/schema`, schema);
+            await api.put(`/tas/me/courses/${selectedCourse._id}/schema`, schema);
             alert("Schema updated successfully!");
             setShowSchemaModal(false);
             fetchCourses();
@@ -101,43 +109,53 @@ const MyCourses = () => {
     };
 
     const filteredCourses = courses.filter(c =>
-        c.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase())
+        c.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.courseId?.courseName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // حساب الإحصائيات بناءً على التعديلات الجديدة
-    const getEnrollmentValue = () => {
+    // حساب الإحصائيات مع دعم الفلترة للكارد الثاني
+    const getStats = () => {
+        let enrollmentCount = 0;
         if (statsCourseFilter === "all") {
-            return courses.reduce((a, b) => a + (b.enrolledCount || 0), 0);
+            enrollmentCount = courses.reduce((a, b) => a + (b.enrolledCount || 0), 0);
+        } else {
+            const selected = courses.find(c => c._id === statsCourseFilter);
+            enrollmentCount = selected ? (selected.enrolledCount || 0) : 0;
         }
-        const target = courses.find(c => c._id === statsCourseFilter);
-        return target ? (target.enrolledCount || 0) : 0;
+
+        const totalCredits = courses.reduce((a, b) => a + (b.courseId?.courseCredits || 0), 0);
+        const pendingCount = courses.filter(c => c.status === 'proposed').length;
+
+        return {
+            active: courses.length,
+            enrollment: enrollmentCount,
+            pending: pendingCount,
+            totalCredits: totalCredits
+        };
     };
 
-    const stats = {
-        active: courses.length,
-        enrollment: getEnrollmentValue(),
-        // حساب إجمالي الساعات المعتمدة لكل المواد المسجلة
-        totalCredits: courses.reduce((acc, curr) => acc + (curr.courseId?.courseCredits || 0), 0)
-    };
+    const stats = getStats();
 
     return (
         <div className="management-container">
             <header className="management-header">
                 <div className="title-section">
-                    <h1>Courses Management</h1>
+                    <h1>TA Courses Management</h1>
                 </div>
             </header>
 
             <div className="insights-grid">
+                {/* كارد 1: Assigned Courses */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <span className="insight-icon icon-blue"><BookOpen size={18} /></span>
-                        <span className="insight-label">Active Courses</span>
+                        <span className="insight-label">Assigned Courses</span>
                     </div>
                     <div className="insight-value">{stats.active}</div>
-                    <div className="insight-footer">Courses currently assigned</div>
+                    <div className="insight-footer">Courses you assist in</div>
                 </div>
 
+                {/* كارد 2: Enrollment (المعدل حسب طلبك) */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -162,6 +180,7 @@ const MyCourses = () => {
                     </div>
                 </div>
 
+                {/* كارد 3: Academic Load (المعدل حسب طلبك) */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <span className="insight-icon icon-purple"><GraduationCap size={18} /></span>
@@ -181,7 +200,7 @@ const MyCourses = () => {
                 <input
                     className="search-input"
                     type="text"
-                    placeholder="Search by Course ID..."
+                    placeholder="Search by Course ID or Name..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -195,7 +214,6 @@ const MyCourses = () => {
                             <th>Course Name</th>
                             <th>Semester</th>
                             <th style={{ textAlign: 'center' }}>Enrollment</th>
-                            {/* <th>Status</th> */}
                             <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
@@ -228,20 +246,12 @@ const MyCourses = () => {
                                             {course.enrolledCount || 0} Students
                                         </span>
                                     </td>
-                                    {/* <td>
-                                        <span className={`type-badge ${course.status === 'proposed' ? 'icon-orange' : 'icon-green'}`}
-                                            style={{ textTransform: 'capitalize' }}>
-                                            {course.status}
-                                        </span>
-                                    </td> */}
                                     <td>
                                         <div className="action-btns">
-                                            <button className="btn-icon btn-edit" title="Settings" onClick={() => handleOpenSchema(course)}>
-                                                <Settings size={18} color='#6486ee' />
-                                            </button>
                                             <button
                                                 className="btn-icon"
-                                                onClick={() => navigate(`/staff/${role}/grading/${course._id}/${course.courseId?._id}`)}
+                                                title="Grading"
+                                                onClick={() => navigate(`/staff/${role}/ta-grading/${course._id}/${course.courseId?._id}`)}
                                             >
                                                 <Users size={18} color='#62b986' />
                                             </button>
@@ -249,7 +259,6 @@ const MyCourses = () => {
                                     </td>
                                 </tr>
 
-                                {/* Expanded Details Row */}
                                 {expandedCourseId === course._id && (
                                     <tr className="details-expanded-row">
                                         <td colSpan="6">
@@ -258,7 +267,6 @@ const MyCourses = () => {
                                             ) : (
                                                 <div className="course-details-container">
                                                     <div className="details-grid">
-                                                        {/* Section 1: Basic Stats */}
                                                         <div className="details-col">
                                                             <h4 className="details-title"><Info size={16} /> Course Info</h4>
                                                             <div className="details-info-list">
@@ -269,7 +277,6 @@ const MyCourses = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Section 2: Grading Schema */}
                                                         <div className="details-col">
                                                             <h4 className="details-title"><Layout size={16} /> Grading Schema</h4>
                                                             <div className="schema-visualizer">
@@ -284,14 +291,13 @@ const MyCourses = () => {
                                                             </div>
                                                         </div>
 
-                                                        {/* Section 3: Academic Setup */}
                                                         <div className="details-col">
-                                                            <h4 className="details-title"><GraduationCap size={16} /> Academic Setup</h4>
+                                                            <h4 className="details-title"><GraduationCap size={16} /> TA Assignment</h4>
                                                             <div className="details-info-list">
                                                                 <div className="info-item"><span>Instructor ID:</span> <strong>{courseDetails?.instructorId}</strong></div>
-                                                                <div className="info-item"><span>Lec / Lab:</span> <strong>{courseDetails?.lecNum} / {courseDetails?.labNum}</strong></div>
-                                                                <div className="info-item"><span>Enrolled:</span> <strong>{courseDetails?.enrolledCount}</strong></div>
-                                                                <div className="info-item"><span>Graduates:</span> <strong>{courseDetails?.graduatesEnrolledCount}</strong></div>
+                                                                <div className="info-item"><span>Your TA ID:</span> <strong>{courseDetails?.taId}</strong></div>
+                                                                <div className="info-item"><span>Labs Scheduled:</span> <strong>{courseDetails?.labNum}</strong></div>
+                                                                <div className="info-item"><span>Students Enrolled:</span> <strong>{courseDetails?.enrolledCount}</strong></div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -305,50 +311,8 @@ const MyCourses = () => {
                     </tbody>
                 </table>
             </div>
-
-            {
-                showSchemaModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-card">
-                            <div className="modal-head">
-                                <h3>Grading Schema</h3>
-                                <button className="close-x-btn" onClick={() => setShowSchemaModal(false)}>
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            <div className="modal-body">
-                                <p style={{ fontSize: '13px', color: '#64748b', marginBottom: '10px' }}>
-                                    Total distribution must equal <b>50 marks</b> (excluding bonus).
-                                </p>
-
-                                {['midTerm', 'attendance', 'lab', 'practical', 'bonus'].map(key => (
-                                    <div key={key} className="form-group">
-                                        <label className="capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
-                                        <input
-                                            type="number"
-                                            value={schema[key]}
-                                            onChange={(e) => setSchema({ ...schema, [key]: Number(e.target.value) })}
-                                            placeholder={`Enter ${key} marks`}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="modal-footer">
-                                <button className="btn-cancel" onClick={() => setShowSchemaModal(false)}>
-                                    Cancel
-                                </button>
-                                <button className="btn-1" onClick={updateSchema} style={{ marginTop: 0 }}>
-                                    Save Changes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
-        </div >
+        </div>
     );
 };
 
-export default MyCourses;
+export default MyCoursesTA;

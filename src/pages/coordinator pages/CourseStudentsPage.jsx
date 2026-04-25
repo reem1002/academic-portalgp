@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
-import { ArrowLeft, Search, Users, Eye, UserPlus, X } from "lucide-react"; // ضفت UserPlus و X
+import { ArrowLeft, Search, Users, Eye, UserPlus, X, GraduationCap } from "lucide-react";
 import "../styles/StudentDetails.css";
 
 const CourseStudentsPage = () => {
@@ -11,15 +11,16 @@ const CourseStudentsPage = () => {
     const { role } = useParams();
     const courseName = location.state?.courseName || "Course Students";
 
-
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // States جديدة للمودال والستاف
+    // States للمودال والستاف
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState("instructor"); // 'instructor' or 'ta'
     const [lecturers, setLecturers] = useState([]);
-    const [selectedLecturer, setSelectedLecturer] = useState("");
+    const [tas, setTas] = useState([]); // State للـ TAs
+    const [selectedStaff, setSelectedStaff] = useState("");
     const [assigning, setAssigning] = useState(false);
 
     useEffect(() => {
@@ -31,8 +32,15 @@ const CourseStudentsPage = () => {
 
                 // Fetch Staff for the modal
                 const staffRes = await api.get("/staff");
+
+                // تصفية المحاضرين
                 const onlyLecturers = staffRes.data.filter(s => s.roles.includes("lecturer"));
                 setLecturers(onlyLecturers);
+
+                // تصفية المعيدين (TAs)
+                const onlyTAs = staffRes.data.filter(s => s.roles.includes("ta"));
+                setTas(onlyTAs);
+
             } catch (err) {
                 console.error("Error fetching data", err);
             } finally {
@@ -43,22 +51,49 @@ const CourseStudentsPage = () => {
     }, [courseId]);
 
     const handleAssignInstructor = async () => {
-        if (!selectedLecturer) return alert("Please select a lecturer");
+        if (!selectedStaff) return alert("Please select a lecturer");
 
         setAssigning(true);
         try {
-            // 2. استخدام الـ offeringId الصحيح في الـ URL
             await api.post(`/course-offerings/${offeringId}/assign-instructor`, {
-                instructorId: selectedLecturer
+                instructorId: selectedStaff
             });
             alert("Instructor assigned successfully!");
             setIsModalOpen(false);
+            setSelectedStaff("");
         } catch (err) {
             console.error("Error assigning instructor", err);
             alert("Failed to assign instructor.");
         } finally {
             setAssigning(false);
         }
+    };
+
+    const handleAssignTA = async () => {
+        if (!selectedStaff) return alert("Please select a TA");
+
+        setAssigning(true);
+        try {
+            // استخدام الـ endpoint الخاص بالـ TA والـ body الصحيح taId
+            await api.post(`/course-offerings/${offeringId}/assign-ta`, {
+                taId: selectedStaff
+            });
+            alert("TA assigned successfully!");
+            setIsModalOpen(false);
+            setSelectedStaff("");
+        } catch (err) {
+            console.error("Error assigning TA", err);
+            alert("Failed to assign TA.");
+        } finally {
+            setAssigning(false);
+        }
+    };
+
+    // فنكشن لفتح المودال وتحديد النوع
+    const openModal = (type) => {
+        setModalType(type);
+        setSelectedStaff("");
+        setIsModalOpen(true);
     };
 
     const filteredStudents = useMemo(() => {
@@ -86,15 +121,20 @@ const CourseStudentsPage = () => {
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    {/* زرار فتح المودال الجديد */}
-                    <button className="assign-btn" onClick={() => setIsModalOpen(true)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 15px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-                        <UserPlus size={20} />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    {/* زرار تعيين المحاضر */}
+                    <button className="btn-1" onClick={() => openModal("instructor")}>
+                        <UserPlus size={18} />
                         Assign Lecturer
                     </button>
 
-                    <div className="academic-profile-card" style={{ minWidth: '200px' }}>
+                    {/* زرار تعيين المعيد (TA) */}
+                    <button className="btn-1" onClick={() => openModal("ta")}>
+                        <GraduationCap size={18} />
+                        Assign TA
+                    </button>
+
+                    <div className="academic-profile-card" style={{ minWidth: '180px' }}>
                         <div className="advisor-info-row">
                             <div className="icon-circle"><Users size={20} /></div>
                             <div>
@@ -106,23 +146,23 @@ const CourseStudentsPage = () => {
                 </div>
             </div>
 
-            {/* المودال - Modal UI */}
+            {/* المودال الموحد لتعيين الستاف */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h2>Assign Instructor</h2>
+                            <h2>{modalType === "instructor" ? "Assign Instructor" : "Assign TA"}</h2>
                             <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
                         </div>
                         <div className="modal-body">
-                            <label>Select Lecturer:</label>
+                            <label>Select {modalType === "instructor" ? "Lecturer" : "Teaching Assistant"}:</label>
                             <select
-                                value={selectedLecturer}
-                                onChange={(e) => setSelectedLecturer(e.target.value)}
+                                value={selectedStaff}
+                                onChange={(e) => setSelectedStaff(e.target.value)}
                                 className="modal-select"
                             >
-                                <option value="">-- Choose a Lecturer --</option>
-                                {lecturers.map(staff => (
+                                <option value="">-- Choose {modalType === "instructor" ? "a Lecturer" : "a TA"} --</option>
+                                {(modalType === "instructor" ? lecturers : tas).map(staff => (
                                     <option key={staff._id} value={staff._id}>
                                         {staff.staffName} ({staff._id})
                                     </option>
@@ -131,7 +171,11 @@ const CourseStudentsPage = () => {
                         </div>
                         <div className="modal-footer">
                             <button className="cancel-btn" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                            <button className="confirm-btn" onClick={handleAssignInstructor} disabled={assigning}>
+                            <button
+                                className="confirm-btn"
+                                onClick={modalType === "instructor" ? handleAssignInstructor : handleAssignTA}
+                                disabled={assigning}
+                            >
                                 {assigning ? "Assigning..." : "Assign Now"}
                             </button>
                         </div>
@@ -139,7 +183,6 @@ const CourseStudentsPage = () => {
                 </div>
             )}
 
-            {/* باقي الجدول كما هو */}
             <div className="data-section" style={{ marginTop: '20px' }}>
                 <div className="filter-search-row">
                     <div className="search-box">

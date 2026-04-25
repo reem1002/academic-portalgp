@@ -82,6 +82,10 @@ export const menuConfig = {
             name: "Anouncements",
             path: "/staff/coordinator/Anouncements",
             icon: <Megaphone size={iconSize} />
+        }, {
+            name: "Schedule",
+            path: "/staff/coordinator/ScheduleManager",
+            icon: <History size={iconSize} />
         },
         {
             name: "Semesters History",
@@ -135,7 +139,7 @@ export const menuConfig = {
         },
         {
             name: "Assist Courses",
-            path: "/staff/ta/courses",
+            path: "/staff/ta/ta-courses",
             icon: <BookOpen size={iconSize} />
         }
     ],
