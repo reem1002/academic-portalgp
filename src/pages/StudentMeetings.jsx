@@ -170,7 +170,7 @@ const StudentMeetings = () => {
     };
 
     return (
-        <div className="advising-container advising-meet">
+        <div className="management-container advising-container advising-meet">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
                     <div className="title-section">

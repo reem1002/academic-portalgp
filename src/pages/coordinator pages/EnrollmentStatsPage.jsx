@@ -132,7 +132,7 @@ const EnrollmentStatsPage = () => {
     if (loading) return <div className="loading">Analyzing Enrollment Data...</div>;
 
     return (
-        <div className="prereg-container">
+        <div className="management-container prereg-container">
             {/* Header */}
             <div className="prereg-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

@@ -188,7 +188,7 @@ const AdvisingManagementPage = () => {
     });
 
     return (
-        <div className="advising-container">
+        <div className="management-container advising-container">
             <header className="advising-header">
                 <div>
                     <h2>Advising Management</h2>

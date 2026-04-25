@@ -204,7 +204,7 @@ const StudentCourseOfferingsPage = () => {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="student-offerings-container">
+        <div className="management-container student-offerings-container">
             <div className="title-section header">
                 <h1>Pre-registration Enrollment</h1>
                 {isDirty ? (

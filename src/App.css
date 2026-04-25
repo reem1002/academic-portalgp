@@ -1,3 +1,6 @@
+.management-container {
+    padding:  1.75rem 3rem !important;
+}
 .table-wrapper {
   max-height: 600px;
   overflow-y: auto;

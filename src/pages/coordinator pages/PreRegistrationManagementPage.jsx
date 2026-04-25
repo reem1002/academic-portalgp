@@ -228,7 +228,7 @@ const PreRegistrationManagementPage = () => {
     if (loading) return <div className="loading">Initializing Management System...</div>;
 
     return (
-        <div className="prereg-container">
+        <div className=" management-container prereg-container">
             <div className="prereg-header">
                 <div>
                     <h2>Pre-Registration Management</h2>

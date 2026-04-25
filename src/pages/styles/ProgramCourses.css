@@ -2,7 +2,7 @@
    Layout
 ========================= */
 .management-container {
-  padding: 0 30px;
+  padding:  2rem;
   background: #f8fafc;
   min-height: 100vh;
 }

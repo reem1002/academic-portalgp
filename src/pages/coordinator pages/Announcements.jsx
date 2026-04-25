@@ -164,7 +164,7 @@ const Announcements = () => {
     }, [announcements, searchTerm, dateFilter]);
 
     return (
-        <div className="advising-container">
+        <div className="management-container advising-container">
             {/* Header */}
             <div className="page-header-section">
                 <div className="title-section">

@@ -106,7 +106,7 @@ const CourseStudentsPage = () => {
     if (loading) return <div className="loading">Fetching Students List...</div>;
 
     return (
-        <div className="student-details-wrapper">
+        <div className="management-container student-details-wrapper">
             <div className="details-header">
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => navigate(-1)}>

@@ -143,7 +143,7 @@ const StudentTranscript = () => {
     const failedCount = transcript.completedCourses?.filter(c => c.status === "failed").length || 0;
 
     return (
-        <div className="student-details-wrapper">
+        <div className="management-container student-details-wrapper">
             <div className="details-header">
                 <div className="header-left">
                     <div className="student-main-info">

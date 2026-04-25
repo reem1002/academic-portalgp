@@ -4,7 +4,7 @@ const StaffDashboard = () => {
     const { role } = useParams();
 
     return (
-        <div>
+        <div className="management-container">
             <h1>{role ? role.replace("-", " ").toUpperCase() : "Staff"} Dashboard</h1>
 
             {/* Example Content Based on Role */}

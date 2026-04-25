@@ -119,7 +119,7 @@ const AdvisingDetails = () => {
     };
 
     return (
-        <div className="advising-container">
+        <div className="management-container">
 
             {/* HEADER */}
             <header className="advising-header">

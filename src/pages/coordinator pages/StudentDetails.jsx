@@ -152,7 +152,7 @@ const StudentDetails = () => {
     };
 
     return (
-        <div className="student-details-wrapper">
+        <div className="management-container student-details-wrapper">
             <div className="details-header">
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => window.history.back()}><FaArrowLeft /></button>

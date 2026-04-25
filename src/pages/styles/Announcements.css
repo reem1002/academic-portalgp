@@ -2,7 +2,7 @@
    Container
 ========================= */
 .announcements-wrapper {
-  padding: 2rem;
+  padding: 1rem 2rem !important;
   background: #f8fafc;
   min-height: 100vh;
   font-family: 'Inter', sans-serif;

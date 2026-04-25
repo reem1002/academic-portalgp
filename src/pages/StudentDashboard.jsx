@@ -122,7 +122,7 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
-            <div className="sd-content-layout">
+            <div className="management-container sd-content-layout">
                 {/* Main Content: Announcements */}
                 <main className="sd-announcements-area">
                     <div className="sd-glass-card">

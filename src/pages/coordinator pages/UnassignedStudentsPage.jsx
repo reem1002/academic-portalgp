@@ -108,7 +108,7 @@ const UnassignedStudentsPage = () => {
     };
 
     return (
-        <div className="advising-container">
+        <div className="management-container advising-container">
             {/* HEADER */}
             <header className="advising-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

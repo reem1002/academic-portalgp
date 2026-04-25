@@ -156,7 +156,7 @@ const CooEnrollmentPage = () => {
     if (loading) return <div className="loading-container">Fetching Data (Coordinator View)...</div>;
 
     return (
-        <div className="student-offerings-container">
+        <div className="management-container">
             <div className="title-section header">
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => navigate(-1)}><FaArrowLeft /></button>
