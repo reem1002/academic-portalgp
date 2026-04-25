@@ -147,7 +147,7 @@ const StudentTranscript = () => {
             <div className="details-header">
                 <div className="header-left">
                     <div className="student-main-info">
-                        <h1>{transcript.studentId?.studentName}</h1>
+                        <h2>{transcript.studentId?.studentName}</h2>
                         <div className="id-tags">
                             <span className="id-badge">ID: {transcript.studentId?._id}</span>
                             <span className="id-badge">@{transcript.studentId?.username}</span>

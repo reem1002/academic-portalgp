@@ -6,7 +6,7 @@
     height: calc(100vh - 20px); /* Adjust based on your navbar height */
     background: #f8fafc;
     overflow: hidden;
-    font-family: 'Inter', sans-serif;
+
 }
 
 /* Loader */

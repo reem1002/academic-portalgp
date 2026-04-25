@@ -167,8 +167,8 @@ const Announcements = () => {
         <div className="management-container advising-container">
             {/* Header */}
             <div className="page-header-section">
-                <div className="title-section">
-                    <h1>Announcements</h1>
+                <div className="prereg-header">
+                    <h2>Announcements</h2>
                 </div>
                 <button className="btn-1" onClick={() => { setEditingAnn(null); setFormData({ title: "", content: "" }); setIsModalOpen(true); }}>
                     <Plus size={18} /> Create New

@@ -148,8 +148,8 @@ const StaffManagement = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>Staff Management</h1>
+                <div className="prereg-header">
+                    <h2>Staff Management</h2>
                 </div>
 
                 <div className="split-button-container">

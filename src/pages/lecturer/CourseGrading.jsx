@@ -213,9 +213,9 @@ const CourseGrading = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
+                <div className="prereg-header">
                     <button className="back-btn-round" onClick={() => navigate(-1)}><FaArrowLeft /></button>
-                    <h1>{course?.courseId?.courseName || course?.courseId}</h1>
+                    <h2>{course?.courseId?.courseName || course?.courseId}</h2>
                 </div>
 
                 <div className="split-button-container" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>

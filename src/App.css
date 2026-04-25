@@ -1,3 +1,4 @@
+
 .management-container {
     padding:  1.75rem 3rem !important;
 }
@@ -91,6 +92,6 @@ th {
     color: var(--text-main);
 }
 
-.title-section{
+.prereg-header{
   display: flex;
 }

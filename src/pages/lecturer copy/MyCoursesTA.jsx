@@ -139,8 +139,8 @@ const MyCoursesTA = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>TA Courses Management</h1>
+                <div className="prereg-header">
+                    <h2>TA Courses Management</h2>
                 </div>
             </header>
 

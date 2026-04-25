@@ -32,9 +32,9 @@ import CourseGrading from "./pages/lecturer/CourseGrading";
 import CourseDetails from "./pages/lecturer/CourseDetails";
 import AttendanceManagement from "./pages/lecturer/AttendanceManagement";
 
-import MyCoursesTA from "./pages/TA/MyCoursesTA";
-import CourseGradingTA from "./pages/TA/CourseGradingTA";
-import AttendanceManagementTA from "./pages/TA/AttendanceManagementTA"
+import MyCoursesTA from "./pages/lecturer copy/MyCoursesTA";
+import CourseGradingTA from "./pages/lecturer copy/CourseGradingTA";
+import AttendanceManagementTA from "./pages/lecturer copy/AttendanceManagementTA"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";

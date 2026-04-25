@@ -183,8 +183,8 @@ const AdvisingMeetings = () => {
         <div className="advising-container advising-meet">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
-                    <div className="title-section">
-                        <h1>Advising Management</h1>
+                    <div className="prereg-header">
+                        <h2>Advising Management</h2>
                     </div>
                 </div>
             </header>
@@ -258,8 +258,8 @@ const AdvisingMeetings = () => {
                 ) : (
                     <div className="maiin_table_contebt">
                         <div className="management-header meeting-header">
-                            <div className="title-section">
-                                <h1>{activeTab}</h1>
+                            <div className="prereg-header">
+                                <h2>{activeTab}</h2>
                             </div>
                         </div>
                         {(selectedDate || highlightedMeetingId) && (

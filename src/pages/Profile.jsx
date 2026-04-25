@@ -146,8 +146,8 @@ const Profile = () => {
     return (
         <div className="management-container profile-page">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>Account Settings</h1>
+                <div className="prereg-header">
+                    <h2>Account Settings</h2>
                 </div>
             </header>
 
@@ -244,34 +244,34 @@ const Profile = () => {
                     ) : (
                         <form onSubmit={handlePasswordChange} className="profile-form-layout">
                             // ... داخل الـ Form بتاع الباسورد
-                                <div className="form-group">
-                                    <label>New Password</label>
-                                    <input
-                                        type="password"
-                                        required
-                                        placeholder="Enter new password"
-                                        value={passwordData.newPassword}
-                                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                    />
+                            <div className="form-group">
+                                <label>New Password</label>
+                                <input
+                                    type="password"
+                                    required
+                                    placeholder="Enter new password"
+                                    value={passwordData.newPassword}
+                                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                />
 
-                                    {/* الـ Strength Meter */}
-                                    {passwordData.newPassword && (
-                                        <div className="password-strength-wrapper">
-                                            <div className="strength-bar-container">
-                                                <div
-                                                    className="strength-bar-fill"
-                                                    style={{
-                                                        width: getPasswordStrength(passwordData.newPassword).width,
-                                                        backgroundColor: getPasswordStrength(passwordData.newPassword).color
-                                                    }}
-                                                ></div>
-                                            </div>
-                                            <span className="strength-label" style={{ color: getPasswordStrength(passwordData.newPassword).color }}>
-                                                {getPasswordStrength(passwordData.newPassword).label}
-                                            </span>
+                                {/* الـ Strength Meter */}
+                                {passwordData.newPassword && (
+                                    <div className="password-strength-wrapper">
+                                        <div className="strength-bar-container">
+                                            <div
+                                                className="strength-bar-fill"
+                                                style={{
+                                                    width: getPasswordStrength(passwordData.newPassword).width,
+                                                    backgroundColor: getPasswordStrength(passwordData.newPassword).color
+                                                }}
+                                            ></div>
                                         </div>
-                                    )}
-                                </div>
+                                        <span className="strength-label" style={{ color: getPasswordStrength(passwordData.newPassword).color }}>
+                                            {getPasswordStrength(passwordData.newPassword).label}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                             <div className="form-group">
                                 <label>Confirm New Password</label>
                                 <input

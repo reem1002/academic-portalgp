@@ -150,11 +150,11 @@ const AdviserEnrollmentPage = () => {
         <div className="student-offerings-container">
             {/* Navigation Header */}
 
-            <div className="title-section header">
+            <div className="prereg-header header">
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => window.history.back()}><FaArrowLeft /></button>
                     <div className="title-info">
-                        <h1>Enroll: Student #{studentId}</h1>
+                        <h2>Enroll: Student #{studentId}</h2>
                     </div>
                 </div>
                 <div>

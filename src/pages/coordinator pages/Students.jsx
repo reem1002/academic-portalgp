@@ -145,8 +145,8 @@ const Students = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>Students Management</h1>
+                <div className="prereg-header">
+                    <h2>Students Management</h2>
                 </div>
 
                 <div className="split-button-container">

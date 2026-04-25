@@ -5,7 +5,7 @@ const StaffDashboard = () => {
 
     return (
         <div className="management-container">
-            <h1>{role ? role.replace("-", " ").toUpperCase() : "Staff"} Dashboard</h1>
+            <h2>{role ? role.replace("-", " ").toUpperCase() : "Staff"} Dashboard</h2>
 
             {/* Example Content Based on Role */}
             {role === "coordinator" && (

@@ -17,7 +17,6 @@
     padding: 0 2rem !important;
     background-color: var(--bg-main);
     min-height: 100vh;
-    font-family: 'Inter', system-ui, sans-serif;
     color: var(--text-main);
 }
 

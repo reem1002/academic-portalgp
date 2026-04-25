@@ -173,8 +173,8 @@ const StudentMeetings = () => {
         <div className="management-container advising-container advising-meet">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
-                    <div className="title-section">
-                        <h1>My Advising Calendar</h1>
+                    <div className="prereg-header">
+                        <h2>My Advising Calendar</h2>
                     </div>
                     <button className="btn-1" onClick={() => setIsModalOpen(true)}>
                         <Plus size={18} /> Request New Meeting
@@ -240,7 +240,7 @@ const StudentMeetings = () => {
             <div className="advising-content">
                 <div className="maiin_table_contebt">
                     <div className="management-header meeting-header">
-                        <div className="title-section">
+                        <div className="prereg-header">
                             <h2>{activeTab}</h2>
                         </div>
                     </div>

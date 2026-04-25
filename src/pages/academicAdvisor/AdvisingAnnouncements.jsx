@@ -160,8 +160,8 @@ const AdvisingAnnouncements = () => {
         <div className="advising-ann-container">
             {/* Header */}
             <div className="page-header-section">
-                <div className="title-section">
-                    <h1>Advising Announcements</h1>
+                <div className="prereg-header">
+                    <h2>Advising Announcements</h2>
                 </div>
                 <button className="btn-1" onClick={() => { setEditingAnn(null); setIsModalOpen(true); }}>
                     <Plus size={18} /> New Announcement

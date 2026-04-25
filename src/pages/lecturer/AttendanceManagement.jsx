@@ -114,12 +114,12 @@ const AttendanceManagement = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
+                <div className="prereg-header">
                     <button className="back-btn-round" onClick={() => navigate(-1)}>
                         <ArrowLeft size={20} />
                     </button>
                     <div>
-                        <h1>Attendance Matrix</h1>
+                        <h2>Attendance Matrix</h2>
                         <p style={{ color: '#64748b', fontSize: '14px' }}>{courseName}</p>
                     </div>
                 </div>

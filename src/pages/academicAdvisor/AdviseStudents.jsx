@@ -130,8 +130,8 @@ const AdviseStudents = () => {
         <div className="adv-page">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
-                    <div className="title-section">
-                        <h1>Student Advising Management</h1>
+                    <div className="prereg-header">
+                        <h2>Student Advising Management</h2>
                     </div>
                 </div>
             </header>

@@ -144,8 +144,8 @@ const ProgramCoursesManagement = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>Course Management</h1>
+                <div className="prereg-header">
+                    <h2>Course Management</h2>
                 </div>
 
                 <div className="split-button-container">

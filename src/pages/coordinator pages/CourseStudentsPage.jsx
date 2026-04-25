@@ -113,7 +113,7 @@ const CourseStudentsPage = () => {
                         <ArrowLeft size={20} />
                     </button>
                     <div className="student-main-info">
-                        <h1 style={{ fontSize: '1.5rem' }}>{courseName}</h1>
+                        <h2 style={{ fontSize: '1.5rem' }}>{courseName}</h2>
                         <div className="id-tags">
                             <span className="id-badge">Course ID: {courseId}</span>
                             <span className="id-badge">Semester: {semesterId}</span>

@@ -101,7 +101,7 @@ const AdvisedStudentDetails = () => {
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => navigate(-1)}><FaArrowLeft /></button>
                     <div className="student-main-info">
-                        <h1>{transcript.studentId?.studentName}</h1>
+                        <h2>{transcript.studentId?.studentName}</h2>
                         <div className="id-tags">
                             <span className="id-badge">ID: {transcript.studentId?._id}</span>
                         </div>
@@ -270,9 +270,9 @@ const AdvisedStudentDetails = () => {
                                                     </td>
                                                 </tr>
                                             );
-                                        }) 
+                                        })
                                     ) : (
-                                      
+
                                         <tr>
                                             <td colSpan="6" className="empty-msg">No courses found</td>
                                         </tr>

@@ -123,8 +123,8 @@ const MyCourses = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
-                    <h1>Courses Management</h1>
+                <div className="prereg-header">
+                    <h2>Courses Management</h2>
                 </div>
             </header>
 

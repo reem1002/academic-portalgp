@@ -205,8 +205,8 @@ const StudentCourseOfferingsPage = () => {
 
     return (
         <div className="management-container student-offerings-container">
-            <div className="title-section header">
-                <h1>Pre-registration Enrollment</h1>
+            <div className="prereg-header header">
+                <h2>Pre-registration Enrollment</h2>
                 {isDirty ? (
                     <div className="status-alert warning"><FaExclamationTriangle /> Unsaved Changes</div>
                 ) : (

@@ -99,8 +99,8 @@ const StudentDashboard = () => {
         <div className="sd-page-wrapper">
             {/* Header Section */}
             <header className="sd-main-header">
-                <div className="title-section">
-                    <h1 className="sd-title">Welcome back, {studentName}!</h1>
+                <div className="prereg-header">
+                    <h2 className="sd-title">Welcome back, {studentName}!</h2>
                 </div>
             </header>
 

@@ -157,7 +157,7 @@ const StudentDetails = () => {
                 <div className="header-left">
                     <button className="back-btn-round" onClick={() => window.history.back()}><FaArrowLeft /></button>
                     <div className="student-main-info">
-                        <h1>{transcript.studentId?.studentName}</h1>
+                        <h2>{transcript.studentId?.studentName}</h2>
                         <div className="id-tags">
                             <span className="id-badge">ID: {transcript.studentId?._id}</span>
                             <span className="id-badge">@{transcript.studentId?.username}</span>

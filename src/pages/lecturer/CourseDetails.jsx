@@ -35,11 +35,11 @@ const CourseDetails = () => {
     return (
         <div className="management-container">
             <header className="management-header">
-                <div className="title-section">
+                <div className="prereg-header">
                     <button className="btn-cancel" onClick={() => navigate(-1)} style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                         <ChevronLeft size={16} /> Back to Courses
                     </button>
-                    <h1>{course.courseId?.courseName} <span style={{ color: '#94a3b8', fontSize: '0.6em' }}>[{course.courseId?._id}]</span></h1>
+                    <h2>{course.courseId?.courseName} <span style={{ color: '#94a3b8', fontSize: '0.6em' }}>[{course.courseId?._id}]</span></h2>
                 </div>
             </header>
 

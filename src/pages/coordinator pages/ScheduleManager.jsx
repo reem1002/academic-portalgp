@@ -208,7 +208,7 @@ const ScheduleManager = () => {
                 {/* Main Schedule Grid (Left Side) */}
                 <main className="schedule-main">
                     <header className="management-header">
-                        <div className="title-section">
+                        <div className="prereg-header">
                             <h2>Academic Schedule</h2>
                         </div>
                         <div className="header-actions">
