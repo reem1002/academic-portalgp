@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import api from "../../services/api";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-    Trash2, Settings, X, RefreshCw, Layers, User, Hash, ChevronRight, Menu, ChevronLeft
+    Trash2, Settings, X, RefreshCw, Layers, User, Hash, ChevronRight, Menu, ChevronLeft, Download
 } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import './ScheduleManager.css';
 
 const ScheduleManager = () => {
@@ -114,6 +116,60 @@ const ScheduleManager = () => {
         }
     };
 
+    const exportToPDF = async () => {
+        const tableElement = document.querySelector('.sc-table-wrapper');
+        if (!tableElement) return;
+
+        // 1. حفظ الستايلات الأصلية عشان نرجعها بعد التصوير
+        const originalStyle = tableElement.style.cssText;
+
+        try {
+            // 2. فك القيود مؤقتاً عشان الجدول يظهر بالكامل
+            tableElement.style.overflow = 'visible';
+            tableElement.style.width = 'fit-content';
+            tableElement.style.maxWidth = 'none';
+
+            const canvas = await html2canvas(tableElement, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                // تحديد العرض والارتفاع الفعليين للجدول بالكامل
+                width: tableElement.scrollWidth,
+                height: tableElement.scrollHeight,
+                windowWidth: tableElement.scrollWidth,
+                windowHeight: tableElement.scrollHeight
+            });
+
+            // 3. رجوع الستايلات الأصلية فوراً
+            tableElement.style.cssText = originalStyle;
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+
+            // حساب الأبعاد عشان الصورة تيجي مظبوطة في نص الصفحة
+            const imgProps = pdf.getImageProperties(imgData);
+            const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
+            const width = imgProps.width * ratio;
+            const height = imgProps.height * ratio;
+
+            pdf.addImage(imgData, 'PNG', (pdfWidth - width) / 2, 5, width, height);
+            pdf.save("Academic_Schedule.pdf");
+
+        } catch (error) {
+            console.error("❌ PDF Export Error:", error);
+            tableElement.style.cssText = originalStyle; // تأمين الرجوع للوضع الأصلي في حالة الخطأ
+            alert("Failed to export PDF");
+        }
+    };
+
     const renderCourseCard = (offering, isInsideGrid = false) => (
         <div className={`uniform-card-s ${isInsideGrid ? 'grid-version' : ''}`} title={offering.courseId?.courseName}>
             <div className="course-header-row">
@@ -140,7 +196,6 @@ const ScheduleManager = () => {
                     <span>{offering.instructorId?.name || "No Instructor"}</span>
                 </div>
             </div>
-            {/* {!isInsideGrid && <ChevronRight size={14} className="arrow-icon" />} */}
         </div>
     );
 
@@ -154,9 +209,12 @@ const ScheduleManager = () => {
                 <main className="schedule-main">
                     <header className="management-header">
                         <div className="title-section">
-                            <h2>Academic Schedual</h2>
+                            <h2>Academic Schedule</h2>
                         </div>
                         <div className="header-actions">
+                            <button className="btn-1 secondary" onClick={exportToPDF}>
+                                <Download size={18} /> Export PDF
+                            </button>
                             <button className="btn-1" onClick={() => setIsModalOpen(true)}>
                                 <Settings size={18} /> Manage Periods
                             </button>
@@ -168,7 +226,7 @@ const ScheduleManager = () => {
                         </div>
                     </header>
 
-                    <div className="sc-table-wrapper">
+                    <div className="sc-table-wrapper" id="printable-schedule">
                         <table className="schedule-table">
                             <thead>
                                 <tr>
@@ -234,9 +292,7 @@ const ScheduleManager = () => {
                 <aside className={`schedule-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
                     <div className="sidebar-header">
                         <div className="header-top">
-
                             <h3>Catalog</h3>
-
                         </div>
                         <p>{offerings.filter(o => !o.schedule?.days?.length).length} available courses</p>
                         <button className="close-sidebar-btn" onClick={() => setIsSidebarOpen(false)}>

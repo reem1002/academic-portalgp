@@ -17,7 +17,10 @@ import {
     BookMarked,
     ShieldCheck,
     UserCog,
-    Calendar
+    Calendar,
+    CalendarDays, // أيقونة للجدول
+    BellRing,     // أيقونة للإعلانات
+    MessagesSquare // أيقونة للمقابلات
 } from "lucide-react";
 
 const iconSize = 20;
@@ -42,10 +45,9 @@ export const menuConfig = {
         {
             name: "Meet Advisor",
             path: "/student/meetings",
-            icon: <Calendar size={iconSize} />
+            icon: <MessagesSquare size={iconSize} /> // تم التغيير لتمييز المقابلات
         }
     ],
-
 
     coordinator: [
         {
@@ -81,11 +83,12 @@ export const menuConfig = {
         {
             name: "Anouncements",
             path: "/staff/coordinator/Anouncements",
-            icon: <Megaphone size={iconSize} />
-        }, {
+            icon: <BellRing size={iconSize} /> // تم التغيير لتمييز الإعلانات
+        },
+        {
             name: "Schedule",
             path: "/staff/coordinator/ScheduleManager",
-            icon: <History size={iconSize} />
+            icon: <CalendarDays size={iconSize} /> // تم التغيير لتمييز الجدول الدراسي
         },
         {
             name: "Semesters History",
@@ -123,7 +126,6 @@ export const menuConfig = {
             path: "/staff/academic-advisor/advising-anouncements",
             icon: <Megaphone size={iconSize} />
         },
-        ,
         {
             name: "Meetings",
             path: "/staff/academic-advisor/ad-meetings",
