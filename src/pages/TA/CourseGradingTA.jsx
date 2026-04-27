@@ -11,7 +11,7 @@ import '../styles/ProgramCourses.css';
 
 const CourseGradingTA = () => {
     const { role } = useParams();
-    const { id, courseId } = useParams();
+    const { id, courseId } = useParams(); // id هو الـ course code في المسار
     const navigate = useNavigate();
     const [course, setCourse] = useState(null);
     const [localGrades, setLocalGrades] = useState([]);
@@ -41,7 +41,7 @@ const CourseGradingTA = () => {
 
     const loadData = async () => {
         try {
-            // الـ Endpoints الجديدة بناءً على توثيق الـ API المرفق
+            // جلب بيانات الكورسات ودرجات الطلاب
             const [detailsRes, studentRes] = await Promise.all([
                 api.get(`/tas/me/courses/${id}`),
                 api.get(`/semester-work/course/${courseId}`)
@@ -60,7 +60,6 @@ const CourseGradingTA = () => {
 
     const fetchAttendanceOnly = async () => {
         try {
-            // استخدام مسار الـ TA لجلب الغياب (افترضنا وجود GET للغياب للـ TA)
             const res = await api.get(`/tas/me/courses/${id}/attendance`);
             setlabDates(res.data.labDates || []);
             setAttendanceData(res.data.attendanceData || []);
@@ -89,7 +88,6 @@ const CourseGradingTA = () => {
     const hasAttendanceToSave = presentStudents.length > 0;
 
     const isTodayAttendanceTaken = useMemo(() => {
-        // التأكد إننا بنقارن فقط الـ Date string بدون الـ Time
         return labDates.some(date => {
             const d = new Date(date).toISOString().split("T")[0];
             return d === selectedDate;
@@ -97,14 +95,14 @@ const CourseGradingTA = () => {
     }, [labDates, selectedDate]);
 
     const handleGradeChange = (studentId, field, value) => {
-        // 🔥 تعديل: السماح فقط بتعديل اللاب والعملي (والبونص إذا رغبت)
+        // 🔥 السماح فقط بتعديل اللاب والعملي للـ TA
         const allowedFields = ['labGrade', 'practicalGrade'];
         if (!allowedFields.includes(field)) return;
 
         const numValue = Number(value);
         if (numValue < 0) return;
 
-        // التحقق من السكيما
+        // التحقق من الحد الأقصى بناءً على الـ gradingSchema
         const schemaField = field.replace('Grade', '');
         const maxAllowed = course?.gradingSchema?.[schemaField] || 100;
 
@@ -131,23 +129,26 @@ const CourseGradingTA = () => {
         try {
             swalService.showLoading("Saving data...");
 
-            // 1. حفظ الدرجات (تعديل الدرجات المسموحة فقط)
+            // 1. حفظ الدرجات (إرسال الـ labGrade و الـ practicalGrade فقط)
             if (hasUnsavedChanges) {
                 const gradePayload = {
                     grades: localGrades.map(s => ({
                         studentId: s.studentId._id,
                         labGrade: s.grade.labGrade,
-                        practicalGrade: s.grade.practicalGrade
+                        practicalGrade: s.grade.practicalGrade,
+                        // نرسل الأصفار أو القيم الحالية للباقي لضمان سلامة الـ Payload 
+                        // لكن الـ Backend سيهتم فقط بما لديه صلاحية بتعديله
+                        midTermGrade: s.grade.midTermGrade,
+                        bonusGrade: s.grade.bonusGrade
                     }))
                 };
-                // يتم إرسال التحديث لـ API المحاضرين أو الـ TA حسب المتاح بالباك إند
-                await api.put(`/lecturers/me/courses/${id}/grades`, gradePayload);
+                await api.put(`/tas/me/courses/${id}/grades`, gradePayload);
             }
 
-            // 2. حفظ غياب المعمل (حسب الـ Endpoint الجديدة للـ TA)
+            // 2. حفظ غياب المعمل
             if (hasAttendanceToSave) {
                 const attendancePayload = {
-                    labDate: selectedDate, // تم تغيير الاسم لـ labDate حسب طلبك
+                    labDate: selectedDate,
                     students: presentStudents
                 };
                 await api.put(`/tas/me/courses/${id}/attendance`, attendancePayload);
@@ -327,7 +328,7 @@ const CourseGradingTA = () => {
                     </thead>
                     <tbody>
                         {filteredStudents.map(s => {
-                            const total = (s.grade.midTermGrade || 0) + (s.grade.labGrade || 0) + (s.grade.attendanceGrade || 0) + (s.grade.practicalGrade || 0);
+                            const total = (s.grade.midTermGrade || 0) + (s.grade.labGrade || 0) + (s.grade.attendanceGrade || 0) + (s.grade.practicalGrade || 0) + (s.grade.bonusGrade || 0);
                             const isPresent = presentStudents.includes(s.studentId._id);
                             const isExpanded = expandedStudentId === s.studentId._id;
                             const originalStudent = originalGrades.find(og => og.studentId._id === s.studentId._id);
@@ -338,7 +339,7 @@ const CourseGradingTA = () => {
                                         style={{
                                             backgroundColor: isPresent ? '#f0f9ff' : (isExpanded ? '#f8fafc' : 'inherit'),
                                             borderLeft: isExpanded ? '4px solid #3b82f6' : 'none',
-                                            opacity: isTodayAttendanceTaken ? 0.8 : 1
+                                            opacity: isTodayAttendanceTaken && isPresent ? 1 : (isTodayAttendanceTaken ? 0.8 : 1)
                                         }}
                                     >
                                         <td style={{ textAlign: 'center' }}>
@@ -373,7 +374,7 @@ const CourseGradingTA = () => {
                                         ].map(field => {
                                             const isChanged = originalStudent && s.grade[field.key] !== originalStudent.grade[field.key];
 
-                                            // 🔥 قفل الحقول غير المسموحة للـ TA
+                                            // 🔥 الصلاحيات: اللاب والعملي فقط هم القابلين للتعديل
                                             const isEditable = field.key === 'labGrade' || field.key === 'practicalGrade';
 
                                             return (
@@ -392,7 +393,8 @@ const CourseGradingTA = () => {
                                                             border: !isEditable ? '1px solid #cbd5e1' : (isChanged ? '1px solid #f59e0b' : '1px solid #e2e8f0'),
                                                             backgroundColor: !isEditable ? '#f1f5f9' : (isChanged ? '#fffbeb' : 'white'),
                                                             color: !isEditable ? '#64748b' : '#1e293b',
-                                                            cursor: !isEditable ? 'not-allowed' : 'text'
+                                                            cursor: !isEditable ? 'not-allowed' : 'text',
+                                                            fontWeight: isChanged ? 'bold' : 'normal'
                                                         }}
                                                     />
                                                 </td>
@@ -427,7 +429,7 @@ const CourseGradingTA = () => {
                                                         </div>
                                                         <div>
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Contact</p>
-                                                            <span style={{ fontSize: '12px', color: '#64748b' }}>{s.studentId.studentPhone}</span>
+                                                            <span style={{ fontSize: '12px', color: '#64748b' }}>{s.studentId.studentPhone || 'No Phone'}</span>
                                                         </div>
                                                     </div>
                                                     <button onClick={() => setExpandedStudentId(null)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px' }}>

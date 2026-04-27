@@ -3,7 +3,7 @@ import api from '../../services/api';
 import swalService from "../../services/swal";
 import {
     Plus, ChevronDown, FileUp, Trash2, Edit, Search, BookOpen,
-    UserCheck, Users, ShieldCheck, Phone, Mail, AlertTriangle, Scale
+    UserCheck, Users, ShieldCheck, Phone, Mail, AlertTriangle, Scale, FileSpreadsheet
 } from 'lucide-react';
 import StaffAddModal from '../../components/StaffAddModal';
 import StaffEditModal from '../../components/StaffEditModal';
@@ -139,6 +139,41 @@ const StaffManagement = () => {
         return matchesSearch && matchesRole && matchesIncomplete && matchesMultiRole;
     });
 
+    // فانكشن تصدير التقرير
+    const handleExportReport = () => {
+        if (filteredStaff.length === 0) {
+            swalService.error("No Data", "There is no data to export with the current filters.");
+            return;
+        }
+
+        // تحضير البيانات
+        const csvRows = [];
+        const headers = ["Staff ID", "Name", "Email", "Phone", "Username", "Roles"];
+        csvRows.push(headers.join(","));
+
+        filteredStaff.forEach(member => {
+            const row = [
+                member._id,
+                `"${member.staffName}"`,
+                member.email || "N/A",
+                member.phone || "N/A",
+                member.username,
+                `"${member.roles.join(", ")}"`
+            ];
+            csvRows.push(row.join(","));
+        });
+
+        const csvString = csvRows.join("\n");
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Staff_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const inlineSelectStyle = {
         border: 'none', background: 'none', fontSize: '14px', fontWeight: 'bold',
         cursor: 'pointer', appearance: 'none', paddingRight: '15px', color: '#1e293b',
@@ -152,23 +187,33 @@ const StaffManagement = () => {
                     <h2>Staff Management</h2>
                 </div>
 
-                <div className="split-button-container">
-                    <button className="main-add-btn" onClick={openAddModal}>
-                        <Plus size={18} /> Add Staff
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* زرار الاكسبورت الجديد - ظاهر ومستقل */}
+                    <button
+                        className="btn-2"
+                        onClick={handleExportReport}
+                    >
+                        <FileSpreadsheet size={18} /> Export CSV
                     </button>
-                    <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
-                        <ChevronDown size={18} />
-                    </button>
-                    {dropdownOpen && (
-                        <div className="split-dropdown-menu">
-                            <button className="dropdown-item" onClick={() => { openAddModal(); setDropdownOpen(false); }}>
-                                <Plus size={14} /> Add Individual
-                            </button>
-                            <button className="dropdown-item" onClick={() => { openCSVModal(); setDropdownOpen(false); }}>
-                                <FileUp size={14} /> CSV Import
-                            </button>
-                        </div>
-                    )}
+
+                    <div className="split-button-container">
+                        <button className="main-add-btn" onClick={openAddModal}>
+                            <Plus size={18} /> Add Staff
+                        </button>
+                        <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                            <ChevronDown size={18} />
+                        </button>
+                        {dropdownOpen && (
+                            <div className="split-dropdown-menu">
+                                <button className="dropdown-item" onClick={() => { openAddModal(); setDropdownOpen(false); }}>
+                                    <Plus size={14} /> Add Individual
+                                </button>
+                                <button className="dropdown-item" onClick={() => { openCSVModal(); setDropdownOpen(false); }}>
+                                    <FileUp size={14} /> CSV Import
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -383,7 +428,6 @@ const StaffManagement = () => {
             )}
 
             {isEditModalOpen && editingStaff && (
-                // داخل الـ Return الخاص بالـ Component عند استدعاء StaffEditModal
                 <StaffEditModal
                     isOpen={isEditModalOpen}
                     onClose={() => {

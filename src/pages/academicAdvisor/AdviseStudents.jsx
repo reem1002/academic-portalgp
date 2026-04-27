@@ -31,6 +31,7 @@ const AdviseStudents = () => {
         try {
             setLoading(true);
             const res = await api.get("/academic-advisors/me/list");
+            console.log(res.data)
             const advising = res.data[0];
 
             const mapped = advising.students.map((s) => ({
@@ -40,6 +41,7 @@ const AdviseStudents = () => {
                 regulation: s.student.transcript.regulation,
                 level: s.student.transcript.level,
                 atRisk: s.student.transcript.atRisk,
+                alerts: s.student.transcript.alerts,
                 registeredCredits: s.student.enrollment.currentEnrolledCredits,
                 allowedCredits: s.student.enrollment.allowedCredits
             }));
@@ -127,7 +129,7 @@ const AdviseStudents = () => {
     if (loading) return <div className="adv-page">Loading Students...</div>;
 
     return (
-        <div className="adv-page">
+        <div className="management-container adv-page">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
                     <div className="prereg-header">
@@ -142,7 +144,7 @@ const AdviseStudents = () => {
                         <Users size={24} />
                     </div>
                     <div className="adv-info">
-                        <span className="adv-label">Total Students</span>
+                        <span className="insight-header">Total Students</span>
                         <span className="adv-value">{stats.total}</span>
                     </div>
                 </div>
@@ -152,7 +154,7 @@ const AdviseStudents = () => {
                         <BookOpen size={18} />
                     </div>
                     <div className="adv-info">
-                        <span className="adv-label">Filtered Students</span>
+                        <span className="insight-header">Filtered Students</span>
                         <span className="adv-value">{filteredStudents.length}</span>
                     </div>
                 </div>
@@ -162,7 +164,7 @@ const AdviseStudents = () => {
                         <BarChart3 size={24} />
                     </div>
                     <div className="adv-info">
-                        <span className="adv-label">Avg. GPA</span>
+                        <span className="insight-header">Avg. GPA</span>
                         <span className="adv-value">{stats.avgGPA}</span>
                     </div>
                 </div>
@@ -207,11 +209,13 @@ const AdviseStudents = () => {
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th>GPA</th>
+                            <th >GPA</th>
                             <th>Regulation</th>
                             <th>Level</th>
                             <th>Credits</th>
-                            <th style={{ textAlign: 'right' }}>Actions</th>
+                            <th>Alerts</th>
+
+                            <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -219,10 +223,10 @@ const AdviseStudents = () => {
                             <tr key={s.id} className={s.atRisk ? "row-at-risk" : ""}>
                                 <td className="adv-student-id">#{s.id}</td>
                                 <td>{s.name}</td>
-                                <td className={s.GPA < 2 ? "gpa-badge low" : "gpa-badge high"} ><span style={{ marginRight: '5px' }}>{s.GPA}</span>
+                                <td className={s.GPA < 2 ? "gpa-badge low" : "gpa-badge high"} style={{ textAlign: 'center' }} ><div style={{ marginRight: '5px' }}>{s.GPA}</div>
                                     {s.atRisk
-                                        ? <span className="type-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>At Risk</span>
-                                        : <span className="type-badge" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>Good</span>
+                                        ? <div className="type-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', width: '40px' }}>At Risk</div>
+                                        : <div className="type-badge" style={{ backgroundColor: '#f0fdf4', color: '#16a34a', width: '40px' }}>Good</div>
                                     }
                                 </td>
                                 <td>
@@ -236,6 +240,10 @@ const AdviseStudents = () => {
                                     </span>
                                 </td>
                                 <td>{s.registeredCredits} / {s.allowedCredits}</td>
+
+                                <td> {s.alerts > 0 ? s.alerts : "No Alerts"}</td>
+
+
                                 <td className="adv-actions">
                                     <button onClick={() => navigate(`/staff/${role}/student/${s.id}`)}><Eye size={18} color="#3a86ff" /></button>
                                     <button onClick={() => navigate(`/staff/${role}/advisor/enroll/${s.id}`)}>

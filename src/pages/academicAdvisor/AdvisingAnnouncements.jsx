@@ -157,7 +157,7 @@ const AdvisingAnnouncements = () => {
     };
 
     return (
-        <div className="advising-ann-container">
+        <div className="management-container advising-ann-container">
             {/* Header */}
             <div className="page-header-section">
                 <div className="prereg-header">

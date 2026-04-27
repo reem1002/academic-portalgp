@@ -81,7 +81,6 @@ const AdvisingMeetings = () => {
     const getDisplayData = () => {
         let filtered = [...meetings];
 
-        // 1. الفلترة حسب التاب النشطة
         if (activeTab === 'Meeting Requests') {
             filtered = filtered.filter(m => m.meetingStatus === 'pending');
         } else if (activeTab === 'Upcoming Meetings') {
@@ -90,14 +89,12 @@ const AdvisingMeetings = () => {
             filtered = filtered.filter(m => m.meetingStatus === 'declined');
         }
 
-        // 2. الفلترة حسب التاريخ المختار من الكاليندر
         if (selectedDate) {
             filtered = filtered.filter(m =>
                 m.meetingDate && m.meetingDate.startsWith(selectedDate)
             );
         }
 
-        // 3. الفلترة لو ميتنج محدد تم اختياره من الكاليندر مباشرة
         if (highlightedMeetingId) {
             filtered = filtered.filter(m => m._id === highlightedMeetingId);
         }
@@ -180,7 +177,7 @@ const AdvisingMeetings = () => {
     };
 
     return (
-        <div className="advising-container advising-meet">
+        <div className="management-container advising-container advising-meet">
             <header className="meeting-header">
                 <div className="management-header meeting-header">
                     <div className="prereg-header">

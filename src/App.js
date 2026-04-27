@@ -7,6 +7,7 @@ import StaffDashboard from "./pages/StaffDashboard";
 import StudentTranscript from "./pages/StudentTranscript";
 import StudentDetails from "./pages/coordinator pages/StudentDetails";
 import StudentMeetings from "./pages/StudentMeetings";
+import StudentSchedule from "./pages/student pages/StudentSchedule"
 
 import PreRegistrationManagement from "./pages/coordinator pages/PreRegistrationManagementPage";
 import EnrollmentStatsPage from "./pages/coordinator pages/EnrollmentStatsPage";
@@ -32,9 +33,11 @@ import CourseGrading from "./pages/lecturer/CourseGrading";
 import CourseDetails from "./pages/lecturer/CourseDetails";
 import AttendanceManagement from "./pages/lecturer/AttendanceManagement";
 
-import MyCoursesTA from "./pages/lecturer copy/MyCoursesTA";
-import CourseGradingTA from "./pages/lecturer copy/CourseGradingTA";
-import AttendanceManagementTA from "./pages/lecturer copy/AttendanceManagementTA"
+import MyCoursesTA from "./pages/TA/MyCoursesTA";
+import CourseGradingTA from "./pages/TA/CourseGradingTA";
+import AttendanceManagementTA from "./pages/TA/AttendanceManagementTA";
+import LecSchedule from "./pages/lecturer/LecSchedule";
+import TASchedule from "./pages/TA/TASchedule"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -71,6 +74,7 @@ function App() {
 
           <Route path="meetings" element={<StudentMeetings />} />
           <Route path="registration" element={<StudentCourseOfferingsPage />} />
+          <Route path="St-Schedule" element={<StudentSchedule />} />
         </Route>
 
         {/* Staff Routes */}
@@ -111,10 +115,12 @@ function App() {
           <Route path=":role/grading/:id/:courseId" element={<CourseGrading />} />
           <Route path=":role/courses/:courseId" element={<CourseDetails />} />
           <Route path=":role/grading/:id/attendance" element={<AttendanceManagement />} />
+          <Route path=":role/lec-Schedule" element={<LecSchedule />} />
           {/* _______________ */}
           <Route path=":role/ta-courses" element={<MyCoursesTA />} />
           <Route path=":role/ta-grading/:id/:courseId" element={<CourseGradingTA />} />
           <Route path=":role/ta-grading/:id/attendance" element={<AttendanceManagementTA />} />
+          <Route path=":role/ta-Schedule" element={<TASchedule />} />
         </Route>
 
 

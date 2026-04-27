@@ -4,10 +4,12 @@ import api from "../../services/api";
 import swalService from "../../services/swal";
 import {
     ArrowLeft, Users, Search, Lock, Unlock,
-    GraduationCap, BookOpen, AlertCircle, CheckCircle2
+    GraduationCap, BookOpen, AlertCircle, CheckCircle2, FileText
 } from "lucide-react";
 
 import { FaArrowLeft } from "react-icons/fa";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 // تأكدي أن المسار لملف الـ CSS صحيح
 import "../styles/EnrollmentStatusPage.css";
 
@@ -25,13 +27,12 @@ const EnrollmentStatsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [typeFilter, setTypeFilter] = useState("All");
 
-
     const handleViewStudents = (courseId, offeringId, courseName) => {
-        // هنضيف الـ offeringId في الـ URL
         navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/${offeringId}/students`, {
             state: { courseName }
         });
     };
+
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -39,7 +40,6 @@ const EnrollmentStatsPage = () => {
             setOfferings(res.data || []);
         } catch (err) {
             console.error("Failed to fetch stats", err);
-
             swalService.error("Connection Error", "Could not load enrollment data.");
         } finally {
             setLoading(false);
@@ -71,7 +71,6 @@ const EnrollmentStatsPage = () => {
 
         try {
             swalService.showLoading("Updating course status...");
-
             await api.put(`/course-offerings/${offeringId}/status`, { status: newStatus });
 
             setOfferings(prev => prev.map(off =>
@@ -106,7 +105,6 @@ const EnrollmentStatsPage = () => {
         return { total, empty, withGrads, suggestions };
     }, [offerings]);
 
-
     const filteredData = useMemo(() => {
         return offerings.filter(off => {
             const courseName = off.courseId?.courseName || "";
@@ -129,17 +127,60 @@ const EnrollmentStatsPage = () => {
         });
     }, [offerings, searchTerm, statusFilter, typeFilter]);
 
+    // --- Export PDF Logic ---
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        const tableColumn = ["Course Details", "Status", "Students", "Graduating", "Hint"];
+        const tableRows = filteredData.map(off => [
+            `${off.courseId?.courseName || 'N/A'}\n(${off.courseId?._id || 'N/A'})`,
+            (off.status || 'N/A').toUpperCase(),
+            off.enrolledCount || 0,
+            off.graduatingCount || 0,
+            (off.enrolledCount || 0) < 5 && off.status === 'open' && (off.graduatingCount || 0) === 0 ? "Low Demand" :
+                (off.graduatingCount || 0) > 0 ? "Mandatory" : "Normal"
+        ]);
+
+        doc.setFontSize(18);
+        doc.text("Enrollment Statistics Report", 14, 20);
+        doc.setFontSize(11);
+        doc.text(`Semester: ${semesterId} | Filter: ${typeFilter} | Total: ${filteredData.length}`, 14, 30);
+
+        autoTable(doc, {
+            startY: 40,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [41, 128, 185], halign: 'center' },
+            columnStyles: {
+                0: { cellWidth: 60 },
+                1: { halign: 'center' },
+                2: { halign: 'center' },
+                3: { halign: 'center' },
+                4: { halign: 'center' }
+            },
+            styles: { fontSize: 9, cellPadding: 3 }
+        });
+
+        doc.save(`Enrollment_Report_${semesterId}.pdf`);
+    };
+
     if (loading) return <div className="loading">Analyzing Enrollment Data...</div>;
 
     return (
         <div className="management-container prereg-container">
             {/* Header */}
             <div className="prereg-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={() => navigate(-1)} className="back-btn-round" >
-                        <FaArrowLeft />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <button onClick={() => navigate(-1)} className="back-btn-round" >
+                            <FaArrowLeft />
+                        </button>
+                        <h2>Live Enrollment</h2>
+                    </div>
+                    <button className="btn-2" onClick={exportToPDF} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileText size={18} />
+                        Export Report
                     </button>
-                    <h2>Live Enrollment</h2>
                 </div>
             </div>
 
@@ -157,7 +198,6 @@ const EnrollmentStatsPage = () => {
                     <div className="insight-footer">Active Semester Courses</div>
                 </div>
 
-                {/* كارد الفاضي */}
                 <div
                     className={`insight-card clickable-card ${typeFilter === 'Empty' ? 'active-card card-empty' : ''}`}
                     onClick={() => handleCardClick('Empty')}
@@ -170,7 +210,6 @@ const EnrollmentStatsPage = () => {
                     <div className="insight-footer">0 Students enrolled</div>
                 </div>
 
-                {/* كارد الخريجين */}
                 <div
                     className={`insight-card clickable-card ${typeFilter === 'Graduates' ? 'active-card card-grads' : ''}`}
                     onClick={() => handleCardClick('Graduates')}
@@ -183,7 +222,6 @@ const EnrollmentStatsPage = () => {
                     <div className="insight-footer">Contains seniors</div>
                 </div>
 
-                {/* كارد اقتراحات السيستم */}
                 <div
                     className={`insight-card clickable-card ${typeFilter === 'Suggestions' ? 'active-card card-suggestions' : ''}`}
                     onClick={() => handleCardClick('Suggestions')}
@@ -209,13 +247,11 @@ const EnrollmentStatsPage = () => {
                     />
                 </div>
                 <div className="drop-filters-group">
-                    {/* فلتر الحالة يظل يعمل بالتوازي */}
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-dropdown">
                         <option value="All">All Statuses</option>
                         <option value="open">Open</option>
                         <option value="closed">Closed</option>
                     </select>
-                    {/* فلتر النوع يظهر الحالة المختارة عبر الكروت */}
                     <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="filter-dropdown">
                         <option value="All">All Types</option>
                         <option value="Graduates">With Graduates</option>
@@ -287,8 +323,8 @@ const EnrollmentStatsPage = () => {
                         No courses found matching your criteria.
                     </div>
                 )}
-
             </div>
+
             {/* Students Modal */}
             {isModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
@@ -297,7 +333,6 @@ const EnrollmentStatsPage = () => {
                             <h3>Students Enrolled in: {selectedCourse}</h3>
                             <button className="close-modal" onClick={() => setIsModalOpen(false)}>×</button>
                         </div>
-
                         <div className="modal-body">
                             {loadingStudents ? (
                                 <div className="loader">Loading students list...</div>

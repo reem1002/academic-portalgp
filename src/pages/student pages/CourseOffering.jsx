@@ -5,17 +5,24 @@ import {
     FaPlus,
     FaExclamationTriangle,
     FaCheckCircle,
-    FaInfoCircle
+    FaInfoCircle,
+    FaChevronDown,
+    FaChevronUp,
+    FaAward,
+    FaMedal,
+    FaTrophy
 } from "react-icons/fa";
 import "../styles/StudentOfferings.css";
 import {
-    Trash2, X
+    Trash2, X, Sparkles, Star, Plus
 } from 'lucide-react';
 
 const StudentCourseOfferingsPage = () => {
     const [availableCourses, setAvailableCourses] = useState([]);
     const [enrolledCourses, setEnrolledCourses] = useState([]);
     const [draftEnrolled, setDraftEnrolled] = useState([]);
+    const [recommendations, setRecommendations] = useState([]);
+    const [isRecVisible, setIsRecVisible] = useState(true);
     const [allowedCredits, setAllowedCredits] = useState(0);
     const [activeTab, setActiveTab] = useState("Freshman");
     const [loading, setLoading] = useState(true);
@@ -24,6 +31,7 @@ const StudentCourseOfferingsPage = () => {
 
     useEffect(() => {
         fetchData();
+        fetchRecommendations();
     }, []);
 
     useEffect(() => {
@@ -51,56 +59,35 @@ const StudentCourseOfferingsPage = () => {
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, [isDirty]);
 
-    // const fetchData = async () => {
-    //     setLoading(true);
-    //     try {
-    //         const availableRes = await api.get("/student/me/available-courses");
-    //         setAvailableCourses(availableRes.data.availableOfferings || []);
-    //         setAllowedCredits(availableRes.data.allowedCredits || 18);
-
-    //         const enrolledRes = await api.get("/student/me/enrollments/current");
-    //         const data = enrolledRes.data || {};
-    //         const currentIds = data?.courses?.map((c) => c.courseOfferingId) || [];
-
-    //         setEnrolledCourses(currentIds);
-    //         setDraftEnrolled(currentIds);
-    //     } catch (err) {
-    //         console.error(err);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
     const fetchData = async () => {
-
         setLoading(true);
-
         try {
-
             const availableRes = await api.get("/student/me/available-courses");
-
             setAvailableCourses(availableRes.data.availableOfferings || []);
-
             setAllowedCredits(availableRes.data.allowedCredits || 18);
 
             const enrolledRes = await api.get("/student/me/enrollments/current");
-
             const data = enrolledRes.data;
             const currentIds = data?.courses?.map((c) => c.courseOfferingId) || [];
 
             setEnrolledCourses(currentIds);
-            const savedDraft = localStorage.getItem("courseDraft");
             setDraftEnrolled(currentIds);
         } catch (err) {
-
             console.error(err);
-
         } finally {
-
             setLoading(false);
-
         }
+    };
 
+    const fetchRecommendations = async () => {
+        try {
+            const res = await api.get("/student/me/recommendations");
+            // ترتيب تنازلي بناءً على الـ score
+            const sortedRecs = (res.data.recommendations || []).sort((a, b) => b.score - a.score);
+            setRecommendations(sortedRecs);
+        } catch (err) {
+            console.error("Failed to fetch recommendations", err);
+        }
     };
 
     const currentTotalCredits = useMemo(() => {
@@ -133,7 +120,6 @@ const StudentCourseOfferingsPage = () => {
     };
 
     const saveEnrollment = async () => {
-        // 1. طلب التأكيد باستخدام الكومبوننت بتاعك
         const result = await swalService.confirm(
             "Confirm Selection",
             `Are you sure you want to enroll in ${draftEnrolled.length} courses? Total credits: ${currentTotalCredits}`,
@@ -143,7 +129,7 @@ const StudentCourseOfferingsPage = () => {
         if (!result.isConfirmed) return;
 
         setSaving(true);
-        swalService.showLoading("Registering your courses..."); // الـ Loading اللطيف بتاعك
+        swalService.showLoading("Registering your courses...");
 
         try {
             const payload = {
@@ -157,51 +143,27 @@ const StudentCourseOfferingsPage = () => {
             setDraftEnrolled(newIds);
             localStorage.removeItem("courseDraft");
 
-            // نجاح العملية
             swalService.success("Success!", "Your enrollment has been processed successfully.");
         } catch (err) {
             console.error(err);
-            // عرض الخطأ اللي جاي من السيرفر
             swalService.error("Registration Failed", err.response?.data?.error || "Something went wrong!");
         } finally {
             setSaving(false);
         }
     };
 
-    // const saveEnrollment = async () => {
-    //     setSaving(true);
+    const getScoreStyle = (score, index) => {
+        const baseOpacity = index === 0 ? 0.15 : index < 3 ? 0.08 : 0.05;
+        const borderOpacity = Math.max(0.2, score / 20);
 
-    //     const payload = {
-    //         courses: draftEnrolled.map((id) => ({
-    //             courseOfferingId: id
-    //         }))
-    //     };
+        return {
+            borderLeft: `5px solid rgba(var(--primary-rgb), ${borderOpacity})`,
+            backgroundColor: index === 0 ? `rgba(255, 215, 0, 0.08)` : `rgba(var(--accent-rgb), ${baseOpacity})`,
+            transition: 'all 0.3s ease'
+        };
+    };
 
-    //     console.log("Sending payload:", payload);
-
-    //     try {
-    //         const res = await api.post("/student/me/enroll", payload);
-    //         console.log("Response:", res.data);
-
-    //         const newIds = res.data.enrollment.courses.map(
-    //             (c) => c.courseOfferingId
-    //         );
-
-    //         setEnrolledCourses(newIds);
-    //         setDraftEnrolled(newIds);
-    //         localStorage.removeItem("courseDraft");
-
-    //     } catch (err) {
-    //         console.log("ERROR FULL:", err.response);
-    //         swalService.error(
-    //             "Failed",
-    //             err.response?.data?.error || "Enrollment failed"
-    //         );
-    //     } finally {
-    //         setSaving(false);
-    //     }
-    // };
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div className="loading-container"><div className="loader"></div></div>;
 
     return (
         <div className="management-container student-offerings-container">
@@ -223,6 +185,91 @@ const StudentCourseOfferingsPage = () => {
                     <div className="progress-fill" style={{ width: `${Math.min((currentTotalCredits / allowedCredits) * 100, 100)}%` }}></div>
                 </div>
             </div>
+
+            {/* --- Recommended Courses Section --- */}
+            {recommendations.length > 0 && (
+                <div className={`section recommendations-section animated-border ${!isRecVisible ? "collapsed" : ""}`}>
+                    <div
+                        className="section-title-with-icon collapsible-header"
+                        onClick={() => setIsRecVisible(!isRecVisible)}
+                        style={{ width: '100%', display: 'flex', justifyContent: 'space-between' }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <Sparkles className="icon-magic sparkle-animation" />
+                            <h3>Personalized Recommendations</h3>
+                        </div>
+                        {isRecVisible ? <FaChevronUp /> : <FaChevronDown />}
+                    </div>
+
+                    {isRecVisible && (
+                        <div className="table-wrapper fade-in">
+                            <table className="offerings-table recommendation-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Code</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recommendations.map((rec, index) => {
+                                        const offering = rec.course;
+                                        const isInDraft = draftEnrolled.includes(offering._id);
+                                        const credits = offering.courseId?.courseCredits || 0;
+                                        // تعطيل الزر إذا لم تكن المادة مختارة بالفعل وكان إجمالي الساعات سيتخطى المسموح
+                                        const isDisabled = !isInDraft && (currentTotalCredits + credits > allowedCredits);
+
+                                        return (
+                                            <tr
+                                                key={offering._id}
+                                                className={isInDraft ? "row-selected" : "rec-row"}
+                                                style={!isInDraft ? getScoreStyle(rec.score, index) : {}}
+                                            >
+                                                <td>
+                                                    {index === 0 ? (
+                                                        <span className="rank-badge gold"><FaTrophy size={14} /> Top Pick</span>
+                                                    ) : index === 1 ? (
+                                                        <span className="rank-badge silver"><FaAward size={14} /> Highly Rec.</span>
+                                                    ) : index === 2 ? (
+                                                        <span className="rank-badge bronze"><FaMedal size={14} /> Recommended</span>
+                                                    ) : (
+                                                        <span className="rank-number">#{index + 1}</span>
+                                                    )}
+                                                </td>
+                                                <td><strong>{offering.courseId?._id}</strong></td>
+                                                <td>{offering.courseId?.courseName}</td>
+                                                <td>
+                                                    <span className="type-badge-minimal">
+                                                        {offering.courseId?.courseType}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {isInDraft ? (
+                                                        <button className="btn-delete" onClick={() => removeCourse(offering._id)}>
+                                                            <X size={22} />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            className={`btn-view ${isDisabled ? "disabled-btn" : ""}`}
+                                                            onClick={() => addCourse(offering._id)}
+                                                            disabled={isDisabled}
+                                                            title={isDisabled ? "Credit limit reached" : "Add Course"}
+                                                        >
+                                                            <Plus size={22} />
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="section">
                 <h3>Available Courses ({activeTab})</h3>
@@ -254,6 +301,7 @@ const StudentCourseOfferingsPage = () => {
                                 .map((offering) => {
                                     const isInDraft = draftEnrolled.includes(offering._id);
                                     const credits = offering.courseId.courseCredits;
+                                    // تعطيل الزر إذا لم تكن المادة مختارة بالفعل وكان إجمالي الساعات سيتخطى المسموح
                                     const isDisabled = !isInDraft && (currentTotalCredits + credits > allowedCredits);
 
                                     return (
@@ -268,16 +316,17 @@ const StudentCourseOfferingsPage = () => {
                                             </td>
                                             <td>
                                                 {isInDraft ? (
-                                                    <button className="action-btn remove-in-table" onClick={() => removeCourse(offering._id)}>
-                                                        <X size={18} />
+                                                    <button className="btn-delete" onClick={() => removeCourse(offering._id)}>
+                                                        <X size={22} />
                                                     </button>
                                                 ) : (
                                                     <button
-                                                        className="action-btn add-in-table"
+                                                        className={`btn-view ${isDisabled ? "disabled-btn" : ""}`}
                                                         onClick={() => addCourse(offering._id)}
                                                         disabled={isDisabled}
+                                                        title={isDisabled ? "Credit limit reached" : "Add Course"}
                                                     >
-                                                        <FaPlus size={18} />
+                                                        <Plus size={22} />
                                                     </button>
                                                 )}
                                             </td>

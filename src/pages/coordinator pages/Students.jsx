@@ -5,7 +5,7 @@ import api from '../../services/api';
 import swalService from "../../services/swal";
 import {
     Plus, ChevronDown, FileUp, Trash2, Edit, Search,
-    Users, AlertTriangle, Star, Eye, Scale
+    Users, AlertTriangle, Star, Eye, Scale, FileSpreadsheet
 } from 'lucide-react';
 
 import StudentAddModal from '../../components/StudentAddModal';
@@ -24,7 +24,7 @@ const Students = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingStudent, setEditingStudent] = useState(null);
     const [isCSVModalOpen, setIsCSVModalOpen] = useState(false);
-    const unassignedCount = students.filter(s => !s.advisorId).length;
+    const [unassignedStudents, setUnassignedStudents] = useState([]);
     const [filterStatus, setFilterStatus] = useState('');
     const [filterLevel, setFilterLevel] = useState('');
     const [filterReg, setFilterReg] = useState('');
@@ -50,7 +50,19 @@ const Students = () => {
         }
     };
 
-    useEffect(() => { fetchStudents(); }, []);
+    useEffect(() => {
+        fetchStudents();
+        fetchUnassignedStudents();
+    }, []);
+
+    const fetchUnassignedStudents = async () => {
+        try {
+            const res = await api.get("/advisors/advising-lists/unassigned-students");
+            setUnassignedStudents(res.data || []);
+        } catch (err) {
+            console.error("Error fetching unassigned:", err);
+        }
+    };
 
     const getCardValue = () => {
         if (cardLevelView === 'all') return students.length;
@@ -69,27 +81,28 @@ const Students = () => {
         const email = (studentObj.studentEmail || "").toLowerCase();
 
         const matchesSearch = name.includes(searchLower) || id.includes(searchLower) || email.includes(searchLower);
-        const matchesStatus = filterStatus === '' || (filterStatus === 'atRisk' ? s.atRisk : !s.atRisk);
+        const matchesStatus = filterStatus === '' ||
+            (filterStatus === 'atRisk' ? s.atRisk :
+                filterStatus === 'noAdvisor' ? !s.advisorId : !s.atRisk);
         const matchesLevel = filterLevel === '' || s.level === filterLevel;
         const matchesReg = filterReg === '' || s.regulation === filterReg;
 
         return matchesSearch && matchesStatus && matchesLevel && matchesReg;
     });
 
-    // إضافة طالب فرادي
     const handleAddStudent = async (studentData) => {
         try {
             swalService.showLoading("Adding student...");
             await api.post("/students", studentData);
             setIsAddModalOpen(false);
             fetchStudents();
+            fetchUnassignedStudents();
             swalService.success("Success", "Student added successfully!");
         } catch (err) {
             swalService.error("Error", err.response?.data?.message || "Error adding student");
         }
     };
 
-    // استيراد ملف CSV
     const handleCSVUpload = async (studentList) => {
         try {
             const result = await swalService.confirm(
@@ -112,6 +125,7 @@ const Students = () => {
                 await api.post("/students/list", formattedList);
                 setIsCSVModalOpen(false);
                 fetchStudents();
+                fetchUnassignedStudents();
                 swalService.success("Imported!", "All students have been added to the system.");
             }
         } catch (err) {
@@ -119,7 +133,6 @@ const Students = () => {
         }
     };
 
-    // حذف طالب
     const deleteStudent = async (id) => {
         const result = await swalService.confirm(
             "Are you sure?",
@@ -132,6 +145,7 @@ const Students = () => {
                 swalService.showLoading("Deleting...");
                 await api.delete(`/students/${id}`);
                 fetchStudents();
+                fetchUnassignedStudents();
                 swalService.success("Deleted", "Student record has been removed.");
             } catch (err) {
                 swalService.error("Error", err.message || "Could not delete student");
@@ -139,8 +153,41 @@ const Students = () => {
         }
     };
 
+    // وظيفة تصدير التقرير (نفس نهج الـ Staff)
+    const handleExportReport = () => {
+        if (filteredStudents.length === 0) {
+            swalService.error("No Data", "There is no data to export with the current filters.");
+            return;
+        }
 
+        const csvRows = [];
+        const headers = ["Student ID", "Name", "Email", "Level", "Regulation", "GPA", "Completed Credits", "Status"];
+        csvRows.push(headers.join(","));
 
+        filteredStudents.forEach(item => {
+            const row = [
+                item.studentId?._id,
+                `"${item.studentId?.studentName}"`,
+                item.studentId?.studentEmail || "N/A",
+                item.level,
+                item.regulation,
+                item.GPA?.toFixed(2),
+                item.completedCredits,
+                item.atRisk ? "At Risk" : "Good Standing"
+            ];
+            csvRows.push(row.join(","));
+        });
+
+        const csvString = csvRows.join("\n");
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Students_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="management-container">
@@ -149,43 +196,54 @@ const Students = () => {
                     <h2>Students Management</h2>
                 </div>
 
-                <div className="split-button-container">
-                    <button className="main-add-btn" onClick={() => setIsAddModalOpen(true)}>
-                        <Plus size={18} /> Add Student
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    {/* زرار الاكسبورت المضاف */}
+                    <button
+                        className="btn-2"
+                        onClick={handleExportReport}
+                    >
+                        <FileSpreadsheet size={18} /> Export CSV
                     </button>
-                    <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
-                        <ChevronDown size={18} />
-                    </button>
-                    {dropdownOpen && (
-                        <div className="split-dropdown-menu">
-                            <button className="dropdown-item" onClick={() => { setIsAddModalOpen(true); setDropdownOpen(false); }}>
-                                <Plus size={14} /> Add Individual
-                            </button>
-                            <button className="dropdown-item" onClick={() => { setIsCSVModalOpen(true); setDropdownOpen(false); }}>
-                                <FileUp size={14} /> CSV Import
-                            </button>
-                        </div>
-                    )}
+
+                    <div className="split-button-container">
+                        <button className="main-add-btn" onClick={() => setIsAddModalOpen(true)}>
+                            <Plus size={18} /> Add Student
+                        </button>
+                        <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                            <ChevronDown size={18} />
+                        </button>
+                        {dropdownOpen && (
+                            <div className="split-dropdown-menu">
+                                <button className="dropdown-item" onClick={() => { setIsAddModalOpen(true); setDropdownOpen(false); }}>
+                                    <Plus size={14} /> Add Individual
+                                </button>
+                                <button className="dropdown-item" onClick={() => { setIsCSVModalOpen(true); setDropdownOpen(false); }}>
+                                    <FileUp size={14} /> CSV Import
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
-            {unassignedCount > 0 && (
+
+            {unassignedStudents.length > 0 && (
                 <div className="unassigned-alert-banner">
                     <div className="alert-content">
                         <AlertTriangle size={20} className="alert-icon-pulse" />
                         <span>
-                            <strong>Attention:</strong> There are <b>{unassignedCount}</b> students without an assigned Academic Advisor.
+                            <strong>Attention:</strong> There are <b>{unassignedStudents.length}</b> students without an assigned Academic Advisor.
                         </span>
                     </div>
                     <button
                         className="fix-now-btn"
-                        onClick={() => setFilterStatus('noAdvisor')} // اختياري: إضافة فلتر جديد
+                        onClick={() => setFilterStatus('noAdvisor')}
                     >
                         Show Now
                     </button>
                 </div>
             )}
+
             <div className="insights-grid">
-                {/* Total Students Card */}
                 <div className="insight-card university-stats">
                     <div className="insight-header">
                         <span className="insight-icon icon-blue"><Users size={18} /></span>
@@ -211,7 +269,6 @@ const Students = () => {
                     <div className="insight-footer">Enrollment Status</div>
                 </div>
 
-                {/* At Risk Card */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <span className="insight-icon icon-orange"><AlertTriangle size={18} /></span>
@@ -221,7 +278,6 @@ const Students = () => {
                     <div className="insight-footer">Requires attention</div>
                 </div>
 
-                {/* Regulation Distribution Card */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <span className="insight-icon icon-green"><Scale size={18} /></span>
@@ -243,7 +299,6 @@ const Students = () => {
                     <div className="insight-footer">System Distribution</div>
                 </div>
 
-                {/* Average GPA Card */}
                 <div className="insight-card">
                     <div className="insight-header">
                         <span className="insight-icon icon-green"><Star size={18} /></span>
@@ -289,8 +344,10 @@ const Students = () => {
                     <option value="">All Status</option>
                     <option value="good">Good Standing</option>
                     <option value="atRisk">At Risk</option>
+                    <option value="noAdvisor">No Advisor</option>
                 </select>
             </div>
+
             {(filterReg || filterLevel || filterStatus || search) && (
                 <div className="active-filters-bar">
                     <div className="filters-info">
@@ -311,6 +368,7 @@ const Students = () => {
                     </button>
                 </div>
             )}
+
             <div className="table-wrapper">
                 {loading ? <p>Loading...</p> : (
                     <table className="management-table">
@@ -353,7 +411,7 @@ const Students = () => {
                                     <td>
                                         <div className="action-btns">
                                             <button className="view-btn-transparent" title="View Profile"
-                                                onClick={() => navigate(`/staff/${role}/students/${student.studentId._id}`)}>
+                                                onClick={() => navigate(`/staff/${role}/students/${student.studentId?._id}`)}>
                                                 <Eye size={18} color="#3a86ff" />
                                             </button>
                                             <button className="btn-icon btn-edit" title="Edit Student"
@@ -361,19 +419,25 @@ const Students = () => {
                                                 <Edit size={18} />
                                             </button>
                                             <button className="btn-icon btn-delete" title="Delete Student"
-                                                onClick={() => deleteStudent(student.studentId._id)}>
+                                                onClick={() => deleteStudent(student.studentId?._id)}>
                                                 <Trash2 size={18} />
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                             ))}
+                            {filteredStudents.length === 0 && (
+                                <tr>
+                                    <td colSpan="7" style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+                                        No student records found matching the current filters.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 )}
             </div>
 
-            {/* Modals remain the same */}
             {isAddModalOpen && (
                 <StudentAddModal
                     isOpen={isAddModalOpen}

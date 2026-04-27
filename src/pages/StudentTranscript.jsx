@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import TranscriptProgressMapModal from "../components/TranscriptProgressMapModal";
 
+// استيراد المكتبات اللازمة لتوليد الـ PDF
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 const CREDIT_MAP = {
     total: { label: "Total Completed", key: "completedCredits" },
     allowed: { label: "Allowed (Next Reg.)", key: "allowedCredits" },
@@ -49,7 +53,6 @@ const StudentTranscript = () => {
         }
     };
 
-
     const fetchMyDetails = async () => {
         try {
             setLoading(true);
@@ -64,11 +67,9 @@ const StudentTranscript = () => {
     };
 
     const handleFailedCardClick = () => {
-
         setStatusFilter(prev => prev === "failed" ? "all" : "failed");
     };
 
-    // دالة محسنة تعتمد على الـ Status الفعلي من الـ API
     const getGradeDisplay = (grade, status) => {
         const isPassed = status?.toLowerCase() === "passed";
         return {
@@ -94,31 +95,107 @@ const StudentTranscript = () => {
         return transcript[apiKey] || 0;
     };
 
-
     const filteredCourses = transcript.completedCourses?.filter(c => {
-        // 1. فلترة بناءً على الحالة (الدروب داون أو الكارد)
         const matchesStatus = statusFilter === "all" || c.status === statusFilter;
-
-        // 2. فلترة بناءً على البحث النصي
         const matchesSearch =
             c.courseId?.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
             c.courseId?._id.toLowerCase().includes(searchTerm.toLowerCase());
-
         return matchesStatus && matchesSearch;
     });
+
+    // دالة إنشاء تقرير الـ PDF
     const handleExportPDF = async () => {
-        swalService.showLoading("Generating your academic transcript...");
+        swalService.showLoading("Generating your official academic transcript...");
 
         try {
-            // هنا الكود الخاص بالـ Export (سواء API call أو Client-side library)
-            // سنحاكي تأخيراً بسيطاً للواقعية
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const doc = new jsPDF();
+            const studentName = transcript.studentId?.studentName || "N/A";
+            const studentId = transcript.studentId?._id || "N/A";
 
-            swalService.success("Ready!", "Your transcript has been exported successfully.");
+            // --- Header & Branding ---
+            doc.setFontSize(22);
+            doc.setTextColor(20, 83, 136); // Dark Blue
+            doc.text("Academic Transcript", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+            doc.line(14, 30, 196, 30);
+
+            // --- Student Profile Info ---
+            doc.setFontSize(12);
+            doc.setTextColor(40);
+            doc.text(`Student Name: ${studentName}`, 14, 40);
+            doc.text(`Student ID: ${studentId}`, 14, 46);
+            doc.text(`Department: ${transcript.department}`, 14, 52);
+            doc.text(`Regulation: ${transcript.regulation} Regulation`, 14, 58);
+
+            // Stats Box
+            doc.setDrawColor(230);
+            doc.setFillColor(248, 250, 252);
+            doc.rect(130, 35, 66, 28, 'F');
+            doc.setTextColor(0);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Cumulative GPA: ${transcript.GPA?.toFixed(2)}`, 135, 42);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Credits: ${transcript.completedCredits} Hrs`, 135, 48);
+            doc.text(`Level: ${transcript.level}`, 135, 54);
+
+            // --- Advisor Info ---
+            doc.setFontSize(11);
+            doc.text(`Academic Advisor: ${advisor?.staffName || "Not Assigned"}`, 14, 68);
+
+            // --- Table 1: Semester Works ---
+            let currentY = 75;
+            if (semesterWorks && semesterWorks.length > 0) {
+                doc.setFontSize(14);
+                doc.setTextColor(20, 83, 136);
+                doc.text(`Current Semester Works (${semester?.name})`, 14, currentY);
+
+                doc.autoTable({
+                    startY: currentY + 5,
+                    head: [['Code', 'Course Name', 'Work Grade (50)']],
+                    body: semesterWorks.map(w => [w.courseId?._id, w.courseId?.courseName, w.grade?.totalGrade]),
+                    headStyles: { fillColor: [46, 204, 113] },
+                    margin: { left: 14, right: 14 }
+                });
+                currentY = doc.lastAutoTable.finalY + 15;
+            }
+
+            // --- Table 2: Transcript History ---
+            doc.setFontSize(14);
+            doc.setTextColor(20, 83, 136);
+            doc.text("Academic History (Completed Courses)", 14, currentY);
+
+            doc.autoTable({
+                startY: currentY + 5,
+                head: [['Code', 'Course Name', 'Status', 'Grade', 'Letter']],
+                body: transcript.completedCourses.map(c => {
+                    const info = getGradeDisplay(c.grade, c.status);
+                    return [c.courseId?._id, c.courseId?.courseName, info.label, c.grade, info.letter];
+                }),
+                headStyles: { fillColor: [52, 73, 94] },
+                alternateRowStyles: { fillColor: [245, 247, 250] },
+                margin: { left: 14, right: 14 }
+            });
+
+            // --- Footer ---
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setTextColor(150);
+                doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+            }
+
+            doc.save(`Transcript_${studentId}.pdf`);
+            swalService.success("Ready!", "Your academic report has been downloaded.");
         } catch (err) {
+            console.error("PDF Export Error:", err);
             swalService.error("Export Failed", "Could not generate the PDF file.");
         }
     };
+
     const contactAdvisor = (email) => {
         swalService.confirm(
             "Contact Advisor",
@@ -137,8 +214,6 @@ const StudentTranscript = () => {
             "Your status is 'At Risk' because your GPA is below 2.0 or you have failed multiple courses. Please consult your advisor."
         );
     };
-
-
 
     const failedCount = transcript.completedCourses?.filter(c => c.status === "failed").length || 0;
 
@@ -174,137 +249,72 @@ const StudentTranscript = () => {
                 </div>
 
                 <div className="academic-profile-card">
-
                     <div className="advisor-info-row">
-
                         <div className="icon-circle"><FaUserTie /></div>
-
                         <div>
-
                             <p className="label">Academic Advisor</p>
-
                             <p className="name">{advisor?.staffName || "Not Assigned"}</p>
-
                         </div>
-
                     </div>
-
                     {advisor?.staffEmail && (
-
                         <div className="advisor-contact-minimal">
-
                             <span><FaEnvelope /> {advisor.staffEmail}</span>
-
                         </div>
-
                     )}
-
                 </div>
-
-
             </div>
 
-
             <div className="dashboard-grid">
-
                 <div className={`dash-card primary ${transcript.GPA < 2 ? 'border-danger' : ''}`}>
-
                     <label>Cumulative GPA</label>
-
                     <div className="gpa-display">
-
                         <span className={`gpa-value ${transcript.GPA < 2 ? 'text-danger' : ''}`}>
-
                             {transcript.GPA?.toFixed(2)}
-
                         </span>
-
                         <span className="gpa-max">/ 4.0</span>
-
                     </div>
-
                 </div>
-
-
 
                 <div className="dash-card">
-
                     <div className="card-header-flex">
-
                         <label>Credits Earned</label>
-
                         <select className="card-select" value={creditType} onChange={(e) => setCreditType(e.target.value)}>
-
                             {Object.entries(CREDIT_MAP).map(([key, info]) => (
-
                                 <option key={key} value={key}>{info.label}</option>
-
                             ))}
-
                         </select>
-
                     </div>
-
                     <div className="value-group">
-
                         <span className="big-val">{getDisplayCredits()}</span>
-
                         <span className="unit">Hrs</span>
-
                     </div>
-
                 </div>
-
-
 
                 <div
-
                     className={`dash-card alert-card ${statusFilter === 'failed' ? 'active-filter' : ''}`}
-
                     onClick={handleFailedCardClick}
-
                     style={{ cursor: 'pointer' }}
-
                 >
-
                     <label>Failing Courses</label>
-
                     <div className="value-group">
-
                         <span className="big-val">{failedCount}</span>
-
                         <FaExclamationTriangle className={failedCount > 0 ? "text-danger" : "text-muted"} />
-
                     </div>
-
                     <p className="sub-info">
-
                         {statusFilter === 'failed' ? "Click to show all" : "Click to filter failed"}
-
                     </p>
-
                 </div>
-
-
 
                 <div className="dash-card">
-
                     <label>Academic Alerts</label>
-
                     <div className="value-group">
-
                         <span className="big-val">{transcript.alerts}</span>
-
                         <FaInfoCircle className={transcript.alerts > 0 ? "text-warn" : "text-muted"} />
-
                     </div>
-
                 </div>
-
             </div>
 
             <div className="details-content-sections">
-                {/* Current Works Section */}
                 <div className="data-section">
                     <div className="section-title-bar">
                         <h3>Semester Works</h3>
@@ -344,7 +354,6 @@ const StudentTranscript = () => {
                     </div>
                 </div>
 
-                {/* Completed Courses Section */}
                 <div className="data-section">
                     <div className="section-title-bar sec-2">
                         <h3>Transcript History</h3>
@@ -371,7 +380,6 @@ const StudentTranscript = () => {
                         <button
                             className="btn-1"
                             onClick={() => setIsMapModalOpen(true)}
-
                         >
                             <GitBranch size={18} /> Progress Map
                         </button>
@@ -404,7 +412,6 @@ const StudentTranscript = () => {
                                         <td colSpan="4" className="empty-state-cell">
                                             <div className="empty-content">
                                                 <p>No courses match your current search or filter.</p>
-                                                {/* زرار اختياري لمسح الفلتر بسرعة */}
                                                 {(searchTerm || statusFilter !== "all") && (
                                                     <button
                                                         className="btn-1"

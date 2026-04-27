@@ -3,7 +3,7 @@
     padding:  1.75rem 3rem !important;
 }
 .table-wrapper {
-  max-height: 600px;
+  max-height: 400px;
   overflow-y: auto;
   /* background: white; */
   border-radius: 10px;
@@ -94,4 +94,44 @@ th {
 
 .prereg-header{
   display: flex;
+}
+
+.btn-2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: 550;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #52637a; 
+    color: white;
+    border: none;
+}
+
+.btn-2:hover {
+    background-color: #64748b; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sticky-row {
+    position: sticky;
+    top: 0px;
+    z-index: 3;
+    background: #e2e8f0;
+        border: 1px solid var(--border);
+            box-shadow: -4px 0 15px rgba(0,0,0,0.05);
+
+}
+
+
+.btn-view{
+  color:#3b82f6;
+}
+
+.btn-view:disabled {
+
+    cursor: not-allowed;
+
 }

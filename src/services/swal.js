@@ -16,14 +16,20 @@ const swalService = {
         });
     },
 
-    // تنبيه الخطأ
-    error: (title, text) => {
+    // تنبيه الخطأ المعدل ليدعم النص والـ HTML تلقائياً
+    error: (title, content) => {
+        // فحص ما إذا كان المحتوى نصاً يحتوي على وسم HTML
+        const isHtml = typeof content === 'string' && content.trim().startsWith('<');
+
         return Swal.fire({
             icon: 'error',
             title: title || 'Error!',
-            text: text || 'Something went wrong.',
+            // استخدام الخاصية المناسبة بناءً على نوع المحتوى
+            [isHtml ? 'html' : 'text']: content || 'Something went wrong.',
             confirmButtonColor: '#ef4444',
             confirmButtonText: 'Try Again',
+            // زيادة العرض فقط في حالة عرض جدول التعارضات ليكون مريحاً للعين
+            width: isHtml ? '600px' : 'auto',
             customClass: {
                 popup: 'rounded-2xl',
             }

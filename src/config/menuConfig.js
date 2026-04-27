@@ -46,7 +46,12 @@ export const menuConfig = {
             name: "Meet Advisor",
             path: "/student/meetings",
             icon: <MessagesSquare size={iconSize} /> // تم التغيير لتمييز المقابلات
-        }
+        },
+        {
+            name: "Schedule",
+            path: "/student/St-Schedule",
+            icon: <CalendarDays size={iconSize} /> // تم التغيير لتمييز الجدول الدراسي
+        },
     ],
 
     coordinator: [
@@ -88,7 +93,7 @@ export const menuConfig = {
         {
             name: "Schedule",
             path: "/staff/coordinator/ScheduleManager",
-            icon: <CalendarDays size={iconSize} /> // تم التغيير لتمييز الجدول الدراسي
+            icon: <CalendarDays size={iconSize} />
         },
         {
             name: "Semesters History",
@@ -107,7 +112,13 @@ export const menuConfig = {
             name: "My Courses",
             path: "/staff/lecturer/lec-courses",
             icon: <BookMarked size={iconSize} />
-        }
+        },
+        {
+            name: "Schedule",
+            path: "/staff/lecturer/lec-Schedule",
+            icon: <CalendarDays size={iconSize} />
+        },
+
     ],
 
     "academic-advisor": [
@@ -143,7 +154,12 @@ export const menuConfig = {
             name: "Assist Courses",
             path: "/staff/ta/ta-courses",
             icon: <BookOpen size={iconSize} />
-        }
+        },
+        {
+            name: "Schedule",
+            path: "/staff/ta/ta-Schedule",
+            icon: <CalendarDays size={iconSize} />
+        },
     ],
 
     admin: [

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import swalService from "../../services/swal";
-import { Plus, ChevronDown, FileUp, Trash2, Edit, Search, BookOpen, GitBranch, LayoutGrid, GraduationCap } from 'lucide-react';
+import { Plus, ChevronDown, FileUp, Trash2, Edit, Search, BookOpen, GitBranch, LayoutGrid, GraduationCap, Download } from 'lucide-react';
 import CourseModal from '../../components/CourseModal';
 import CSVImportModal from '../../components/CSVImportModal';
 import DependencyMap from '../../components/DependencyMap'; // استيراد الكومبوننت الجديد
@@ -31,7 +31,6 @@ const TYPE_COLORS = {
     "Engineering Mathematics Elective": "#fff6ec",
     "graduation-project": "ffc658",
     "training": "#8dd1e1"
-
 };
 
 const ProgramCoursesManagement = () => {
@@ -59,7 +58,6 @@ const ProgramCoursesManagement = () => {
     };
 
     useEffect(() => { fetchCourses(); }, []);
-
 
     const stats = {
         total: courses.length,
@@ -133,6 +131,37 @@ const ProgramCoursesManagement = () => {
         }
     };
 
+    const handleExportCSV = () => {
+        if (courses.length === 0) {
+            swalService.error("Export Failed", "No courses available to export.");
+            return;
+        }
+
+        const headers = ["ID", "Course Name", "Level", "Type", "Credits", "Prerequisites", "Regulation"];
+        const csvRows = [
+            headers.join(','),
+            ...courses.map(c => [
+                c._id,
+                `"${c.courseName}"`,
+                c.courseLevel,
+                c.courseType,
+                c.courseCredits,
+                `"${Array.isArray(c.prerequisiteCourses) ? c.prerequisiteCourses.join('; ') : c.prerequisiteCourses || ''}"`,
+                c.courseRegulation
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvRows], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `program_courses_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const filteredCourses = courses.filter(c =>
         (c.courseName.toLowerCase().includes(search.toLowerCase()) ||
             c._id.toLowerCase().includes(search.toLowerCase())) &&
@@ -148,23 +177,30 @@ const ProgramCoursesManagement = () => {
                     <h2>Course Management</h2>
                 </div>
 
-                <div className="split-button-container">
-                    <button className="main-add-btn" onClick={() => openModal('single')}>
-                        <Plus size={18} /> Add Item
+                <div className="header-actions" style={{ display: 'flex', gap: '12px' }}>
+                    {/* زر الإكسبورت المنفصل */}
+                    <button className="btn-2" onClick={handleExportCSV}>
+                        <Download size={18} /> Export CSV
                     </button>
-                    <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
-                        <ChevronDown size={18} />
-                    </button>
-                    {dropdownOpen && (
-                        <div className="split-dropdown-menu">
-                            <button className="dropdown-item" onClick={() => { openModal('single'); setDropdownOpen(false); }}>
-                                <Plus size={14} /> Add One Item
-                            </button>
-                            <button className="dropdown-item" onClick={() => { openModal('csv'); setDropdownOpen(false); }}>
-                                <FileUp size={14} /> CSV Import
-                            </button>
-                        </div>
-                    )}
+
+                    <div className="split-button-container">
+                        <button className="main-add-btn" onClick={() => openModal('single')}>
+                            <Plus size={18} /> Add Item
+                        </button>
+                        <button className="dropdown-toggle-btn" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                            <ChevronDown size={18} />
+                        </button>
+                        {dropdownOpen && (
+                            <div className="split-dropdown-menu">
+                                <button className="dropdown-item" onClick={() => { openModal('single'); setDropdownOpen(false); }}>
+                                    <Plus size={14} /> Add One Item
+                                </button>
+                                <button className="dropdown-item" onClick={() => { openModal('csv'); setDropdownOpen(false); }}>
+                                    <FileUp size={14} /> CSV Import
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -270,7 +306,6 @@ const ProgramCoursesManagement = () => {
                                     <div style={{ fontSize: '12px', color: '#64748b' }}>
                                         {course.courseRegulation} Regulation
                                     </div>
-
                                 </td>
                                 <td>
                                     <span

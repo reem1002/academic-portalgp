@@ -147,7 +147,7 @@ const AdviserEnrollmentPage = () => {
     if (loading) return <div className="loading-container">Loading Student Data...</div>;
 
     return (
-        <div className="student-offerings-container">
+        <div className="management-container student-offerings-container">
             {/* Navigation Header */}
 
             <div className="prereg-header header">
