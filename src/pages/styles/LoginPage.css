@@ -1,132 +1,201 @@
+
 .login-page {
   min-height: 100vh;
-  background: #f1f5f9;
+  background-color: #f9f9f9; 
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(95, 137, 182, 0.2) 0%, transparent 20%),
+    linear-gradient(135deg, transparent 80%, #202938 80%);
   display: flex;
   align-items: center;
   justify-content: center;
-
 }
+
 
 .login-card {
-  width: 100%;
-  max-width: 420px;
+  width: 900px;
+  height: 520px;
+  display: flex;
   background: white;
-  padding: 40px 35px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  border: 1px solid #e2e8f0;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.login-header {
+
+.login-left {
+  flex: 1;
+  background: linear-gradient(180deg, #1e293b 0%, #59759d 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  padding: 40px;
   text-align: center;
-  margin-bottom: 30px;
+}
+
+.left-content {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .login-logo {
-  width: 100px;
-  margin-bottom: 10px;
+  width: 130px;
+  margin-bottom: 20px;
+  background: white;
+  border-radius: 50%;
+  padding: 10px;
 }
 
-.login-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #0f172a;
+.login-left h2 {
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
 }
 
-.login-subtitle {
-  font-size: 13px;
-  color: #64748b;
-  margin-top: 5px;
+
+.login-right {
+  flex: 1.3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px;
+  position: relative;
 }
 
 .login-form {
+  width: 100%;
+  max-width: 350px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
 }
 
-/* Inputs */
-.login-input {
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 14px;
-  transition: 0.2s ease;
-}
 
-.login-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-/* Radio buttons */
 .login-role {
   display: flex;
-  gap: 20px;
   justify-content: center;
-  margin-bottom: 10px;
+  gap: 30px;
+  margin-bottom: 30px;
 }
 
 .login-role label {
-  font-size: 14px;
-  color: #0f172a;
-  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #2e4463;
+  font-size: 16px;
 }
 
 .login-role input[type="radio"] {
-  accent-color: #1e293b; /* اللون الأساسي للـ radio */
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: #1e293b; 
 }
 
-/* Button */
-.login-button {
-  padding: 12px;
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  color: #4a668a;
+}
+
+.login-input {
+  width: 100%;
+  padding: 11px 15px 11px 45px;
+  /* background-color: #f0f4f8; */
+  border: 1px solid #d9e2ec;
   border-radius: 10px;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  border-color: #2e4463;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px #d5effb;
+}
+
+.login-input::placeholder {
+  color: #9fb3c8;
+}
+
+/* زر العين */
+.eye-btn {
+  position: absolute;
+  right: 15px;
+  background: none;
   border: none;
-  background: #1e293b;
-  color: white;
-  font-weight: 500;
   cursor: pointer;
-  transition: 0.2s ease;
+  color: #4a668a;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.eye-btn:hover {
+  color: #2e4463;
+}
+
+/* زر الدخول */
+.login-button {
+  background-color: #1e293b;
+  color: white;
+  padding: 15px;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .login-button:hover {
-  background: #334155;
+  background-color: #2e4463;
+  transform: translateY(-1px);
 }
 
+.login-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
 
-/* Error message */
+/* رسالة الخطأ */
 .error {
-  color: #dc2626; /* أحمر فاتح */
+  color: #d64545;
   font-size: 13px;
   text-align: center;
-  margin-top: -5px;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
 }
 
-/* Footer */
-.login-footer {
-  text-align: center;
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 20px;
-}
-
-/* Mobile */
-@media (max-width: 480px) {
+/* Responsive */
+@media (max-width: 850px) {
   .login-card {
-    margin: 20px;
-    padding: 30px 20px;
-  }
-
-  .login-role {
     flex-direction: column;
-    gap: 10px;
+    width: 90%;
+    height: auto;
+    margin: 20px;
+  }
+  .login-left {
+    padding: 30px;
+  }
+  .login-right {
+    padding: 40px 20px;
   }
 }

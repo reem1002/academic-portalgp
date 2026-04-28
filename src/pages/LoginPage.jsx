@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { User, Lock, Eye, EyeOff } from "lucide-react"; // استخدام لوسيد ريأكت
 import Cookies from "js-cookie";
 import api from "../services/api";
 import "./styles/LoginPage.css";
@@ -7,6 +8,7 @@ import "./styles/LoginPage.css";
 const LoginPage = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false); // حالة إظهار الباسورد
     const [roleType, setRoleType] = useState("student");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -61,62 +63,79 @@ const LoginPage = () => {
     return (
         <div className="login-page">
             <div className="login-card">
-                <div className="login-header">
-                    <img
-                        src="/images/department-logo.png"
-                        alt="Department Logo"
-                        className="login-logo"
-                    />
-                    <div className="login-title">Academic Portal</div>
+                <div className="login-left">
+                    <div className="left-content">
+                        <img
+                            src="/images/department-logo.png"
+                            alt="ECE Logo"
+                            className="login-logo"
+                        />
+                        <h2>Electrical And<br />Computer Engineering</h2>
+                    </div>
                 </div>
 
-                <form className="login-form" onSubmit={handleLogin}>
-                    <div className="login-role">
-                        <label>
+                <div className="login-right">
+                    <form className="login-form" onSubmit={handleLogin}>
+
+                        <div className="login-role">
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="student"
+                                    checked={roleType === "student"}
+                                    onChange={() => setRoleType("student")}
+                                />
+                                <span>Student</span>
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="staff"
+                                    checked={roleType === "staff"}
+                                    onChange={() => setRoleType("staff")}
+                                />
+                                <span>Staff</span>
+                            </label>
+                        </div>
+
+                        <div className="input-group">
+                            <User size={20} className="input-icon" />
                             <input
-                                type="radio"
-                                value="student"
-                                checked={roleType === "student"}
-                                onChange={() => setRoleType("student")}
+                                type="text"
+                                placeholder="UserName ..."
+                                className="login-input"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
                             />
-                            Student
-                        </label>
-                        <label>
+                        </div>
+
+                        <div className="input-group">
+                            <Lock size={20} className="input-icon" />
                             <input
-                                type="radio"
-                                value="staff"
-                                checked={roleType === "staff"}
-                                onChange={() => setRoleType("staff")}
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Password ..."
+                                className="login-input"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
                             />
-                            Staff
-                        </label>
-                    </div>
+                            <button
+                                type="button"
+                                className="eye-btn"
+                                onClick={() => setShowPassword(!showPassword)}
+                            >
+                                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                            </button>
+                        </div>
 
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        className="login-input"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="password"
-                        placeholder="Password"
-                        className="login-input"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+                        {error && <p className="error">{error}</p>}
 
-                    {error && <p className="error">{error}</p>}
-
-                    <button type="submit" className="btn-1" disabled={loading}>
-                        {loading ? "Logging in..." : "Login"}
-                    </button>
-                </form>
-
-                <div className="login-footer">© 2026 ECE</div>
+                        <button type="submit" className="btn-1" disabled={loading}>
+                            {loading ? "Logging in..." : "Login"}
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     );

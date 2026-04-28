@@ -96,7 +96,7 @@ const StudentDashboard = () => {
     };
 
     return (
-        <div className="sd-page-wrapper">
+        <div className="management-container sd-page-wrapper">
             {/* Header Section */}
             <header className="sd-main-header">
                 <div className="prereg-header">
@@ -122,7 +122,7 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
-            <div className="management-container sd-content-layout">
+            <div className=" sd-content-layout">
                 {/* Main Content: Announcements */}
                 <main className="sd-announcements-area">
                     <div className="sd-glass-card">
