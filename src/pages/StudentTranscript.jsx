@@ -13,9 +13,9 @@ import {
 } from 'lucide-react';
 import TranscriptProgressMapModal from "../components/TranscriptProgressMapModal";
 
-// استيراد المكتبات اللازمة لتوليد الـ PDF
+// استيراد المكتبات بطريقة تضمن تسجيل autoTable
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const CREDIT_MAP = {
     total: { label: "Total Completed", key: "completedCredits" },
@@ -98,24 +98,23 @@ const StudentTranscript = () => {
     const filteredCourses = transcript.completedCourses?.filter(c => {
         const matchesStatus = statusFilter === "all" || c.status === statusFilter;
         const matchesSearch =
-            c.courseId?.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            c.courseId?._id.toLowerCase().includes(searchTerm.toLowerCase());
+            c.courseId?.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesStatus && matchesSearch;
     });
 
-    // دالة إنشاء تقرير الـ PDF
     const handleExportPDF = async () => {
         swalService.showLoading("Generating your official academic transcript...");
 
         try {
             const doc = new jsPDF();
-            const studentName = transcript.studentId?.studentName || "N/A";
-            const studentId = transcript.studentId?._id || "N/A";
+            const studentName = String(transcript.studentId?.studentName || "N/A");
+            const studentId = String(transcript.studentId?._id || "N/A");
 
             // --- Header & Branding ---
             doc.setFontSize(22);
-            doc.setTextColor(20, 83, 136); // Dark Blue
-            doc.text("Academic Transcript", 14, 20);
+            doc.setTextColor(20, 83, 136);
+            doc.text("Official Academic Transcript", 14, 20);
 
             doc.setFontSize(10);
             doc.setTextColor(100);
@@ -123,63 +122,88 @@ const StudentTranscript = () => {
             doc.line(14, 30, 196, 30);
 
             // --- Student Profile Info ---
-            doc.setFontSize(12);
+            doc.setFontSize(11);
             doc.setTextColor(40);
-            doc.text(`Student Name: ${studentName}`, 14, 40);
-            doc.text(`Student ID: ${studentId}`, 14, 46);
-            doc.text(`Department: ${transcript.department}`, 14, 52);
-            doc.text(`Regulation: ${transcript.regulation} Regulation`, 14, 58);
+            doc.setFont(undefined, 'bold');
+            doc.text(`Student Name:`, 14, 40);
+            doc.setFont(undefined, 'normal');
+            doc.text(studentName, 45, 40);
+
+            doc.setFont(undefined, 'bold');
+            doc.text(`Student ID:`, 14, 46);
+            doc.setFont(undefined, 'normal');
+            doc.text(studentId, 45, 46);
+
+            doc.setFont(undefined, 'bold');
+            doc.text(`Department:`, 14, 52);
+            doc.setFont(undefined, 'normal');
+            doc.text(String(transcript.department || "N/A"), 45, 52);
 
             // Stats Box
-            doc.setDrawColor(230);
+            doc.setDrawColor(20, 83, 136);
             doc.setFillColor(248, 250, 252);
             doc.rect(130, 35, 66, 28, 'F');
-            doc.setTextColor(0);
+            doc.setTextColor(20, 83, 136);
             doc.setFont(undefined, 'bold');
-            doc.text(`Cumulative GPA: ${transcript.GPA?.toFixed(2)}`, 135, 42);
+            doc.text(`Cumulative GPA: ${Number(transcript.GPA || 0).toFixed(2)}`, 135, 42);
+            doc.setTextColor(0);
             doc.setFont(undefined, 'normal');
-            doc.text(`Credits: ${transcript.completedCredits} Hrs`, 135, 48);
-            doc.text(`Level: ${transcript.level}`, 135, 54);
+            doc.text(`Total Credits: ${transcript.completedCredits || 0} Hrs`, 135, 50);
+            doc.text(`Academic Level: ${transcript.level || "N/A"}`, 135, 58);
 
-            // --- Advisor Info ---
-            doc.setFontSize(11);
-            doc.text(`Academic Advisor: ${advisor?.staffName || "Not Assigned"}`, 14, 68);
+            let currentY = 75;
 
             // --- Table 1: Semester Works ---
-            let currentY = 75;
             if (semesterWorks && semesterWorks.length > 0) {
                 doc.setFontSize(14);
                 doc.setTextColor(20, 83, 136);
-                doc.text(`Current Semester Works (${semester?.name})`, 14, currentY);
+                doc.text(`Current Semester Works`, 14, currentY);
 
-                doc.autoTable({
+                const worksBody = semesterWorks.map(w => [
+                    String(w.courseId?._id || "N/A"),
+                    String(w.courseId?.courseName || "N/A"),
+                    String(w.grade?.totalGrade ?? "0")
+                ]);
+
+                // نستخدم autoTable المستوردة مباشرة كدالة بدلاً من doc.autoTable
+                autoTable(doc, {
                     startY: currentY + 5,
                     head: [['Code', 'Course Name', 'Work Grade (50)']],
-                    body: semesterWorks.map(w => [w.courseId?._id, w.courseId?.courseName, w.grade?.totalGrade]),
+                    body: worksBody,
                     headStyles: { fillColor: [46, 204, 113] },
-                    margin: { left: 14, right: 14 }
+                    margin: { left: 14, right: 14 },
+                    theme: 'striped'
                 });
                 currentY = doc.lastAutoTable.finalY + 15;
             }
 
+            if (currentY > 240) { doc.addPage(); currentY = 20; }
+
             // --- Table 2: Transcript History ---
             doc.setFontSize(14);
             doc.setTextColor(20, 83, 136);
-            doc.text("Academic History (Completed Courses)", 14, currentY);
+            doc.text("Academic History", 14, currentY);
 
-            doc.autoTable({
-                startY: currentY + 5,
-                head: [['Code', 'Course Name', 'Status', 'Grade', 'Letter']],
-                body: transcript.completedCourses.map(c => {
-                    const info = getGradeDisplay(c.grade, c.status);
-                    return [c.courseId?._id, c.courseId?.courseName, info.label, c.grade, info.letter];
-                }),
-                headStyles: { fillColor: [52, 73, 94] },
-                alternateRowStyles: { fillColor: [245, 247, 250] },
-                margin: { left: 14, right: 14 }
+            const historyBody = (transcript.completedCourses || []).map(c => {
+                const info = getGradeDisplay(c.grade, c.status);
+                return [
+                    String(c.courseId?._id || "N/A"),
+                    String(c.courseId?.courseName || "N/A"),
+                    String(info.label),
+                    String(c.grade ?? "0"),
+                    String(info.letter)
+                ];
             });
 
-            // --- Footer ---
+            autoTable(doc, {
+                startY: currentY + 5,
+                head: [['Code', 'Course Name', 'Status', 'Grade', 'Letter']],
+                body: historyBody,
+                headStyles: { fillColor: [52, 73, 94] },
+                margin: { left: 14, right: 14 },
+                theme: 'striped'
+            });
+
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -188,11 +212,11 @@ const StudentTranscript = () => {
                 doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
             }
 
-            doc.save(`Transcript_${studentId}.pdf`);
-            swalService.success("Ready!", "Your academic report has been downloaded.");
+            doc.save(`Official_Transcript_${studentId}.pdf`);
+            swalService.success("Success", "Academic transcript exported successfully.");
         } catch (err) {
             console.error("PDF Export Error:", err);
-            swalService.error("Export Failed", "Could not generate the PDF file.");
+            swalService.error("Export Failed", "Error: " + err.message);
         }
     };
 
@@ -226,7 +250,7 @@ const StudentTranscript = () => {
                         <div className="id-tags">
                             <span className="id-badge">ID: {transcript.studentId?._id}</span>
                             <span className="id-badge">@{transcript.studentId?.username}</span>
-                            <span className="id-badge " onClick={handleExportPDF} style={{ cursor: 'pointer' }}>
+                            <span className="id-badge" onClick={handleExportPDF} style={{ cursor: 'pointer', background: '#3498db', color: 'white' }}>
                                 <FaFileDownload /> Export PDF
                             </span>
                         </div>
@@ -257,7 +281,7 @@ const StudentTranscript = () => {
                         </div>
                     </div>
                     {advisor?.staffEmail && (
-                        <div className="advisor-contact-minimal">
+                        <div className="advisor-contact-minimal" onClick={() => contactAdvisor(advisor.staffEmail)} style={{ cursor: 'pointer' }}>
                             <span><FaEnvelope /> {advisor.staffEmail}</span>
                         </div>
                     )}
