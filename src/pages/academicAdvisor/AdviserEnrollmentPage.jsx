@@ -17,7 +17,7 @@ const AdviserEnrollmentPage = () => {
     const navigate = useNavigate();
 
     const [availableCourses, setAvailableCourses] = useState([]);
-    const [originalEnrolled, setOriginalEnrolled] = useState([]); // لحفظ الحالة الأصلية من السيرفر
+    const [originalEnrolled, setOriginalEnrolled] = useState([]);
     const [draftEnrolled, setDraftEnrolled] = useState([]);
     const [allowedCredits, setAllowedCredits] = useState(0);
     const [activeTab, setActiveTab] = useState("Freshman");
@@ -289,7 +289,7 @@ const AdviserEnrollmentPage = () => {
                 </div>
 
                 <button
-                    className={`save-btn ${isDirty ? "active" : ""}`}
+                    className={`btn-1 save-btn ${isDirty ? "active" : ""}`}
                     onClick={saveEnrollment}
                     disabled={!isDirty || saving}
                 >
