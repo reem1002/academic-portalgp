@@ -3,14 +3,14 @@ import api from "../../services/api";
 import { Calendar, Clock, AlertCircle, Download, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import './StudentSchedule.css';
+import './styles/StudentSchedule.css';
 
 const StudentSchedule = () => {
     const [scheduleData, setScheduleData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [exporting, setExporting] = useState(false); // State جديد للتحميل
+    const [exporting, setExporting] = useState(false); 
     const [isAnnounced, setIsAnnounced] = useState(false);
-    const tableRef = useRef(null); // استخدام Ref بدلاً من querySelector
+    const tableRef = useRef(null); 
 
     const daysOfWeek = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 

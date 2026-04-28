@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../../services/api";
 import {
     ArrowLeft, Search, Users, Eye, UserPlus, X,
-    GraduationCap, Filter, FileText, Layout, Info
+    GraduationCap, Filter, FileText, Layout, Info, UserCheck
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -14,6 +14,10 @@ const CourseStudentsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const courseName = location.state?.courseName || "Course Students";
+
+    // استلام بيانات الاستاف من الـ state
+    const currentInstructor = location.state?.instructorId;
+    const currentTA = location.state?.taId;
 
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -168,6 +172,33 @@ const CourseStudentsPage = () => {
                         <GraduationCap size={18} />
                         Assign TA
                     </button>
+                </div>
+            </div>
+
+            {/* عرض الـ Instructor والـ TA في بوكسات منقطة */}
+            <div className="staff-assignment-overview" style={{
+                display: 'flex',
+                justifyContent: 'space-around',
+
+                marginTop: '15px',
+                padding: '10px',
+                border: '2px dashed #e5e7eb',
+                borderRadius: '12px',
+                backgroundColor: '#fcfcfd'
+            }}>
+                <div style={{ display: 'flex', width: '50%', alignItems: 'center', gap: '10px', padding: '5px 15px', borderRight: '1px solid #e5e7eb' }}>
+                    <UserCheck size={18} color="#3a86ff" />
+                    <div>
+                        <span style={{ fontSize: '0.7rem', color: '#6b7280', display: 'block', textTransform: 'uppercase' }}>Course Instructor</span>
+                        <span style={{ fontWeight: '600', color: '#111827' }}>{currentInstructor || "Not Assigned"}</span>
+                    </div>
+                </div>
+                <div style={{ display: 'flex', width: '50%', alignItems: 'center', gap: '10px', padding: '5px 15px' }}>
+                    <Users size={18} color="#06d6a0" />
+                    <div>
+                        <span style={{ fontSize: '0.7rem', color: '#6b7280', display: 'block', textTransform: 'uppercase' }}>Teaching Assistant</span>
+                        <span style={{ fontWeight: '600', color: '#111827' }}>{currentTA || "Not Assigned"}</span>
+                    </div>
                 </div>
             </div>
 

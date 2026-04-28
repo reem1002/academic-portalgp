@@ -37,7 +37,8 @@ import MyCoursesTA from "./pages/TA/MyCoursesTA";
 import CourseGradingTA from "./pages/TA/CourseGradingTA";
 import AttendanceManagementTA from "./pages/TA/AttendanceManagementTA";
 import LecSchedule from "./pages/lecturer/LecSchedule";
-import TASchedule from "./pages/TA/TASchedule"
+import TASchedule from "./pages/TA/TASchedule";
+import TAAnnouncements from "./pages/TA/TAAnnouncements"
 
 import StudentCourseOfferingsPage from "./pages/student pages/CourseOffering";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -121,6 +122,7 @@ function App() {
           <Route path=":role/ta-grading/:id/:courseId" element={<CourseGradingTA />} />
           <Route path=":role/ta-grading/:id/attendance" element={<AttendanceManagementTA />} />
           <Route path=":role/ta-Schedule" element={<TASchedule />} />
+          <Route path=":role/TA-anouncements" element={<TAAnnouncements />} />
         </Route>
 
 

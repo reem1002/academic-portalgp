@@ -1,3 +1,12 @@
+/* اختيار كل العناصر، والعناصر الوهمية قبل وبعد */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* اختيار اختياري لضمان تناسق الجداول */
+html {
+    box-sizing: border-box;
+}
 
 .management-container {
     padding:  1.75rem 3rem !important;
@@ -135,3 +144,5 @@ th {
     cursor: not-allowed;
 
 }
+
+

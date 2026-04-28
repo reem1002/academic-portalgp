@@ -159,7 +159,12 @@ export const menuConfig = {
             name: "Schedule",
             path: "/staff/ta/ta-Schedule",
             icon: <CalendarDays size={iconSize} />
-        },
+        }, ,
+        {
+            name: "Anouncements",
+            path: "/staff/ta/TA-anouncements",
+            icon: <Megaphone size={iconSize} />
+        }
     ],
 
     admin: [

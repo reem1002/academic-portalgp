@@ -4,7 +4,7 @@ import api from "../../services/api";
 import swalService from "../../services/swal";
 import {
     ArrowLeft, Users, Search, Lock, Unlock,
-    GraduationCap, BookOpen, AlertCircle, CheckCircle2, FileText
+    GraduationCap, BookOpen, AlertCircle, CheckCircle2, FileText, UserSquare2
 } from "lucide-react";
 
 import { FaArrowLeft } from "react-icons/fa";
@@ -27,9 +27,14 @@ const EnrollmentStatsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [typeFilter, setTypeFilter] = useState("All");
 
-    const handleViewStudents = (courseId, offeringId, courseName) => {
+    // تم تعديل الدالة لتمرير Instructor ID و TA ID
+    const handleViewStudents = (courseId, offeringId, courseName, instructorId, taId) => {
         navigate(`/staff/${role}/semester/${semesterId}/course/${courseId}/${offeringId}/students`, {
-            state: { courseName }
+            state: {
+                courseName,
+                instructorId,
+                taId
+            }
         });
     };
 
@@ -37,6 +42,7 @@ const EnrollmentStatsPage = () => {
         try {
             setLoading(true);
             const res = await api.get(`/course-offerings?semesterId=${semesterId}`);
+            console.log(res.data)
             setOfferings(res.data || []);
         } catch (err) {
             console.error("Failed to fetch stats", err);
@@ -130,9 +136,10 @@ const EnrollmentStatsPage = () => {
     // --- Export PDF Logic ---
     const exportToPDF = () => {
         const doc = new jsPDF();
-        const tableColumn = ["Course Details", "Status", "Students", "Graduating", "Hint"];
+        const tableColumn = ["Course Details", "Staff (Inst/TA)", "Status", "Students", "Graduating", "Hint"];
         const tableRows = filteredData.map(off => [
             `${off.courseId?.courseName || 'N/A'}\n(${off.courseId?._id || 'N/A'})`,
+            `Inst: ${off.instructorId || '-'}\nTA: ${off.taId || '-'}`,
             (off.status || 'N/A').toUpperCase(),
             off.enrolledCount || 0,
             off.graduatingCount || 0,
@@ -152,13 +159,14 @@ const EnrollmentStatsPage = () => {
             theme: 'grid',
             headStyles: { fillColor: [41, 128, 185], halign: 'center' },
             columnStyles: {
-                0: { cellWidth: 60 },
-                1: { halign: 'center' },
+                0: { cellWidth: 50 },
+                1: { cellWidth: 35 },
                 2: { halign: 'center' },
                 3: { halign: 'center' },
-                4: { halign: 'center' }
+                4: { halign: 'center' },
+                5: { halign: 'center' }
             },
-            styles: { fontSize: 9, cellPadding: 3 }
+            styles: { fontSize: 8, cellPadding: 2 }
         });
 
         doc.save(`Enrollment_Report_${semesterId}.pdf`);
@@ -267,6 +275,7 @@ const EnrollmentStatsPage = () => {
                     <thead>
                         <tr>
                             <th>Course Details</th>
+                            <th>Staff (Inst/TA)</th>
                             <th>Status</th>
                             <th>Students</th>
                             <th>Graduating</th>
@@ -277,16 +286,21 @@ const EnrollmentStatsPage = () => {
                     <tbody>
                         {filteredData.map(off => (
                             <tr key={off._id}>
-                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName)}>
+                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName, off.instructorId, off.taId)}>
                                     <div className="c-name">{off.courseId?.courseName || "Unknown Course"}</div>
                                     <div className="c-id">{off.courseId?._id || off.courseId}</div>
+                                </td>
+                                {/* خلية المدرس والمعيد المضافة */}
+                                <td style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
+                                    <div style={{ color: '#3b82f6', fontWeight: '500' }}>I: {off.instructorId || '-'}</div>
+                                    <div style={{ color: '#6b7280' }}>T: {off.taId || '-'}</div>
                                 </td>
                                 <td>
                                     <span className={`status-badge ${off.status === 'open' ? 'live' : 'draft'}`}>
                                         {off.status ? off.status.toUpperCase() : 'N/A'}
                                     </span>
                                 </td>
-                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName)}>
+                                <td className="fetchCourse clickable-cell" onClick={() => handleViewStudents(off.courseId?._id, off._id, off.courseId?.courseName, off.instructorId, off.taId)}>
                                     {off.enrolledCount || 0}
                                 </td>
                                 <td className="text-center">

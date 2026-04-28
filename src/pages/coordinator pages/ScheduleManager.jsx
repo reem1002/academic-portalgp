@@ -1,28 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from "../../services/api";
 import swalService from "../../services/swal";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-    Trash2, Settings, X, RefreshCw, Layers, User, Hash, Menu, Download, Megaphone
+    Trash2, Settings, X, RefreshCw, Layers, User, Hash, Menu, Download, Megaphone, Search, Eye, Save, Clock
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import './ScheduleManager.css';
+import './styles/ScheduleManager.css';
 
 const ScheduleManager = () => {
+    const navigate = useNavigate();
     const [offerings, setOfferings] = useState([]);
     const [periods, setPeriods] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
+    // Configuration for bulk generation
     const [config, setConfig] = useState({
         startTime: "09:00",
         duration: 45,
         count: 12
     });
 
+    // Temporary state for manual editing in modal
+    const [tempPeriods, setTempPeriods] = useState([]);
+
     const daysOfWeek = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
+    const role = localStorage.getItem('role') || 'coordinator';
 
     useEffect(() => {
         fetchData();
@@ -32,7 +40,9 @@ const ScheduleManager = () => {
         try {
             const res = await api.get('/schedule');
             setOfferings(res.data.courseOfferings || []);
-            setPeriods(res.data.schedule[0]?.periodsTime || []);
+            const fetchedPeriods = res.data.schedule[0]?.periodsTime || [];
+            setPeriods(fetchedPeriods);
+            setTempPeriods(fetchedPeriods);
         } catch (err) {
             console.error("❌ Data fetch error:", err);
             swalService.error("Fetch Error", "Could not load schedule data.");
@@ -41,8 +51,7 @@ const ScheduleManager = () => {
         }
     };
 
-    const generatePeriods = async () => {
-        swalService.showLoading("Updating Grid...");
+    const previewGeneratedPeriods = () => {
         let currentStart = config.startTime;
         const newPeriods = [];
         for (let i = 0; i < config.count; i++) {
@@ -54,8 +63,19 @@ const ScheduleManager = () => {
             newPeriods.push({ startTime: currentStart, endTime });
             currentStart = endTime;
         }
+        setTempPeriods(newPeriods);
+    };
+
+    const handleManualPeriodChange = (index, field, value) => {
+        const updated = [...tempPeriods];
+        updated[index] = { ...updated[index], [field]: value };
+        setTempPeriods(updated);
+    };
+
+    const savePeriods = async () => {
+        swalService.showLoading("Saving Periods...");
         try {
-            await api.post('/schedule/set/time', { periodsTime: newPeriods });
+            await api.post('/schedule/set/time', { periodsTime: tempPeriods });
             await fetchData();
             swalService.success("Success", "Periods updated successfully");
             setIsModalOpen(false);
@@ -118,23 +138,33 @@ const ScheduleManager = () => {
     const handleScheduleError = (err) => {
         const errorData = err.response?.data;
         if (errorData?.conflictCourses) {
-            // إنشاء جدول HTML لعرض التعارضات بشكل محترم
+            // Updated Conflict UI with View Profile logic
+            window.viewStudent = (id) => navigate(`/staff/${role}/students/${id}`);
+
             const conflictRows = errorData.conflictCourses.map(c =>
-                `<tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${c.courseName}</td>
-                    <td style="border: 1px solid #ddd; padding: 8px;">
-                        ${c.conflictStudents.map(s => s.studentId.studentName).join(', ')}
+                c.conflictStudents.map(s => `
+                <tr style="border-bottom: 1px solid #333;">
+                    <td style="padding: 10px; color: #f94545;">${c.courseName}</td>
+                    <td style="padding: 10px; font-family: monospace;">${s.studentId.id}</td>
+                    <td style="padding: 10px;">${s.studentId.studentName}</td>
+                    <td style="padding: 10px; text-align: center;">
+                        <button onclick="viewStudent('${s.studentId._id}')" 
+                                style="background: none; border: none; cursor: pointer; color: #3a86ff;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
                     </td>
-                </tr>`
+                </tr>`).join('')
             ).join('');
 
             const tableHtml = `
-                <div style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
-                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: left;">
+                <div style="max-height: 400px; overflow-y: auto; background: #1a1a1a; border-radius: 8px; margin-top: 15px;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85em;">
                         <thead>
-                            <tr style="background: #f3f4f6;">
-                                <th style="border: 1px solid #ddd; padding: 8px;">Conflicting Course</th>
-                                <th style="border: 1px solid #ddd; padding: 8px;">Students</th>
+                            <tr style="background: #2d2d2d; position: sticky; top: 0;">
+                                <th style="padding: 12px; text-align: left;">Conflict With</th>
+                                <th style="padding: 12px; text-align: left;">ID</th>
+                                <th style="padding: 12px; text-align: left;">Student</th>
+                                <th style="padding: 12px;">View</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -219,7 +249,7 @@ const ScheduleManager = () => {
             const height = imgProps.height * ratio;
 
             pdf.addImage(imgData, 'PNG', (pdfWidth - width) / 2, 10, width, height);
-            pdf.save("Academic_Schedule_2026.pdf");
+            pdf.save(`Academic_Schedule_${new Date().getFullYear()}.pdf`);
             swalService.close();
         } catch (error) {
             swalService.error("Export Error", "Failed to generate PDF document");
@@ -254,13 +284,20 @@ const ScheduleManager = () => {
         </div>
     );
 
+    // Sidebar search filter
+    const filteredOfferings = offerings
+        .filter(o => !o.schedule?.days?.length)
+        .filter(o =>
+            o.courseId?.courseName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            o.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+
     if (loading) return <div className="loader">Initializing Portal...</div>;
 
     return (
         <div className="management-container schedule-container ">
             <DragDropContext onDragEnd={onDragEnd}>
 
-                {/* Main Schedule Grid (Left Side) */}
                 <main className="schedule-main">
                     <header className="management-header">
                         <div className="prereg-header">
@@ -273,7 +310,7 @@ const ScheduleManager = () => {
                             <button className="btn-2" onClick={exportToPDF}>
                                 <Download size={18} /> Export PDF
                             </button>
-                            <button className="btn-1" onClick={() => setIsModalOpen(true)}>
+                            <button className="btn-1" onClick={() => { setTempPeriods(periods); setIsModalOpen(true); }}>
                                 <Settings size={18} /> Manage Periods
                             </button>
                             {!isSidebarOpen && (
@@ -287,7 +324,6 @@ const ScheduleManager = () => {
                         <table className="schedule-table">
                             <thead>
                                 <tr>
-                                    {/* الـ z-index هنا أعلى لضمان ظهوره فوق الكولمن والرو عند التقاطع */}
                                     <th className="sticky-row sticky-col corner-header">Days</th>
                                     {[...Array(6)].map((_, i) => {
                                         const pIdx = i * 2;
@@ -346,7 +382,6 @@ const ScheduleManager = () => {
                     </div>
                 </main>
 
-                {/* Sidebar (Right Side) */}
                 <aside className={`schedule-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
                     <div className="s_sidebar-header">
                         <div className="head">
@@ -356,24 +391,35 @@ const ScheduleManager = () => {
                                     <X size={20} />
                                 </button>
                             </div>
-                            <p className='available-text'>{offerings.filter(o => !o.schedule?.days?.length).length} available courses</p>
+
+                            {/* Catalog Search Input */}
+                            <div className="sidebar-search-wrapper">
+                                <Search size={14} className="search-icon-inside" />
+                                <input
+                                    type="text"
+                                    className="catalog-search-input"
+                                    placeholder="Search by ID or Name..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <p className='available-text'>{filteredOfferings.length} courses found</p>
                         </div>
                     </div>
 
                     <Droppable droppableId="sidebar">
                         {(provided) => (
                             <div ref={provided.innerRef} {...provided.droppableProps} className="course-list">
-                                {offerings
-                                    .filter(o => !o.schedule?.days?.length)
-                                    .map((offering, index) => (
-                                        <Draggable key={offering._id} draggableId={offering._id} index={index}>
-                                            {(provided) => (
-                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                                    {renderCourseCard(offering)}
-                                                </div>
-                                            )}
-                                        </Draggable>
-                                    ))}
+                                {filteredOfferings.map((offering, index) => (
+                                    <Draggable key={offering._id} draggableId={offering._id} index={index}>
+                                        {(provided) => (
+                                            <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                {renderCourseCard(offering)}
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
                                 {provided.placeholder}
                             </div>
                         )}
@@ -393,28 +439,68 @@ const ScheduleManager = () => {
 
             </DragDropContext>
 
-            {/* Settings Modal */}
+            {/* Enhanced Settings Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="modal-content period-modal-wide">
                         <div className="modal-header">
-                            <h2>Grid Settings</h2>
+                            <div className="title-with-icon">
+                                <h2>Time Slot Configuration</h2>
+                            </div>
                             <button className="close-sidebar-btn" onClick={() => setIsModalOpen(false)}><X /></button>
                         </div>
+
                         <div className="modal-body">
-                            <div className="config-grid">
-                                <div className="input-group">
-                                    <label>Start Time</label>
-                                    <input type="time" value={config.startTime} onChange={e => setConfig({ ...config, startTime: e.target.value })} />
+                            <div className="config-top-bar">
+                                <div className="input-group-row">
+                                    <div className="input-field">
+                                        <label>Start From</label>
+                                        <input type="time" value={config.startTime} onChange={e => setConfig({ ...config, startTime: e.target.value })} />
+                                    </div>
+                                    <div className="input-field">
+                                        <label>Slot (Min)</label>
+                                        <input type="number" value={config.duration} onChange={e => setConfig({ ...config, duration: parseInt(e.target.value) })} />
+                                    </div>
+                                    <div className="input-field">
+                                        <label>Total Slots</label>
+                                        <input type="number" value={config.count} onChange={e => setConfig({ ...config, count: parseInt(e.target.value) })} />
+                                    </div>
+                                    <button className="btn-2" onClick={previewGeneratedPeriods}>
+                                        <RefreshCw size={16} /> Auto-Generate
+                                    </button>
                                 </div>
-                                <div className="input-group">
-                                    <label>Duration (Min)</label>
-                                    <input type="number" value={config.duration} onChange={e => setConfig({ ...config, duration: parseInt(e.target.value) })} />
-                                </div>
-                                <button className="bulk-update-btn" onClick={generatePeriods}>
-                                    <RefreshCw size={16} /> Update Grid
-                                </button>
                             </div>
+
+                            <div className="manual-edit-section">
+                                <h3>Manual Adjustments</h3>
+                                <div className="periods-grid-scroll">
+                                    {tempPeriods.map((p, idx) => (
+                                        <div key={idx} className="period-edit-card">
+                                            <span className="p-index">#{idx + 1}</span>
+                                            <div className="p-inputs">
+                                                <input
+                                                    type="time"
+                                                    value={p.startTime}
+                                                    onChange={(e) => handleManualPeriodChange(idx, 'startTime', e.target.value)}
+                                                />
+                                                <span className="p-arrow">→</span>
+                                                <input
+                                                    type="time"
+                                                    value={p.endTime}
+                                                    onChange={(e) => handleManualPeriodChange(idx, 'endTime', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn-cancel" onClick={() => setIsModalOpen(false)}>Cancel</button>
+                            <button className="btn-1" onClick={savePeriods}>
+                                <Save size={18} /> Save All Changes
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -54,6 +54,7 @@
 .head{
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 
@@ -232,14 +233,14 @@
 
 .delete-zone {
     margin: 20px;
-    padding: 20px;
-    border: 2px dashed #cbd5e1; /* بوردر مخطط */
+    padding: 25px;
+    border: 2px dashed #ef4444; 
     border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    color: #94a3b8;
+    color: #ef4444;
     transition: all 0.3s;
 }
 
@@ -392,4 +393,263 @@
     /* height: 100px; */
     /* min-height: 100px; */
     position: relative;
+}
+
+
+
+
+
+/* عدل الـ Table Wrapper */
+.sc-table-wrapper {
+    flex: 1;
+    overflow: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    display: block; 
+}
+
+/* تعديل الـ Table نفسه */
+.schedule-table {
+    width: 100%;
+    /* تغيير من auto لـ fixed يمنع الأعمدة من تغيير عرضها بناءً على المحتوى */
+    table-layout: fixed; 
+    min-width: 1000px; /* أو أي رقم يضمن ظهور البيانات بوضوح */
+    border-collapse: separate;
+    border-spacing: 5px;
+}
+
+/* تثبيت الارتفاع والعرض للخلايا */
+.schedule-table td {
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 6px;
+    transition: background 0.2s; 
+
+}
+
+.courses-stack {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.slot.drop-hover {
+    background: #dbeafe;
+    border: 2px solid var(--primary);
+}
+
+/* الكارد أثناء السحب */
+.uniform-card-s[style*="transform"] {
+    z-index: 100;
+}
+
+
+
+
+
+
+/* --- 1. Sidebar Search Styles --- */
+.sidebar-search-wrapper {
+
+    position: relative;
+    margin: 15px 0 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.search-icon-inside {
+    position: absolute;
+    left: 12px;
+    color: #888;
+    pointer-events: none;
+}
+
+.catalog-search-input {
+    width: 100%;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    padding: 10px 10px 10px 35px;
+    color: #eee;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.catalog-search-input:focus {
+    outline: none;
+    border-color: #3a86ff;
+    box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.2);
+    background: #222;
+}
+
+/* --- 2. Enhanced Periods Modal Styles --- */
+.period-modal-wide {
+    width: 90% !important;
+    max-width: 800px !important;
+    border: 1px solid #aaa;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+.title-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.config-top-bar {
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #aaa;
+}
+
+.input-group-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.input-field label {
+    font-size: 0.8rem;
+    color: #000;
+font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-field input {
+
+    border: 1px solid #aaa;
+    padding: 10px;
+    border-radius: 6px;
+    color: #000;
+}
+
+.bulk-generate-btn {
+    background: #3a86ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    height: 42px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.bulk-generate-btn:hover {
+    background: #256edc;
+}
+
+/* --- 3. Manual Edit Grid --- */
+.manual-edit-section h3 {
+    font-size: 1.1rem;
+
+    color: #000;
+}
+
+.periods-grid-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.period-edit-card {
+    border: 1px solid #aaa;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.p-index {
+    color: #3a86ff;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.p-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.p-inputs input {
+    width: 75px;
+    background: transparent;
+    border: 1px solid #444;
+    color: #000;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.p-arrow {
+    color: #000;
+    font-weight: bold;
+}
+
+/* --- 4. Modal Footer & Conflict Fixes --- */
+.modal-footer {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #aaa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.save-btn {
+    background: #06d6a0;
+    color: #000;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 6px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    background: transparent;
+    color: #888;
+    border: 1px solid #444;
+    padding: 10px 25px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+
+/* SweetAlert Conflict Table Scroll Fix */
+.swal2-html-container {
+    margin: 0 !important;
+    overflow: hidden !important;
 }

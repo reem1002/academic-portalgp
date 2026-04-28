@@ -373,3 +373,44 @@ padding: 0.5rem 2rem;
     font-size: 0.8rem;
     color: #94a3b8;
 }
+
+
+/* تحسين شكل الـ Empty State داخل الجدول */
+.empty-table-state {
+    padding: 60px 0;
+    text-align: center;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.empty-table-state p {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--accent-color); /* اللون الأزرق أو الموف الخاص بك */
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* شكل الـ Empty State في الـ Grid */
+.grid-empty-state {
+    grid-column: 1 / -1; /* يمتد على كامل عرض الجريد */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    background: var(--bg-secondary);
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+}

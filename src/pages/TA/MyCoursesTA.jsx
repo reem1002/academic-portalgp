@@ -160,7 +160,6 @@ const MyCoursesTA = () => {
                     <div className="insight-header">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className="insight-icon icon-green"><Users size={18} /></span>
-                            <span className="insight-label">Enrollment</span>
                         </div>
                         <select
                             className="insight-select"

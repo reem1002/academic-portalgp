@@ -41,7 +41,7 @@ const ProgramCoursesManagement = () => {
     const [editingCourse, setEditingCourse] = useState(null);
 
     const [insightLevel, setInsightLevel] = useState('freshman');
-    const [insightType, setInsightType] = useState('core');
+    const [insightType, setInsightType] = useState('Core');
     const [showDependencyMap, setShowDependencyMap] = useState(false);
 
     const [filterLevel, setFilterLevel] = useState('');
