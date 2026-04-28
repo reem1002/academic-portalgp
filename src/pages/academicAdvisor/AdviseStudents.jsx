@@ -117,7 +117,6 @@ const AdviseStudents = () => {
         const matchesLevel = filterLevel === "All" || s.level === filterLevel;
         const matchesReg = filterReg === "All" || s.regulation === filterReg;
 
-        // ✅ FIX status filter
         const matchesStatus =
             filterStatus === "All" ||
             (filterStatus === "atRisk" && s.atRisk) ||
@@ -194,7 +193,6 @@ const AdviseStudents = () => {
                         <option value="Last">Last</option>
                     </select>
 
-                    {/* ✅ FIX */}
                     <select className="adv-filter-select" onChange={(e) => setFilterStatus(e.target.value)}>
                         <option value="All">Status</option>
                         <option value="atRisk">At Risk</option>
@@ -209,12 +207,11 @@ const AdviseStudents = () => {
                         <tr>
                             <th>ID</th>
                             <th>Name</th>
-                            <th >GPA</th>
+                            <th style={{ textAlign: 'center' }}>GPA</th>
                             <th>Regulation</th>
                             <th>Level</th>
                             <th>Credits</th>
                             <th>Alerts</th>
-
                             <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
@@ -223,11 +220,14 @@ const AdviseStudents = () => {
                             <tr key={s.id} className={s.atRisk ? "row-at-risk" : ""}>
                                 <td className="adv-student-id">#{s.id}</td>
                                 <td>{s.name}</td>
-                                <td className={s.GPA < 2 ? "gpa-badge low" : "gpa-badge high"} style={{ textAlign: 'center' }} ><div style={{ marginRight: '5px' }}>{s.GPA}</div>
-                                    {s.atRisk
-                                        ? <div className="type-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', width: '40px' }}>At Risk</div>
-                                        : <div className="type-badge" style={{ backgroundColor: '#f0fdf4', color: '#16a34a', width: '40px' }}>Good</div>
-                                    }
+                                <td style={{ textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                        <span style={{ fontWeight: '600' }}>{s.GPA}</span>
+                                        {s.atRisk
+                                            ? <div className="type-badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', width: 'fit-content' }}>At Risk</div>
+                                            : <div className="type-badge" style={{ backgroundColor: '#f0fdf4', color: '#16a34a', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', width: 'fit-content' }}>Good</div>
+                                        }
+                                    </div>
                                 </td>
                                 <td>
                                     <span className={`badge-reg reg-${s.regulation?.toLowerCase() === 'new' ? 'new' : 'last'}`}>
@@ -240,15 +240,12 @@ const AdviseStudents = () => {
                                     </span>
                                 </td>
                                 <td>{s.registeredCredits} / {s.allowedCredits}</td>
-
                                 <td> {s.alerts > 0 ? s.alerts : "No Alerts"}</td>
-
-
                                 <td className="adv-actions">
-                                    <button onClick={() => navigate(`/staff/${role}/student/${s.id}`)}><Eye size={18} color="#3a86ff" /></button>
-                                    <button onClick={() => navigate(`/staff/${role}/advisor/enroll/${s.id}`)}>
-
-
+                                    <button onClick={() => navigate(`/staff/${role}/student/${s.id}`)} title="View Profile">
+                                        <Eye size={18} color="#3a86ff" />
+                                    </button>
+                                    <button onClick={() => navigate(`/staff/${role}/advisor/enroll/${s.id}`)} title="Enroll Student">
                                         <PlusCircle size={18} color="#10b981" />
                                     </button>
                                 </td>
@@ -257,8 +254,6 @@ const AdviseStudents = () => {
                     </tbody>
                 </table>
             </div>
-
-
         </div>
     );
 };

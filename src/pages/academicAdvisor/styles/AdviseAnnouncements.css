@@ -279,7 +279,6 @@ padding: 0.5rem 2rem;
     font-style: italic;
 }
 
-/* Clear Date Icon */
 .clear-icon {
     cursor: pointer;
     color: #94a3b8;
@@ -289,9 +288,8 @@ padding: 0.5rem 2rem;
     color: #ef4444;
 }
 
-/* حل مشكلة اختفاء الدروب داون */
 .modal-content.large {
-    overflow: visible !important; /* السماح للعناصر بالخروج بره المودال */
+    overflow: visible !important;
     max-height: 90vh;
     /* display: flex; */
     flex-direction: column;
@@ -299,7 +297,7 @@ padding: 0.5rem 2rem;
 
 .form-main-layout {
     gap: 2rem;
-    overflow: visible; /* مهم جداً */
+    overflow: visible; 
 }
 
 /* تحسين شكل الكاردات */
@@ -353,7 +351,7 @@ padding: 0.5rem 2rem;
     line-height: 1.5;
     margin-bottom: 1.5rem;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    /* -webkit-line-clamp: 3; */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -394,7 +392,7 @@ padding: 0.5rem 2rem;
 .btn-text {
     background: none;
     border: none;
-    color: var(--accent-color); /* اللون الأزرق أو الموف الخاص بك */
+    color: var(--accent-color); 
     text-decoration: underline;
     cursor: pointer;
     font-weight: 600;
@@ -402,7 +400,7 @@ padding: 0.5rem 2rem;
 
 /* شكل الـ Empty State في الـ Grid */
 .grid-empty-state {
-    grid-column: 1 / -1; /* يمتد على كامل عرض الجريد */
+    grid-column: 1 / -1; 
     display: flex;
     flex-direction: column;
     align-items: center;

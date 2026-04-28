@@ -243,7 +243,7 @@ const Profile = () => {
                         </div>
                     ) : (
                         <form onSubmit={handlePasswordChange} className="profile-form-layout">
-                            // ... داخل الـ Form بتاع الباسورد
+
                             <div className="form-group">
                                 <label>New Password</label>
                                 <input

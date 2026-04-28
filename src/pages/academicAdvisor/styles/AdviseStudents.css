@@ -50,7 +50,7 @@
 
 .adv-search-wrapper {
     position: relative;
-    width: 300px;
+    width: 100%;
 }
 
 .adv-search-icon {
@@ -105,11 +105,11 @@
     font-weight: 600;
 }
 
-.adv-actions {
+/* .adv-actions {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-}
+} */
 
 .adv-actions button {
     background: none;
