@@ -238,3 +238,36 @@
     gap: 10px;
 }
 
+
+
+ .advising-tabs {
+  display: flex;
+  gap: 12px;
+  /* margin-bottom: 24px; */
+  padding-bottom: 12px;
+
+}
+
+.advising-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 530;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+ .advising-tabs button:hover {
+  background: #f1f5f9;
+}
+
+ .advising-tabs button.active {
+  background: #eff6ff;
+  color: #2563eb;
+}

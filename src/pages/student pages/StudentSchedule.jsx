@@ -6,29 +6,39 @@ import jsPDF from 'jspdf';
 import './styles/StudentSchedule.css';
 
 const StudentSchedule = () => {
-    const [scheduleData, setScheduleData] = useState(null);
+    const [activeTab, setActiveTab] = useState('mySchedule'); // 'mySchedule' or 'fullSchedule'
+    const [personalSchedule, setPersonalSchedule] = useState(null);
+    const [fullSchedule, setFullSchedule] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [exporting, setExporting] = useState(false); 
+    const [exporting, setExporting] = useState(false);
     const [isAnnounced, setIsAnnounced] = useState(false);
-    const tableRef = useRef(null); 
+    const tableRef = useRef(null);
 
     const daysOfWeek = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"];
 
     useEffect(() => {
-        const fetchStudentSchedule = async () => {
+        const fetchSchedules = async () => {
+            setLoading(true);
             try {
-                const res = await api.get('/student/me/courses/my-schedule');
-                if (res.data.schedule && res.data.schedule.length > 0) {
-                    setScheduleData(res.data);
-                    setIsAnnounced(res.data.schedule[0].isAnnounced ?? true);
+                // Fetch Personal Schedule
+                const personalRes = await api.get('/student/me/courses/my-schedule');
+                if (personalRes.data.schedule && personalRes.data.schedule.length > 0) {
+                    setPersonalSchedule(personalRes.data);
+                    setIsAnnounced(personalRes.data.schedule[0].isAnnounced ?? true);
+                }
+
+                // Fetch Full Semester Schedule
+                const fullRes = await api.get('/student/me/courses/schedule');
+                if (fullRes.data.schedule && fullRes.data.schedule.length > 0) {
+                    setFullSchedule(fullRes.data);
                 }
             } catch (err) {
-                console.error("Error fetching schedule:", err);
+                console.error("Error fetching schedules:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchStudentSchedule();
+        fetchSchedules();
     }, []);
 
     const exportToPDF = async () => {
@@ -37,20 +47,19 @@ const StudentSchedule = () => {
 
         try {
             const canvas = await html2canvas(tableRef.current, {
-                scale: 4, // زيادة الجودة أكثر
+                scale: 4,
                 useCORS: true,
                 backgroundColor: "#ffffff",
                 onclone: (clonedDoc) => {
                     const container = clonedDoc.querySelector('.student-schedule-wrapper');
                     const table = clonedDoc.querySelector('.modern-schedule-table');
 
-                    // إجبار الجدول على أخذ عرض مريح للطباعة
                     if (container) {
                         container.style.width = "1200px";
                         container.style.padding = "40px";
                     }
                     if (table) {
-                        table.style.borderSpacing = "12px"; // زيادة المسافات في النسخة المطبوعة
+                        table.style.borderSpacing = "12px";
                     }
                 }
             });
@@ -66,14 +75,13 @@ const StudentSchedule = () => {
             const pdfHeight = pdf.internal.pageSize.getHeight();
 
             const imgProps = pdf.getImageProperties(imgData);
-            // حساب النسبة بحيث يأخذ الجدول العرض الكامل للورقة تقريباً
             const ratio = Math.min((pdfWidth - 10) / imgProps.width, (pdfHeight - 10) / imgProps.height);
 
             const w = imgProps.width * ratio;
             const h = imgProps.height * ratio;
 
             pdf.addImage(imgData, 'PNG', (pdfWidth - w) / 2, (pdfHeight - h) / 2, w, h);
-            pdf.save("Student_Schedule.pdf");
+            pdf.save(`${activeTab === 'mySchedule' ? 'My_Schedule' : 'Full_Schedule'}.pdf`);
         } catch (error) {
             console.error("Export Error", error);
         } finally {
@@ -81,9 +89,9 @@ const StudentSchedule = () => {
         }
     };
 
-    if (loading) return <div className="loader">Loading your schedule...</div>;
+    if (loading) return <div className="loader">Loading schedules...</div>;
 
-    if (!isAnnounced || !scheduleData) {
+    if (!isAnnounced || !personalSchedule) {
         return (
             <div className="not-announced-container">
                 <AlertCircle size={48} className="text-amber-500" />
@@ -93,25 +101,22 @@ const StudentSchedule = () => {
         );
     }
 
-    const { schedule, offerings } = scheduleData;
-    const periods = schedule[0].periodsTime;
-
-    const getCourseForSlot = (day, periodIndex) => {
-        const actualPeriod = (periodIndex * 2) + 1;
-        return offerings.find(o =>
-            o.schedule?.days?.includes(day) &&
-            Number(o.schedule.lecPeriod) === actualPeriod
-        );
-    };
+    // Determine which data to show based on active tab
+    const currentData = activeTab === 'mySchedule' ? personalSchedule : fullSchedule;
+    const { schedule, offerings } = currentData || { schedule: [], offerings: [] };
+    const periods = schedule.length > 0 ? schedule[0].periodsTime : [];
 
     return (
         <div className="management-container student-schedule-wrapper">
             <div className="schedule-header">
                 <div className="title-section">
-                    <h2>My Academic Schedule</h2>
-                </div>
-                <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <h2>Academic Calendar</h2>
 
+
+                </div>
+
+
+                <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <div className="status-badge">Finalized</div>
                     <button
                         className="btn-1"
@@ -127,9 +132,24 @@ const StudentSchedule = () => {
                     </button>
                 </div>
             </div>
+            <div className="advising-tabs" style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '15px', marginBottom: '15px' }}>
+                <button
+                    className={` ${activeTab === 'mySchedule' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('mySchedule')}
+                >
+                    My Schedule
+                </button>
+                <div style={{ borderRight: '1px solid #e2e8f0' }} ></div>
+                <button
+                    className={` ${activeTab === 'fullSchedule' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('fullSchedule')}
+                >
+                    Semester Schedule
+                </button>
+            </div>
 
             <div className="sc-table-wrapper table-responsive sc-table-wrapper-student" ref={tableRef}>
-                <table className="modern-schedule-table" >
+                <table className="modern-schedule-table">
                     <thead>
                         <tr>
                             <th className="day-cell-header">Days</th>
@@ -141,7 +161,7 @@ const StudentSchedule = () => {
                                     <th key={i}>
                                         <span className="session-name">Session {i + 1}</span>
                                         <span className="session-time">
-                                            {pStart?.startTime} - {pEnd?.endTime}
+                                            {pStart?.startTime || '--:--'} - {pEnd?.endTime || '--:--'}
                                         </span>
                                     </th>
                                 );
@@ -153,7 +173,6 @@ const StudentSchedule = () => {
                             <tr key={day}>
                                 <td className="day-cell">{day}</td>
                                 {[...Array(6)].map((_, i) => {
-                                    // جلب كل الكورسات في هذا اليوم وهذا السيشن (ليدعم الكورسات المتعددة في نفس الخلية)
                                     const courses = offerings.filter(o =>
                                         o.schedule?.days?.includes(day) &&
                                         Number(o.schedule.lecPeriod) === (i * 2 + 1)
