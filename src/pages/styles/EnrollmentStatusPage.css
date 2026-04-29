@@ -99,8 +99,8 @@
     font-weight: 500;
 }
 
-.insight-value-large { font-size: 32px; font-weight: 700; color: #1e293b; }
-.insight-value { font-size: 28px; font-weight: 650; color: #1e293b; }
+.insight-value-large { font-size: 32px; font-weight: 700; color: var( --primary-blue-color); }
+.insight-value { font-size: 28px; font-weight: 650; color: var( --primary-blue-color); }
 
 .insight-footer {
     margin-top: 10px;
@@ -135,7 +135,7 @@
     margin-left: 10px;
     width: 60%;
     font-size: 14px;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .drop-filters-group {
@@ -149,7 +149,7 @@
     border: 1px solid #e2e8f0;
     background: white;
     font-size: 14px;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     cursor: pointer;
     outline: none;
 }
@@ -174,7 +174,7 @@
 }
 /* نفترض أن live وا draft معرفين في الستايل العام، لو لأ ضيفيهم هنا */
 .status-badge.live { background: #dcfce7; color: #166534; }
-.status-badge.draft { background: #f1f5f9; color: #1e293b; }
+.status-badge.draft { background: #f1f5f9; color: var( --primary-blue-color); }
 
 /* Grading */
 .g-critical { color: #10b981; font-weight: 600; }

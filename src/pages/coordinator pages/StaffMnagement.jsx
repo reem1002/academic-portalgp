@@ -176,7 +176,7 @@ const StaffManagement = () => {
 
     const inlineSelectStyle = {
         border: 'none', background: 'none', fontSize: '14px', fontWeight: 'bold',
-        cursor: 'pointer', appearance: 'none', paddingRight: '15px', color: '#1e293b',
+        cursor: 'pointer', appearance: 'none', paddingRight: '15px', color: 'var( --primary-blue-color)',
         textDecoration: 'underline'
     };
 
@@ -373,7 +373,7 @@ const StaffManagement = () => {
                             <tr key={member._id}>
                                 <td className="course-id-cell">{member._id}</td>
                                 <td>
-                                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{member.staffName}</div>
+                                    <div style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{member.staffName}</div>
                                 </td>
                                 <td>
                                     <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -389,7 +389,7 @@ const StaffManagement = () => {
                                 <td>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                         {member.roles.map(role => (
-                                            <span key={role} className="type-badge" style={{ backgroundColor: ROLE_COLORS[role] || "#eee", color: "#1e293b", border: "1px solid rgba(0,0,0,0.05)" }}>
+                                            <span key={role} className="type-badge" style={{ backgroundColor: ROLE_COLORS[role] || "#eee", color: "var( --primary-blue-color)", border: "1px solid rgba(0,0,0,0.05)" }}>
                                                 {role}
                                             </span>
                                         ))}

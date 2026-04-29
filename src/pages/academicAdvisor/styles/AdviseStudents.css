@@ -38,7 +38,7 @@
 .adv-icon-box.orange { background: #fff7ed; color: #ea580c; }
 
 .adv-label { display: block; color: #64748b; font-size: 0.875rem; }
-.adv-value { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+.adv-value { font-size: 1.5rem; font-weight: 700; color: var( --primary-blue-color); }
 
 /* Controls */
 .adv-controls {
@@ -94,12 +94,12 @@
 
 
 
-.adv-student-id { font-weight: 600; color: #1e293b; }
+.adv-student-id { font-weight: 600; color: var( --primary-blue-color); }
 
 .adv-badge {
     padding: 4px 8px;
     background: #f1f5f9;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
@@ -222,7 +222,7 @@
 }
 
 .insight-label { font-size: 0.8rem; color: #64748b; }
-.insight-count { font-size: 1.2rem; font-weight: 700; color: #1e293b; }
+.insight-count { font-size: 1.2rem; font-weight: 700; color: var( --primary-blue-color); }
 .adv-icon-box.green {
     background: #ecfdf5;
     color: #059669;

@@ -390,18 +390,8 @@ const PreRegistrationManagementPage = () => {
 
                                         {/* الزرار الجديد هنا */}
                                         <button
-                                            className="btn-secondary"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '8px',
-                                                backgroundColor: '#186F8F',
-                                                color: 'white',
-                                                padding: '10px 20px',
-                                                borderRadius: '8px',
-                                                border: 'none',
-                                                cursor: 'pointer'
-                                            }}
+                                            className="btn-2"
+
                                             onClick={() => navigate(`/staff/${role}/enrollment-stats/${currentSemester._id}`)}
                                         >
                                             <BarChart3 size={18} /> Enrollment Details

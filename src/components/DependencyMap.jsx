@@ -45,7 +45,7 @@ const DependencyMap = ({ courses, onClose }) => {
         const initialEdges = [];
 
         courses.forEach((course) => {
-            const style = LEVEL_STYLES[course.courseLevel?.toLowerCase()] || { bg: '#fff', border: '#cbd5e1', text: '#1e293b' };
+            const style = LEVEL_STYLES[course.courseLevel?.toLowerCase()] || { bg: '#fff', border: '#cbd5e1', text: 'var( --primary-blue-color)' };
 
             initialNodes.push({
                 id: course._id,

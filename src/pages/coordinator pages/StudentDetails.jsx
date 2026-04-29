@@ -78,14 +78,14 @@ const StudentScheduleModal = ({ isOpen, onClose, studentId }) => {
                         <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'separate', borderSpacing: '8px' }}>
                             <thead>
                                 <tr>
-                                    <th style={{ backgroundColor: '#1e293b', color: 'f8fafc', padding: '15px', borderRadius: '8px', minWidth: '100px' }}>Days</th>
+                                    <th style={{ backgroundColor: 'var( --primary-blue-color)', color: 'f8fafc', padding: '15px', borderRadius: '8px', minWidth: '100px' }}>Days</th>
                                     {[...Array(6)].map((_, i) => {
                                         const pIdx = i * 2;
                                         const periods = scheduleData.schedule.periodsTime;
                                         const pStart = periods[pIdx];
                                         const pEnd = periods[pIdx + 1] || pStart;
                                         return (
-                                            <th key={i} style={{ backgroundColor: '#1e293b', padding: '10px', borderRadius: '8px' }}>
+                                            <th key={i} style={{ backgroundColor: 'var( --primary-blue-color)', padding: '10px', borderRadius: '8px' }}>
                                                 <div style={{ fontSize: '0.9rem', color: '#fff' }}>Session {i + 1}</div>
                                                 <div style={{ fontSize: '0.75rem', color: '#f8fafc', marginTop: '4px' }}>
                                                     {pStart?.startTime} - {pEnd?.endTime}

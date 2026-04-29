@@ -51,7 +51,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #1e293b;
+  color: var( --primary-blue-color);
 }
 
 .semester-modal-overlay .header-title h3 {
@@ -94,7 +94,7 @@
 .semester-modal-overlay .form-group label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var( --primary-blue-color);
   margin-bottom: 6px;
 }
 
@@ -104,7 +104,7 @@
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   font-size: 0.95rem;
-  color: #1e293b;
+  color: var( --primary-blue-color);
   transition: border-color 0.2s;
 }
 
@@ -132,7 +132,7 @@
 .timeline-section h4 {
   margin: 0 0 12px 0;
   font-size: 0.9rem;
-  color: #1e293b;
+  color: var( --primary-blue-color);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -193,7 +193,7 @@
   padding: 10px 24px;
   border-radius: 8px;
   border: none;
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   font-weight: 600;
   cursor: pointer;

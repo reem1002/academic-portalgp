@@ -57,7 +57,7 @@
 .profile-page .insight-label {
     font-size: 17px;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .profile-page .profile-form-layout .form-group {
@@ -68,7 +68,7 @@
     display: block;
     font-size: 13.5px;
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     margin-bottom: 6px;
 }
 
@@ -142,14 +142,14 @@
     padding: 12px;
   border-radius: 10px;
   border: none;
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   font-weight: 550;
   cursor: pointer;
   transition: 0.2s ease;
  }
-.btn-save:hover:not(:disabled) { background: #1e293b; }
-.btn-save:disabled { background: #1e293b; cursor: not-allowed; }
+.btn-save:hover:not(:disabled) { background: var( --primary-blue-color); }
+.btn-save:disabled { background: var( --primary-blue-color); cursor: not-allowed; }
 
 .btn-cancel { background: #186F8F; color: #fff; font-weight: 550; }
 .btn-cancel:hover { background: #2892b8; }

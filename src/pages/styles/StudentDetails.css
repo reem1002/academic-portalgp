@@ -1,10 +1,10 @@
 /* --- Variables & Base Setup --- */
 :root {
-    --primary-color: #1e293b;
+    --primary-color: var( --primary-blue-color);
     --primary-hover: #4338ca;
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
-    --text-main: #1e293b;
+    --text-main: var( --primary-blue-color);
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --success: #22c55e;
@@ -341,12 +341,12 @@
 .level-sophomore { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; } 
 .level-junior { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; } 
 .level-senior, .level-senior-1, .level-senior-2 { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.level-graduated { background-color: #1e293b; color: #ffffff; } 
+.level-graduated { background-color: var( --primary-blue-color); color: #ffffff; } 
 
 
 .reg-new { background-color: #ecfdf5; color: #059669; border: 1px dashed #10b981; }
 .reg-old { background-color: #fff1f2; color: #e11d48; border: 1px dashed #fb7185; }
-.reg-last { background-color: #f8fafc; color: #1e293b; border: 1px dashed #cbd5e1; }
+.reg-last { background-color: #f8fafc; color: var( --primary-blue-color); border: 1px dashed #cbd5e1; }
 
 .badge {
     padding: 4px 12px;
@@ -460,7 +460,7 @@
 .alert-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
 .id-tags { display: flex; gap: 8px; margin: 4px 0 10px 0; }
-.id-badge { background: #f1f5f9; color: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+.id-badge { background: #f1f5f9; color: var( --primary-blue-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
 
 
 /* صف تواصل الطالب الجديد */

@@ -279,7 +279,7 @@ const AdvisingManagementPage = () => {
                                 {filteredAdvisors.length > 0 ? filteredAdvisors.map(adv => (
                                     <tr key={adv._id}>
                                         <td className="course-id-cell">{adv._id}</td>
-                                        <td style={{ fontWeight: '600', color: '#1e293b' }}>{adv.staffName}</td>
+                                        <td style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{adv.staffName}</td>
                                         <td>{adv.email}</td>
                                         <td>{adv.phone}</td>
                                         <td>
@@ -320,7 +320,7 @@ const AdvisingManagementPage = () => {
                                     {filteredLists.length > 0 ? filteredLists.map(list => (
                                         <tr key={list._id}>
                                             <td className="course-id-cell">{list._id}</td>
-                                            <td style={{ fontWeight: '600', color: '#1e293b' }}>{list.advisor?.staffName || <span className="text-muted">Unassigned</span>}</td>
+                                            <td style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{list.advisor?.staffName || <span className="text-muted">Unassigned</span>}</td>
                                             <td><span className="badge">{list.studentsCount} Students</span></td>
                                             <td>
                                                 <button className="btn-edit" onClick={() => fetchListForEdit(list)}>
@@ -350,7 +350,7 @@ const AdvisingManagementPage = () => {
                                 {filteredNonAdvisors.length > 0 ? filteredNonAdvisors.map(staff => (
                                     <tr key={staff._id}>
                                         <td className="course-id-cell">{staff._id}</td>
-                                        <td style={{ fontWeight: '600', color: '#1e293b' }}>{staff.staffName}</td>
+                                        <td style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{staff.staffName}</td>
                                         <td>{staff.email}</td>
                                         <td>
                                             <button

@@ -1,9 +1,9 @@
 /* استخدم نفس متغيرات الألوان اللي بعتها لتوحيد الـ Theme */
 :root {
-    --primary-color: #1e293b;
+    --primary-color: var( --primary-blue-color);
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
-    --text-main: #1e293b;
+    --text-main: var( --primary-blue-color);
     --text-muted: #64748b;
     --border-color: #e2e8f0;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);

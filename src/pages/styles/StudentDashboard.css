@@ -2,7 +2,7 @@
 .sd-page-wrapper {
     padding: 0.85rem 2rem;
     min-height: 100vh;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 /* --- Header --- */
@@ -82,7 +82,7 @@
 
 .sd-section-title-box { display: flex; align-items: center; gap: 0.75rem; }
 .sd-section-title-box h2 { font-size: 1.25rem; font-weight: 700; }
-.sd-primary-icon { color: #1e293b; }
+.sd-primary-icon { color: var( --primary-blue-color); }
 
 .sd-filter-tabs {
     background: #f1f5f9;
@@ -105,7 +105,7 @@
 
 .sd-tab-item.is-active {
     background: #ffffff;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -121,14 +121,14 @@
 }
 
 .sd-ann-item:hover {
-    /* border-color: #1e293b; */
+    /* border-color: var( --primary-blue-color); */
     transform: translateY(-2px);
 
 }
 
 .sd-ann-header { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .sd-ann-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-.sd-ann-content { color: #1e293b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; }
+.sd-ann-content { color: var( --primary-blue-color); font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; }
 
 .sd-ann-footer {
     display: flex;

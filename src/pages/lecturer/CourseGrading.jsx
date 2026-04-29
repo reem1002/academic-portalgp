@@ -277,7 +277,7 @@ const CourseGrading = () => {
                         {Object.entries(course?.gradingSchema || {}).map(([key, val]) => (
                             <div key={key} style={{ flex: 1, padding: '10px', background: '#f8fafc', borderRadius: '10px', textAlign: 'center', border: '1px solid #e2e8f0' }}>
                                 <p style={{ fontSize: '10px', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 'bold' }}>{key}</p>
-                                <p style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e293b' }}>{val}</p>
+                                <p style={{ fontSize: '16px', fontWeight: 'bold', color: 'var( --primary-blue-color)' }}>{val}</p>
                             </div>
                         ))}
                     </div>
@@ -362,7 +362,7 @@ const CourseGrading = () => {
                                                     {s.studentId.studentName.charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontWeight: '600', color: '#1e293b' }}>{s.studentId.studentName}</div>
+                                                    <div style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{s.studentId.studentName}</div>
                                                     <div style={{ fontSize: '11px', color: '#64748b' }}>ID: {s.studentId._id}</div>
                                                 </div>
                                             </div>
@@ -394,7 +394,7 @@ const CourseGrading = () => {
                                                             // ستايل مختلف لو هو حقل غياب عشان اليوزر يعرف إنه ممنوع
                                                             border: isAttendance ? '1px solid #cbd5e1' : (isChanged ? '1px solid #f59e0b' : '1px solid #e2e8f0'),
                                                             backgroundColor: isAttendance ? '#f1f5f9' : (isChanged ? '#fffbeb' : 'white'),
-                                                            color: isAttendance ? '#64748b' : '#1e293b',
+                                                            color: isAttendance ? '#64748b' : 'var( --primary-blue-color)',
                                                             cursor: isAttendance ? 'not-allowed' : 'text'
                                                         }}
                                                     />
@@ -415,7 +415,7 @@ const CourseGrading = () => {
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>GPA Score</p>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                 <Award size={16} color="#f59e0b" />
-                                                                <span style={{ fontWeight: 'bold', color: '#1e293b' }}>{s.studentId.transcript?.GPA || 'N/A'}</span>
+                                                                <span style={{ fontWeight: 'bold', color: 'var( --primary-blue-color)' }}>{s.studentId.transcript?.GPA || 'N/A'}</span>
                                                             </div>
                                                         </div>
                                                         <div>
@@ -426,7 +426,7 @@ const CourseGrading = () => {
                                                         </div>
                                                         <div>
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Regulation</p>
-                                                            <span style={{ fontWeight: '500', color: '#1e293b' }}>{s.studentId.transcript?.regulation || 'Standard'}</span>
+                                                            <span style={{ fontWeight: '500', color: 'var( --primary-blue-color)' }}>{s.studentId.transcript?.regulation || 'Standard'}</span>
                                                         </div>
                                                         <div>
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Contact</p>
@@ -448,7 +448,7 @@ const CourseGrading = () => {
             </div>
 
             {(hasUnsavedChanges || hasAttendanceToSave) && (
-                <div className="unsaved-alert" style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: '#1e293b', color: 'white', padding: '12px 24px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '15px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
+                <div className="unsaved-alert" style={{ position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)', background: 'var( --primary-blue-color)', color: 'white', padding: '12px 24px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '15px', zIndex: 1000, boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
                     <AlertCircle size={20} color="#f59e0b" />
                     <span style={{ fontSize: '13px' }}>Unsaved {hasUnsavedChanges ? "Grades" : ""} {hasUnsavedChanges && hasAttendanceToSave ? "&" : ""} {hasAttendanceToSave ? "Attendance" : ""}</span>
                     <button onClick={saveEverything} style={{ background: '#3b82f6', border: 'none', color: 'white', padding: '6px 18px', borderRadius: '20px', fontWeight: 'bold', cursor: 'pointer' }}>Save Changes</button>

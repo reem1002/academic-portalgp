@@ -1,4 +1,9 @@
-/* اختيار كل العناصر، والعناصر الوهمية قبل وبعد */
+
+:root {
+    --primary-blue-color:  #202A38;
+
+}
+
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -40,7 +45,7 @@ td{
 }
 
 th {
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: #fff;
   font-weight: 600;
 }
@@ -53,7 +58,7 @@ th {
   padding: 12px 15px;
   border-radius: 10px;
   border: none;
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   font-weight: 550;
   cursor: pointer;
@@ -61,7 +66,7 @@ th {
 }
 
 .btn-1:hover {
-  background: #1e293b;
+  background: var( --primary-blue-color);
 }
 .btn-cancel {
    display: flex;
@@ -114,7 +119,7 @@ th {
     font-weight: 550;
     cursor: pointer;
     transition: all 0.2s;
-    background-color: #52637a; 
+    background-color: #1d4d64; 
     color: white;
     border: none;
 }
@@ -154,6 +159,6 @@ th {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #52637a;
+    background: #1d4d64;
     border-radius: 6px;
 }

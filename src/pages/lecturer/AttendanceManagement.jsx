@@ -203,7 +203,7 @@ const AttendanceManagement = () => {
                                 <tr key={student.studentId}>
                                     <td className="sticky-col" style={{ left: 0 }}>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontWeight: '600', color: '#1e293b' }}>{student.studentName}</span>
+                                            <span style={{ fontWeight: '600', color: 'var( --primary-blue-color)' }}>{student.studentName}</span>
                                             <span style={{ fontSize: '11px', color: '#94a3b8' }}>
                                                 ID: {student.studentId} • {presentCount}/{lecDates.length}
                                             </span>

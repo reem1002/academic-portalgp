@@ -13,7 +13,7 @@
   padding:10px 16px;
   border:none;
   border-radius:8px;
-  background:#1e293b;
+  background:var( --primary-blue-color);
   color:white;
   cursor:pointer;
     font-weight:600;
@@ -76,7 +76,7 @@
 }
 
 .courses-table th {
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: #fff;
   font-weight: 600;
 }
@@ -156,7 +156,7 @@ align-items: center;
 }
 
 .search-input:focus {
-    border-color: #1e293b;
+    border-color: var( --primary-blue-color);
 }
 
 .filter-select {
@@ -190,7 +190,7 @@ align-items: center;
 
 .status-badge.draft {
     background: #f1f5f9;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 /* --- تحسين شكل الـ Table Row Status --- */
@@ -239,7 +239,7 @@ align-items: center;
     width: 18px;
     height: 18px;
     cursor: pointer;
-    accent-color: #1e293b;
+    accent-color: var( --primary-blue-color);
 }
 
 .courses-table input[type="checkbox"]:disabled {
@@ -248,7 +248,7 @@ align-items: center;
 }
 
 .status-filter {
-    /* border-left: 3px solid #1e293b; */
+    /* border-left: 3px solid var( --primary-blue-color); */
     font-weight: 500;
 }
 
@@ -340,7 +340,7 @@ align-items: center;
 }
 
 .edit-timeline-btn:hover {
-    background: #1e293b;
+    background: var( --primary-blue-color);
     color: white;
 }
 

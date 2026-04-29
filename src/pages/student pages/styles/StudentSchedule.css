@@ -18,7 +18,7 @@
 
 .title-section h2 {
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-size: 1.4rem;
     margin: 0;
 }
@@ -49,7 +49,7 @@
 
 
 .modern-schedule-table th {
-    background: #1e293b; 
+    background: var( --primary-blue-color); 
     color: #f8fafc;
     padding: 12px 8px;
     text-align: center;
@@ -74,7 +74,7 @@
 /* الخلايا */
 .day-cell {
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     background: #f1f5f9; 
     /* border: 1px solid #f6f5f8; */
     width: 100px;
@@ -117,7 +117,7 @@
 .course-name {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     line-height: 1.1;
     margin: 2px 0;
 }
@@ -182,7 +182,7 @@
 
 /* عناوين الأيام والسيشن */
 .modern-schedule-table th {
-    background: #1e293b;
+    background: var( --primary-blue-color);
     color: #ffffff;
     border-radius: 8px;
     padding: 12px;
@@ -190,7 +190,7 @@
 
 .day-cell {
     background: #f8fafc !important;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     text-align: center;
@@ -213,7 +213,7 @@
 .course-name {
     font-size: 0.85rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     line-height: 1.2;
     margin-bottom: 8px;
 }

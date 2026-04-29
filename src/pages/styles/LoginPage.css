@@ -24,7 +24,7 @@
 
 .login-left {
   flex: 1;
-  background: linear-gradient(180deg, #1e293b 0%, #59759d 100%);
+  background: linear-gradient(180deg, var( --primary-blue-color) 0%, #59759d 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +96,7 @@
 .login-role input[type="radio"] {
   width: 18px;
   height: 18px;
-  accent-color: #1e293b; 
+  accent-color: var( --primary-blue-color); 
 }
 
 .input-group {
@@ -153,7 +153,7 @@
 
 /* زر الدخول */
 .login-button {
-  background-color: #1e293b;
+  background-color: var( --primary-blue-color);
   color: white;
   padding: 15px;
   border: none;

@@ -78,7 +78,7 @@
   gap: 6px;
   padding: 8px 14px;
   font-size: 0.8rem;
-  color: #1e293b;
+  color: var( --primary-blue-color);
   background: #fff;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -160,7 +160,7 @@
   margin-bottom: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var( --primary-blue-color);
 }
 
 .advising-container .form-group input,
@@ -390,7 +390,7 @@
 .advising-container .dropdown-item .name {
     font-size: 14px;
     font-weight: 500;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .advising-container .dropdown-item .id {

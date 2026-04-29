@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Cookies from "js-cookie";
 import swalService from '../services/swal';
-import { FiLogOut, FiMenu, FiChevronLeft, FiSettings } from "react-icons/fi";
+import { FiLogOut, FiMenu, FiChevronLeft, FiSettings, } from "react-icons/fi";
 import { ChevronLeft, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { menuConfig } from "../config/menuConfig";
 import "./styles/AppLayout.css";
@@ -119,12 +119,12 @@ const AppLayout = () => {
                 <div className="sidebar-footer">
                     {collapsed ? (
                         <div className="collapsed-user-trigger" onClick={() => setCollapsed(false)}>
-                            <div className="avatar-placeholder">{user.username?.charAt(0) || "U"}</div>
+                            <div className="avatar-placeholder">{user.username ? user.username.charAt(0).toUpperCase() : "U"}</div>
                         </div>
                     ) : (
                         <div className="user-card">
                             <div className="user-profile-info">
-                                <div className="avatar-placeholder">{user.username?.charAt(0) || "U"}</div>
+                                <div className="avatar-placeholder">{user.username ? user.username.charAt(0).toUpperCase() : "U"}</div>
                                 <div className="user-details">
                                     <span className="user-name">{user.username || "User"}</span>
                                     {userType === "staff" && (
@@ -150,10 +150,10 @@ const AppLayout = () => {
 
                             <div className="footer-actions">
                                 <button className="action-btn settings" onClick={() => navigate(`/${userType}/profile`)}>
-                                    <FiSettings size={16} />
+                                    <FiSettings size={22} />
                                 </button>
                                 <button className="action-btn logout" onClick={logout}>
-                                    <FiLogOut size={16} />
+                                    <FiLogOut size={22} />
                                 </button>
                             </div>
                         </div>

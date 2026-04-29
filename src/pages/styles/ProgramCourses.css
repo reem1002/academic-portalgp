@@ -34,7 +34,7 @@
 }
 
 .main-add-btn {
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   border: none;
   padding: 10px 16px;
@@ -47,7 +47,7 @@
 }
 
 .dropdown-toggle-btn {
-  background: #1e293b;
+  background: var( --primary-blue-color);
   border: none;
   padding: 10px;
   border-radius: 0 8px 8px 0;
@@ -116,7 +116,7 @@
 
 .course-id-cell {
   font-family: monospace;
-  color: #1e293b;
+  color: var( --primary-blue-color);
 }
 
 .type-badge {
@@ -237,7 +237,7 @@
 
 .form-group label {
   font-size: 13px;
-  color: #1e293b;
+  color: var( --primary-blue-color);
 }
 
 .form-group input,
@@ -258,7 +258,7 @@
 ========================= */
 .btn-submit {
   margin-top: 10px;
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   border: none;
   padding: 10px;
@@ -306,7 +306,7 @@
 }
 
 .btn-main {
-  background: #1e293b;
+  background: var( --primary-blue-color);
   color: white;
   border: none;
   padding: 6px 10px;
@@ -403,8 +403,8 @@
 }
 
 .dropdown-list {
-  /* background: #1e293b; */
-  border: 1px solid #1e293b;
+  /* background: var( --primary-blue-color); */
+  border: 1px solid var( --primary-blue-color);
   max-height: 150px;
   overflow-y: auto;
   border-radius: 6px;
@@ -548,7 +548,7 @@
 .drop-zone p {
     margin: 0;
     font-size: 0.95rem;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-weight: 500;
 }
 
@@ -610,7 +610,7 @@
 .insight-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     margin-bottom: 5px;
 }
 
@@ -632,7 +632,7 @@
     background: transparent;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     cursor: pointer;
     outline: none;
     padding: 0;
@@ -642,7 +642,7 @@
 }
 
 .insight-select:hover {
-    color: #1e293b;
+    color: var( --primary-blue-color);
     text-decoration: underline;
 }
 
@@ -733,7 +733,7 @@
 .node-name {
     font-size: 12px;
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     line-height: 1.2;
 }
 
@@ -753,7 +753,7 @@
 }
 
 .tree-header h3 {
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-weight: 700;
 }
 

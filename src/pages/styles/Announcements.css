@@ -61,7 +61,7 @@
   padding: 10px 18px;
   border: none;
   background: #e2e8f0;
-  color: #1e293b;
+  color: var( --primary-blue-color);
   border-radius: 8px;
   cursor: pointer;
   transition: 0.3s;
@@ -371,7 +371,7 @@
     margin-right: 1rem;
 }
 
-.stat-info h3 { font-size: 1.8rem; margin: 0; color: #1e293b; }
+.stat-info h3 { font-size: 1.8rem; margin: 0; color: var( --primary-blue-color); }
 .stat-info p { font-size: 0.85rem; color: #64748b; margin: 0; }
 
 .stat-trend {
@@ -393,7 +393,7 @@
 .chart-header h4 {
     margin: 0 0 1rem 0;
     font-size: 0.9rem;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -428,7 +428,7 @@
     outline: none;
     padding: 0.6rem;
     font-family: inherit;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .content-cell {
@@ -513,7 +513,7 @@
 
 .card-badge {
     background: #eff6ff;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-size: 0.75rem;
     padding: 4px 8px;
     border-radius: 6px;
@@ -525,7 +525,7 @@
 .card-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     margin-bottom: 8px;
 }
 
@@ -550,7 +550,7 @@
     align-items: center;
     gap: 10px;
     font-size: 0.85rem;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .author-avatar {
@@ -580,7 +580,7 @@
     outline: none;
     background: transparent;
     font-size: 0.9rem;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     cursor: pointer;
 }
 
@@ -802,7 +802,7 @@
 
 /* Container for the relative positioning */
 .custom-multiselect-container {
-    position: relative; /* مهم جداً عشان الـ panel تظهر تحته بالظبط */
+    position: relative; 
     width: 100%;
 }
 
@@ -826,14 +826,14 @@
 /* التعديل الجوهري هنا */
 .dropdown-panel {
     position: absolute;
-    top: calc(100% + 5px); /* يظهر تحت التريجر بـ 5 بكسل */
+    top: calc(100% + 5px); 
     left: 0;
     right: 0;
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    z-index: 1000; /* يضمن الظهور فوق أي عنصر تاني */
+    z-index: 1000; 
     display: flex;
     flex-direction: column;
     max-height: 350px;

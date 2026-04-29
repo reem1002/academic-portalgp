@@ -18,7 +18,7 @@
     cursor: pointer;
     appearance: none;
     padding-right: 20px;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     text-decoration: underline;
     outline: none;
 }
@@ -35,7 +35,7 @@
 .insight-value-large {
   font-size: 1.75rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     margin-bottom: 5px;
 }
 
@@ -65,7 +65,7 @@
 /* Table Cell Helpers */
 .student-name-text {
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .capitalize-text {

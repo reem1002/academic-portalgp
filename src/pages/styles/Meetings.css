@@ -85,7 +85,7 @@ Badges for Meeting Status
     margin: 0;
     font-size: 22px;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .text-success { color: #10b981; }

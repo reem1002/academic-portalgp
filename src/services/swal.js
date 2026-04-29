@@ -42,7 +42,7 @@ const swalService = {
             text: text || "You won't be able to revert this!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#1e293b',
+            confirmButtonColor: 'var( --primary-blue-color)',
             cancelButtonColor: '#186F8F',
             confirmButtonText: confirmText,
             cancelButtonText: 'Cancel',

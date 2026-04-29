@@ -98,7 +98,7 @@ padding: 0.5rem 2rem;
     border: none;
     background: transparent;
     outline: none;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-size: 0.9rem;
     cursor: pointer;
 }
@@ -120,7 +120,7 @@ padding: 0.5rem 2rem;
 
 .student-name-main {
     font-weight: 600;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     font-size: 0.9rem;
 }
 
@@ -131,7 +131,7 @@ padding: 0.5rem 2rem;
 
 .badge-all {
     background: #fffedf;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     border: 1px solid #fbf5e7;
     padding: 4px 10px;
     border-radius: 20px;
@@ -243,7 +243,7 @@ padding: 0.5rem 2rem;
     margin: 0;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #1e293b;
+    color: var( --primary-blue-color);
 }
 
 .option-info span {
@@ -341,7 +341,7 @@ padding: 0.5rem 2rem;
 .card-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     margin: 0.5rem 0;
 }
 
@@ -415,7 +415,7 @@ padding: 0.5rem 2rem;
 
 .badge-stu {
     background: #fff0f5;
-    color: #1e293b;
+    color: var( --primary-blue-color);
     border: 1px solid #fbf5e7;
     padding: 4px 10px;
     border-radius: 20px;

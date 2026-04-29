@@ -101,7 +101,7 @@ color:#999;
 }
 
 .edit-timeline-btn:hover {
-    background: #1e293b;
+    background: var( --primary-blue-color);
     color: white;
 }
 
@@ -132,7 +132,7 @@ color:#999;
 }
 
 .edit-timeline-btn:hover {
-    background: #1e293b;
+    background: var( --primary-blue-color);
     color: white;
 }
 

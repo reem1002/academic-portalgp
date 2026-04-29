@@ -188,7 +188,7 @@ const UnassignedStudentsPage = () => {
                 <div className="table-wrapper">
                     {loading ? (
                         <div className="loading-state" style={{ height: '40vh' }}>
-                            <Loader2 className="animate-spin" size={40} color="#1e293b" />
+                            <Loader2 className="animate-spin" size={40} color="var( --primary-blue-color)" />
                             <p>Fetching waiting list...</p>
                         </div>
                     ) : (
@@ -280,7 +280,7 @@ const UnassignedStudentsPage = () => {
                         <div className="modal-body">
                             <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', marginBottom: '20px', borderLeft: '4px solid #3b82f6' }}>
                                 <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>Student Selected:</p>
-                                <p style={{ margin: 0, fontWeight: '600', color: '#1e293b' }}>{selectedStudent?.studentId?.studentName} (#{selectedStudent?.studentId?._id})</p>
+                                <p style={{ margin: 0, fontWeight: '600', color: 'var( --primary-blue-color)' }}>{selectedStudent?.studentId?.studentName} (#{selectedStudent?.studentId?._id})</p>
                             </div>
 
                             <div className="form-group">
