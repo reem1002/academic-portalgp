@@ -224,7 +224,7 @@ const AdvisedStudentDetails = () => {
                         <h2>{transcript.studentId?.studentName}</h2>
                         <div className="id-tags">
                             <span className="id-badge">ID: {transcript.studentId?._id}</span>
-                            
+
                         </div>
                         <div className="status-container">
                             <span className={`badge ${transcript.atRisk ? 'risk' : 'safe'}`}>{transcript.atRisk ? "At Risk" : "Good Standing"}</span>

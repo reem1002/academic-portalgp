@@ -128,7 +128,7 @@
 
 .sd-ann-header { display: flex; justify-content: space-between; margin-bottom: 0.75rem; }
 .sd-ann-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
-.sd-ann-content { color: #475569; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; }
+.sd-ann-content { color: #1e293b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem; }
 
 .sd-ann-footer {
     display: flex;

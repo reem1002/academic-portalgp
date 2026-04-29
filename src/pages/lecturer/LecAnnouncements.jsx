@@ -9,7 +9,7 @@ import swalService from "../../services/swal";
 import api from "../../services/api";
 import "../styles/Announcements.css";
 
-const TAAnnouncements = () => {
+const LecAnnouncements = () => {
     // --- States ---
     const [layout, setLayout] = useState("table");
     const [announcements, setAnnouncements] = useState([]);
@@ -17,7 +17,6 @@ const TAAnnouncements = () => {
     const [students, setStudents] = useState([]);
     const [selectedCourseId, setSelectedCourseId] = useState("");
     const [totalFilterId, setTotalFilterId] = useState("all");
-    const [viewingAnn, setViewingAnn] = useState(null);
 
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFilter, setDateFilter] = useState("");
@@ -28,6 +27,7 @@ const TAAnnouncements = () => {
     const [submitting, setSubmitting] = useState(false);
     const [editingAnn, setEditingAnn] = useState(null);
     const [viewMode, setViewMode] = useState("week");
+    const [viewingAnn, setViewingAnn] = useState(null);
 
     // States for Enhanced Student Dropdown
     const [studentSearch, setStudentSearch] = useState("");
@@ -55,7 +55,7 @@ const TAAnnouncements = () => {
     // 1. Fetch Courses
     const fetchCourses = async () => {
         try {
-            const res = await api.get("/tas/me/courses");
+            const res = await api.get("/lecturers/me/courses");
             const coursesData = Array.isArray(res.data) ? res.data : [];
             setCourses(coursesData);
             if (coursesData.length > 0) {
@@ -71,7 +71,7 @@ const TAAnnouncements = () => {
         if (!selectedCourseId) return;
         try {
             setLoading(true);
-            const res = await api.get(`/tas/me/courses/${selectedCourseId}/announcements`);
+            const res = await api.get(`/lecturers/me/courses/${selectedCourseId}/announcements`);
             setAnnouncements(Array.isArray(res.data) ? res.data : (res.data.data || []));
         } catch (err) {
             console.error("Error fetching announcements:", err);
@@ -97,6 +97,7 @@ const TAAnnouncements = () => {
     useEffect(() => {
         fetchCourses();
 
+        // Handle clicks outside dropdown to close it
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsStudentDropdownOpen(false);
@@ -182,7 +183,7 @@ const TAAnnouncements = () => {
         const result = await swalService.confirm("Delete Announcement?", "This action cannot be undone.");
         if (result.isConfirmed) {
             try {
-                await api.delete(`/tas/me/courses/${id}/announcements`);
+                await api.delete(`/lecturers/me/courses/${id}/announcements`);
                 swalService.success("Deleted!", "Announcement removed.");
                 fetchAnnouncements();
             } catch (err) { swalService.error("Error", "Failed to delete."); }
@@ -211,10 +212,10 @@ const TAAnnouncements = () => {
         try {
             setSubmitting(true);
             if (editingAnn) {
-                await api.put(`/tas/me/courses/${editingAnn._id}/announcements`, formData);
+                await api.put(`/lecturers/me/courses/${editingAnn._id}/announcements`, formData);
                 swalService.success("Updated", "Announcement updated successfully");
             } else {
-                await api.post(`/tas/me/courses/${formData.courseId}/announcements`, formData);
+                await api.post(`/lecturers/me/courses/${formData.courseId}/announcements`, formData);
                 swalService.success("Sent", "Announcement published successfully");
             }
             setIsModalOpen(false);
@@ -302,6 +303,11 @@ const TAAnnouncements = () => {
             {/* Filters Bar */}
             <div className="filters-bar-modern">
                 <div className="filters-upper-row">
+                    {/* <div className="search-box-modern">
+                        <Search size={18} />
+                        <input type="text" placeholder="Search in content..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    </div> */}
+
                     <div className="filter-group-horizontal">
                         <div className="filter-item">
                             <Filter size={16} />
@@ -323,7 +329,10 @@ const TAAnnouncements = () => {
                         <button className={layout === "grid" ? "active" : ""} onClick={() => setLayout("grid")}><LayoutGrid size={20} /></button>
                     </div>
                 </div>
-                <div className="filter-summary" style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                {/* Fixed filter-summary error by removing non-existent targetFilter */}
+                <div className="filter-summary" style={{
+                    display: 'flex', gap: '10px', justifyContent: 'center'
+                }}>
                     Showing <strong>{filteredData.length}</strong> announcements
                     {(typeFilter !== "all" || dateFilter) && " based on your filters"}
                 </div>
@@ -509,7 +518,6 @@ const TAAnnouncements = () => {
             )}
 
 
-
             {/* Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
@@ -619,7 +627,7 @@ const TAAnnouncements = () => {
 
                             <div className="form-group">
                                 <label>Announcement Title</label>
-                                <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Lab Session Update" />
+                                <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. The next lecture has been postponed" />
                             </div>
 
                             <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
@@ -654,4 +662,4 @@ const TAAnnouncements = () => {
     );
 };
 
-export default TAAnnouncements;
+export default LecAnnouncements;

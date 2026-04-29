@@ -292,7 +292,7 @@ const ScheduleManager = () => {
             o.courseId?._id?.toLowerCase().includes(searchTerm.toLowerCase())
         );
 
-    if (loading) return <div className="loader">Initializing Portal...</div>;
+    if (loading) return <div className="management-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>Initializing Schedule Portal...</div>;
 
     return (
         <div className="management-container schedule-container ">

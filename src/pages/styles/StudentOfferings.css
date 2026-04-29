@@ -162,7 +162,7 @@ button {
 .save-btn {
   /* margin-top: 20px; */
   padding: 12px 24px;
-  background: #334155;
+  background: #1e293b;
   border-radius: 10px;
   border: none;
   color: white;
@@ -184,7 +184,7 @@ button {
   /* transform: translateY(-2px);
   filter: brightness(1.1); */
   
-  background: #334155;
+  background: #1e293b;
 }
 
 /* ===== Alerts ===== */
@@ -223,7 +223,7 @@ button {
 
 /* ستايل زرار الإضافة */
 .add-in-table {
-    color: #475569;
+    color: #1e293b;
 }
 
 .add-in-table:hover:not(:disabled) {
@@ -267,7 +267,7 @@ button {
 
 /* ستايل زرار الإضافة */
 .add-in-table {
-    color: #475569;
+    color: #1e293b;
 }
 
 .add-in-table:hover:not(:disabled) {

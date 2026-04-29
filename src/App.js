@@ -32,6 +32,7 @@ import MyCourses from "./pages/lecturer/MyCourses";
 import CourseGrading from "./pages/lecturer/CourseGrading";
 import CourseDetails from "./pages/lecturer/CourseDetails";
 import AttendanceManagement from "./pages/lecturer/AttendanceManagement";
+import LecAnnouncements from "./pages/lecturer/LecAnnouncements"
 
 import MyCoursesTA from "./pages/TA/MyCoursesTA";
 import CourseGradingTA from "./pages/TA/CourseGradingTA";
@@ -117,6 +118,7 @@ function App() {
           <Route path=":role/courses/:courseId" element={<CourseDetails />} />
           <Route path=":role/grading/:id/attendance" element={<AttendanceManagement />} />
           <Route path=":role/lec-Schedule" element={<LecSchedule />} />
+          <Route path=":role/Lec-anouncements" element={<LecAnnouncements />} />
           {/* _______________ */}
           <Route path=":role/ta-courses" element={<MyCoursesTA />} />
           <Route path=":role/ta-grading/:id/:courseId" element={<CourseGradingTA />} />

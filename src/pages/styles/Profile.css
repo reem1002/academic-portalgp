@@ -68,7 +68,7 @@
     display: block;
     font-size: 13.5px;
     font-weight: 600;
-    color: #475569;
+    color: #1e293b;
     margin-bottom: 6px;
 }
 
@@ -148,8 +148,8 @@
   cursor: pointer;
   transition: 0.2s ease;
  }
-.btn-save:hover:not(:disabled) { background: #334155; }
-.btn-save:disabled { background: #334155; cursor: not-allowed; }
+.btn-save:hover:not(:disabled) { background: #1e293b; }
+.btn-save:disabled { background: #1e293b; cursor: not-allowed; }
 
 .btn-cancel { background: #186F8F; color: #fff; font-weight: 550; }
 .btn-cancel:hover { background: #2892b8; }

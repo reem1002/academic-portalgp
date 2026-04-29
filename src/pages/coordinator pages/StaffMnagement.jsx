@@ -389,7 +389,7 @@ const StaffManagement = () => {
                                 <td>
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                         {member.roles.map(role => (
-                                            <span key={role} className="type-badge" style={{ backgroundColor: ROLE_COLORS[role] || "#eee", color: "#334155", border: "1px solid rgba(0,0,0,0.05)" }}>
+                                            <span key={role} className="type-badge" style={{ backgroundColor: ROLE_COLORS[role] || "#eee", color: "#1e293b", border: "1px solid rgba(0,0,0,0.05)" }}>
                                                 {role}
                                             </span>
                                         ))}

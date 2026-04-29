@@ -426,7 +426,7 @@ const CourseGrading = () => {
                                                         </div>
                                                         <div>
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Regulation</p>
-                                                            <span style={{ fontWeight: '500', color: '#475569' }}>{s.studentId.transcript?.regulation || 'Standard'}</span>
+                                                            <span style={{ fontWeight: '500', color: '#1e293b' }}>{s.studentId.transcript?.regulation || 'Standard'}</span>
                                                         </div>
                                                         <div>
                                                             <p style={{ fontSize: '10px', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '4px' }}>Contact</p>

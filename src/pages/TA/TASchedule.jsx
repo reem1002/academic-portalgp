@@ -77,7 +77,7 @@ const TASchedule = () => {
         }
     };
 
-    if (loading) return <div className="loader">Loading your schedule...</div>;
+    if (loading) return <div className="management-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>Loading your schedule...</div>;
 
     if (!isAnnounced || !scheduleData) {
         return (

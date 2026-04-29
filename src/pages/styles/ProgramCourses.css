@@ -116,7 +116,7 @@
 
 .course-id-cell {
   font-family: monospace;
-  color: #334155;
+  color: #1e293b;
 }
 
 .type-badge {
@@ -237,7 +237,7 @@
 
 .form-group label {
   font-size: 13px;
-  color: #475569;
+  color: #1e293b;
 }
 
 .form-group input,
@@ -404,7 +404,7 @@
 
 .dropdown-list {
   /* background: #1e293b; */
-  border: 1px solid #334155;
+  border: 1px solid #1e293b;
   max-height: 150px;
   overflow-y: auto;
   border-radius: 6px;
@@ -548,7 +548,7 @@
 .drop-zone p {
     margin: 0;
     font-size: 0.95rem;
-    color: #475569;
+    color: #1e293b;
     font-weight: 500;
 }
 
@@ -632,7 +632,7 @@
     background: transparent;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #475569;
+    color: #1e293b;
     cursor: pointer;
     outline: none;
     padding: 0;

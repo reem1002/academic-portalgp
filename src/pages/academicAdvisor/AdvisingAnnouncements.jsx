@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import {
     Megaphone, Plus, Search, Edit3, Trash2,
     Calendar, ArrowUpRight, TrendingUp, X,
-    LayoutGrid, List, UserCheck, Check, ChevronDown, User, Filter
+    LayoutGrid, List, UserCheck, Check, ChevronDown, User, Filter, Users, Eye
 } from "lucide-react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import swalService from "../../services/swal";
@@ -23,6 +23,7 @@ const AdvisingAnnouncements = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [editingAnn, setEditingAnn] = useState(null);
+    const [viewingAnn, setViewingAnn] = useState(null); // State for Drawer
     const [viewMode, setViewMode] = useState("week");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -205,11 +206,6 @@ const AdvisingAnnouncements = () => {
             {/* Comprehensive Filters Row */}
             <div className="filters-bar-modern">
                 <div className="filters-upper-row">
-                    {/* <div className="search-box-modern">
-                        <Search size={18} />
-                        <input type="text" placeholder="Search announcements..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div> */}
-
                     <div className="filter-group-horizontal">
                         <div className="filter-item">
                             <Filter size={16} />
@@ -243,7 +239,9 @@ const AdvisingAnnouncements = () => {
                     </div>
                 </div>
 
-                <div className="filter-summary">
+                <div className="filter-summary" style={{
+                    display: 'flex', gap: '10px', justifyContent: 'center'
+                }}>
                     Showing <strong>{filteredData.length}</strong> announcements
                     {(typeFilter !== "all" || targetFilter !== "all" || dateFilter) && " based on your filters"}
                 </div>
@@ -268,23 +266,25 @@ const AdvisingAnnouncements = () => {
                             </thead>
                             <tbody>
                                 {filteredData.map(ann => (
-                                    <tr key={ann._id}>
-                                        <td style={{ fontWeight: '600' }}>{ann.title}</td>
+                                    <tr key={ann._id} onClick={() => setViewingAnn(ann)} style={{ cursor: 'pointer' }}>
+                                        <td className="content-cell" style={{ fontWeight: '550' }}>{ann.title}</td>
                                         <td><span className={`badge-type ${ann.type}`}>{ann.type}</span></td>
                                         <td className="content-cell">{ann.content}</td>
-                                        <td>{ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "No Expiry"}</td>
+                                        <td>{ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "Permanent"}</td>
                                         <td>
                                             {ann.target === "specificStudents" ? (
-                                                <div className="target-info-cell">
-                                                    <div className="student-name-main">{myStudents.find(s => ann.targetIds?.includes(s.id))?.studentName || "Selected Students"}</div>
-                                                    <div className="student-id-sub">{ann.targetIds?.length > 1 ? `+${ann.targetIds.length - 1} more` : ann.targetIds?.[0]}</div>
-                                                </div>
+
+                                                <span className="badge-stu">
+                                                    <Users size={12} style={{ marginRight: '4px' }} />
+                                                    {ann.targetIds?.length} Students
+                                                </span>
                                             ) : (
-                                                <span className="badge-all">All Students</span>
+                                                <span className="badge-all">ِAll Students</span>
                                             )}
                                         </td>
-                                        <td>
-                                            <div className="action-btns">
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <div className="action-btns" >
+                                                {/* <button onClick={() => setViewingAnn(ann)} className="btn-view" title="View Details"><Eye size={18} /></button> */}
                                                 <button onClick={() => handleEdit(ann)} className="btn-edit"><Edit3 size={18} /></button>
                                                 <button onClick={() => handleDelete(ann._id)} className="btn-delete"><Trash2 size={18} /></button>
                                             </div>
@@ -297,12 +297,12 @@ const AdvisingAnnouncements = () => {
                 ) : (
                     <div className="announcements-grid">
                         {filteredData.map(ann => (
-                            <div key={ann._id} className={`announcement-card border-${ann.type}`}>
+                            <div key={ann._id} className={`announcement-card border-${ann.type}`} onClick={() => setViewingAnn(ann)} style={{ cursor: 'pointer' }}>
                                 <div className="card-top">
                                     <span className={`badge-type ${ann.type}`}>{ann.type}</span>
-                                    <div className="action-btns">
-                                        <button onClick={() => handleEdit(ann)} className="btn-edit-small"><Edit3 size={16} /></button>
-                                        <button onClick={() => handleDelete(ann._id)} className="btn-delete-small"><Trash2 size={16} /></button>
+                                    <div className="action-btns" onClick={(e) => e.stopPropagation()}>
+                                        <button className="btn-edit" onClick={() => handleEdit(ann)}><Edit3 size={16} /></button>
+                                        <button onClick={() => handleDelete(ann._id)} className="btn-delete"><Trash2 size={16} /></button>
                                     </div>
                                 </div>
 
@@ -315,14 +315,11 @@ const AdvisingAnnouncements = () => {
                                         <span>Expires: {ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "No Expiry"}</span>
                                     </div>
                                     <div className="meta-row">
-                                        <User size={14} />
+                                        <Users size={14} />
                                         {ann.target === "specificStudents" ? (
-                                            <div className="target-info-cell">
-                                                <div className="student-name-main">{myStudents.find(s => ann.targetIds?.includes(s.id))?.studentName || "Selected Students"}</div>
-                                                <div className="student-id-sub">{ann.targetIds?.length > 1 ? `+${ann.targetIds.length - 1} more` : ann.targetIds?.[0]}</div>
-                                            </div>
+                                            <span className="badge-stu">{ann.targetIds?.length} Selected Students</span>
                                         ) : (
-                                            <span className="badge-all">All Students</span>
+                                            <span className="badge-all">ِAll Students</span>
                                         )}
                                     </div>
                                     <div className="meta-row" style={{ marginTop: '4px', fontWeight: '500' }}>
@@ -337,7 +334,7 @@ const AdvisingAnnouncements = () => {
                 <div className="no-data">No announcements match your criteria.</div>
             )}
 
-            {/* Form Modal with Dropdown Selector */}
+            {/* Form Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal-content large">
@@ -347,6 +344,89 @@ const AdvisingAnnouncements = () => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="form-main-layout">
+                                {!editingAnn && (
+                                    <div className="form-right student-selection-area">
+                                        <label><UserCheck size={16} /> Target Recipient</label>
+                                        <div className="custom-multiselect">
+                                            <div className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                                                <span>
+                                                    {formData.studentsIds.length === 0
+                                                        ? "All Students (Default)"
+                                                        : `${formData.studentsIds.length} Student(s) Selected`}
+                                                </span>
+                                                <ChevronDown size={18} />
+                                            </div>
+
+                                            {isDropdownOpen && (
+                                                <div className="dropdown-panel">
+                                                    <div className="dropdown-search">
+                                                        <Search size={14} />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search student name or ID..."
+                                                            value={studentSearch}
+                                                            onChange={(e) => setStudentSearch(e.target.value)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
+                                                    </div>
+                                                    <div className="dropdown-options">
+                                                        {myStudents
+                                                            .filter(student =>
+                                                                student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                                student.id.toLowerCase().includes(studentSearch.toLowerCase())
+                                                            )
+                                                            .map(student => (
+                                                                <div
+                                                                    key={student.id}
+                                                                    className={`option-item ${formData.studentsIds.includes(student.id) ? 'selected' : ''}`}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        toggleStudentSelection(student.id);
+                                                                    }}
+                                                                >
+                                                                    <div className="check-box">
+                                                                        {formData.studentsIds.includes(student.id) && <Check size={12} />}
+                                                                    </div>
+                                                                    <div className="option-info">
+                                                                        <p>{student.studentName}</p>
+                                                                        <span>{student.id}</span>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        {myStudents.filter(student =>
+                                                            student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
+                                                            student.id.toLowerCase().includes(studentSearch.toLowerCase())
+                                                        ).length === 0 && (
+                                                                <div className="no-results">No students found</div>
+                                                            )}
+                                                    </div>
+                                                    <div className="dropdown-footer">
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setFormData({ ...formData, studentsIds: [] });
+                                                            }}
+                                                        >
+                                                            Clear All
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn-1"
+                                                            onClick={() => {
+                                                                setIsDropdownOpen(false);
+                                                                setStudentSearch("");
+                                                            }}
+                                                        >
+                                                            Done
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="selection-hint">Leave empty to send to your entire advising list.</p>
+                                    </div>
+                                )}
                                 <div className="form-left">
                                     <div className="form-group">
                                         <label>Title</label>
@@ -370,99 +450,86 @@ const AdvisingAnnouncements = () => {
                                     </div>
                                 </div>
 
-                                {!editingAnn && (
-                                    <div className="form-right student-selection-area">
-                                        <label><UserCheck size={16} /> Target Recipient</label>
-                                        <div className="custom-multiselect">
-                                            <div className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
-                                                <span>
-                                                    {formData.studentsIds.length === 0
-                                                        ? "All Students (Default)"
-                                                        : `${formData.studentsIds.length} Student(s) Selected`}
-                                                </span>
-                                                <ChevronDown size={18} />
-                                            </div>
+                                <div className="modal-foot">
+                                    <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}>Cancel</button>
+                                    <button type="submit" disabled={submitting} className="btn-1">
+                                        {submitting ? "Processing..." : editingAnn ? "Update" : "Publish Now"}
+                                    </button>
+                                </div>
+                            </div>
 
-                                            {isDropdownOpen && (
-                                                <div className="dropdown-panel">
-                                                    <div className="dropdown-search">
-                                                        <Search size={14} />
-                                                        <input
-                                                            type="text"
-                                                            placeholder="Search student name or ID..."
-                                                            value={studentSearch} // ربط القيمة بالـ state
-                                                            onChange={(e) => setStudentSearch(e.target.value)} // تحديث الـ state عند الكتابة
-                                                            onClick={(e) => e.stopPropagation()} // منع إغلاق الدروب داون عند الضغط على الـ input
-                                                        />
-                                                    </div>
-                                                    <div className="dropdown-options">
-                                                        {myStudents
-                                                            // إضافة الفلترة هنا
-                                                            .filter(student =>
-                                                                student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                                                student.id.toLowerCase().includes(studentSearch.toLowerCase())
-                                                            )
-                                                            .map(student => (
-                                                                <div
-                                                                    key={student.id}
-                                                                    className={`option-item ${formData.studentsIds.includes(student.id) ? 'selected' : ''}`}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation(); // منع إغلاق القائمة عند اختيار طالب
-                                                                        toggleStudentSelection(student.id);
-                                                                    }}
-                                                                >
-                                                                    <div className="check-box">
-                                                                        {formData.studentsIds.includes(student.id) && <Check size={12} />}
-                                                                    </div>
-                                                                    <div className="option-info">
-                                                                        <p>{student.studentName}</p>
-                                                                        <span>{student.id}</span>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        {/* رسالة في حالة عدم وجود نتائج */}
-                                                        {myStudents.filter(student =>
-                                                            student.studentName.toLowerCase().includes(studentSearch.toLowerCase()) ||
-                                                            student.id.toLowerCase().includes(studentSearch.toLowerCase())
-                                                        ).length === 0 && (
-                                                                <div className="no-results">No students found</div>
-                                                            )}
-                                                    </div>
-                                                    <div className="dropdown-footer">
-                                                        <button
-                                                            type="button"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setFormData({ ...formData, studentsIds: [] });
-                                                            }}
-                                                        >
-                                                            Clear All
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-done"
-                                                            onClick={() => {
-                                                                setIsDropdownOpen(false);
-                                                                setStudentSearch(""); // تصفير البحث عند الانتهاء (اختياري)
-                                                            }}
-                                                        >
-                                                            Done
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <p className="selection-hint">Leave empty to send to your entire advising list.</p>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}>Cancel</button>
-                                <button type="submit" disabled={submitting} className="btn-1">
-                                    {submitting ? "Processing..." : editingAnn ? "Update" : "Publish Now"}
-                                </button>
-                            </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Details Drawer */}
+            {viewingAnn && (
+                <div className="details-drawer-overlay" onClick={() => setViewingAnn(null)}>
+                    <div className="details-drawer" onClick={(e) => e.stopPropagation()}>
+                        <div className="drawer-header">
+                            <div className="drawer-title-area">
+                                <span className={`badge-type ${viewingAnn.type}`}>{viewingAnn.type}</span>
+                                <h3>Announcement Details</h3>
+                            </div>
+                            <button className="close-drawer-btn" onClick={() => setViewingAnn(null)}><X size={20} /></button>
+                        </div>
+
+                        <div className="drawer-content">
+                            <div className="detail-group">
+                                <label>Title</label>
+                                <p className="detail-value title">{viewingAnn.title}</p>
+                            </div>
+
+                            <div className="detail-group">
+                                <label>Content</label>
+                                <p className="detail-value content-full">{viewingAnn.content}</p>
+                            </div>
+
+                            <div className="detail-row-grid">
+                                <div className="detail-group">
+                                    <label><Calendar size={14} /> Published</label>
+                                    <p className="detail-value">{new Date(viewingAnn.createdAt).toLocaleString()}</p>
+                                </div>
+                                <div className="detail-group">
+                                    <label><Calendar size={14} /> Expiry Date</label>
+                                    <p className="detail-value">{viewingAnn.expiresAt ? new Date(viewingAnn.expiresAt).toLocaleDateString() : "Permanent"}</p>
+                                </div>
+                            </div>
+
+                            <div className="detail-group">
+                                <label><Users size={14} /> Audience</label>
+                                <div className="audience-info">
+                                    {viewingAnn.target !== "specificStudents" ? (
+                                        <span className="badge-all">Sent to All Students</span>
+                                    ) : (
+                                        <div className="specific-students-list">
+                                            <p className="sub-label">Selected Students ({viewingAnn.targetIds?.length}):</p>
+                                            <div className="students-chips-container">
+                                                {viewingAnn.targetIds?.map(stdId => {
+                                                    const student = myStudents.find(s => s.id === stdId);
+                                                    return (
+                                                        <div key={stdId} className="student-detail-chip">
+                                                            <User size={12} />
+                                                            <div className="std-info">
+                                                                <span className="std-name">{student?.studentName || "Student"}</span>
+                                                                <span className="std-id">{stdId}</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="drawer-footer">
+                            <button className="btn-1" onClick={() => { handleEdit(viewingAnn); setViewingAnn(null); }}>
+                                <Edit3 size={16} /> Edit Announcement
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

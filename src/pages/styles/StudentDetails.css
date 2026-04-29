@@ -346,7 +346,7 @@
 
 .reg-new { background-color: #ecfdf5; color: #059669; border: 1px dashed #10b981; }
 .reg-old { background-color: #fff1f2; color: #e11d48; border: 1px dashed #fb7185; }
-.reg-last { background-color: #f8fafc; color: #475569; border: 1px dashed #cbd5e1; }
+.reg-last { background-color: #f8fafc; color: #1e293b; border: 1px dashed #cbd5e1; }
 
 .badge {
     padding: 4px 12px;
@@ -460,7 +460,7 @@
 .alert-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
 
 .id-tags { display: flex; gap: 8px; margin: 4px 0 10px 0; }
-.id-badge { background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
+.id-badge { background: #f1f5f9; color: #1e293b; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; }
 
 
 /* صف تواصل الطالب الجديد */

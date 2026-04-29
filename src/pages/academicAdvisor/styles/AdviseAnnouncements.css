@@ -131,7 +131,7 @@ padding: 0.5rem 2rem;
 
 .badge-all {
     background: #fffedf;
-    color: #475569;
+    color: #1e293b;
     border: 1px solid #fbf5e7;
     padding: 4px 10px;
     border-radius: 20px;
@@ -168,7 +168,7 @@ padding: 0.5rem 2rem;
     top: calc(100% + 5px);
     left: 0;
     width: 100%;
-    max-height: 150px;
+    max-height: 350px;
     background: white;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
@@ -412,3 +412,14 @@ padding: 0.5rem 2rem;
     color: var(--text-secondary);
     text-align: center;
 }
+
+.badge-stu {
+    background: #fff0f5;
+    color: #1e293b;
+    border: 1px solid #fbf5e7;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+

@@ -61,7 +61,7 @@ th {
 }
 
 .btn-1:hover {
-  background: #334155;
+  background: #1e293b;
 }
 .btn-cancel {
    display: flex;
@@ -146,3 +146,14 @@ th {
 }
 
 
+
+/* ====== SCROLLBAR ====== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #52637a;
+    border-radius: 6px;
+}

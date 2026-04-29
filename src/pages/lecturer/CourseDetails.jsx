@@ -98,7 +98,7 @@ const CourseDetails = () => {
                         {course.courseId?.prerequisiteCourses?.length > 0 ? (
                             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                 {course.courseId.prerequisiteCourses.map(pre => (
-                                    <span key={pre} className="type-badge" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>{pre}</span>
+                                    <span key={pre} className="type-badge" style={{ backgroundColor: '#f1f5f9', color: '#1e293b' }}>{pre}</span>
                                 ))}
                             </div>
                         ) : (

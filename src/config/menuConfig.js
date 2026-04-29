@@ -118,6 +118,11 @@ export const menuConfig = {
             path: "/staff/lecturer/lec-Schedule",
             icon: <CalendarDays size={iconSize} />
         },
+        {
+            name: "Anouncements",
+            path: "/staff/lecturer/Lec-anouncements",
+            icon: <Megaphone size={iconSize} />
+        }
 
     ],
 

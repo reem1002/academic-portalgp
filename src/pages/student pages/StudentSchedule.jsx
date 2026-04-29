@@ -89,7 +89,7 @@ const StudentSchedule = () => {
         }
     };
 
-    if (loading) return <div className="loader">Loading schedules...</div>;
+    if (loading) return <div className="management-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>Loading schedules...</div>;
 
     if (!isAnnounced || !personalSchedule) {
         return (

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useMemo } from "react";
 import {
     Megaphone, Users, Plus, Search, Edit3, Trash2,
-    Calendar, Globe, ArrowUpRight, TrendingUp, X,
-    LayoutGrid, List
+    Calendar, Globe, ArrowUpRight, TrendingUp, X, User,
+    LayoutGrid, List, UserCheck, ChevronDown, Check
 } from "lucide-react";
 import { AreaChart, Area, Tooltip, ResponsiveContainer } from 'recharts';
 import swalService from "../../services/swal";
 import api from "../../services/api";
+
 import "../styles/Announcements.css";
+
 
 const Announcements = () => {
     const [activeTab, setActiveTab] = useState("department");
@@ -18,15 +20,41 @@ const Announcements = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [formData, setFormData] = useState({ title: "", content: "" });
     const [editingAnn, setEditingAnn] = useState(null);
     const [viewMode, setViewMode] = useState("week");
     const [advisingLists, setAdvisingLists] = useState([]);
     const [selectedAdvId, setSelectedAdvId] = useState("");
+    const [viewingAnn, setViewingAnn] = useState(null);
+
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [Students, setStudents] = useState([]);
+    const [studentSearch, setStudentSearch] = useState("");
+
+    // تم دمج الـ State هنا ومنع التكرار لضمان عمل الفورم بشكل صحيح
+    const [formData, setFormData] = useState({
+        title: "",
+        content: "",
+        type: "general",
+        expiresAt: "",
+        studentsIds: []
+    });
+
+    const types = ["general", "urgent", "event", "deadline", "warning"];
 
     const getDateKey = (date) => {
         const d = new Date(date);
         return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    };
+
+    const fetchStudents = async () => {
+        try {
+            const res = await api.get("/transcripts");
+            console.log(res.data)
+            const data = res.data?.data || res.data || [];
+            setStudents(data);
+        } catch (err) {
+            console.error("Error fetching students:", err);
+        }
     };
 
     const fetchAdvisingLists = async () => {
@@ -34,7 +62,7 @@ const Announcements = () => {
             const res = await api.get("/advisors/advising-lists/all");
             setAdvisingLists(res.data);
             if (res.data.length > 0 && !selectedAdvId) {
-                setSelectedAdvId(res.data[0]._id); // اختيار أول واحدة تلقائياً
+                setSelectedAdvId(res.data[0]._id);
             }
         } catch (err) {
             console.error("Error fetching advising lists:", err);
@@ -42,6 +70,7 @@ const Announcements = () => {
     };
 
     useEffect(() => {
+        fetchStudents();
         if (activeTab === "advising") {
             fetchAdvisingLists();
         }
@@ -54,7 +83,6 @@ const Announcements = () => {
             if (activeTab === "department") {
                 res = await api.get("/announcements/");
             } else {
-                // لو مفيش ID مختار لسه، متبعثش الريكويست
                 if (!selectedAdvId) {
                     setAnnouncements([]);
                     setLoading(false);
@@ -97,9 +125,24 @@ const Announcements = () => {
         });
     }, [announcements, viewMode]);
 
+    const toggleStudentSelection = (id) => {
+        setFormData(prev => ({
+            ...prev,
+            studentsIds: prev.studentsIds.includes(id)
+                ? prev.studentsIds.filter(sid => sid !== id)
+                : [...prev.studentsIds, id]
+        }));
+    };
+
     const handleEdit = (ann) => {
         setEditingAnn(ann);
-        setFormData({ title: ann.title, content: ann.content });
+        setFormData({
+            title: ann.title,
+            content: ann.content,
+            type: ann.type || "general",
+            expiresAt: ann.expiresAt ? new Date(ann.expiresAt).toISOString().split('T')[0] : "",
+            studentsIds: ann.targetIds || []
+        });
         setIsModalOpen(true);
     };
 
@@ -127,24 +170,22 @@ const Announcements = () => {
 
         try {
             setSubmitting(true);
+            const payload = {
+                ...formData,
+                target: activeTab === "department" ? "all" : (formData.studentsIds.length > 0 ? "specificStudents" : "advising")
+            };
+
             if (editingAnn) {
-                await api.put(`/announcements/${editingAnn._id}`, {
-                    ...formData,
-                    semesterId: editingAnn.semesterId,
-                    target: editingAnn.target
-                });
+                await api.put(`/announcements/${editingAnn._id}`, payload);
                 swalService.success("Updated!", "Announcement updated successfully.");
             } else {
-                await api.post("/announcements/", {
-                    ...formData,
-                    target: activeTab === "department" ? "all" : "advising"
-                });
+                await api.post("/announcements/", payload);
                 swalService.success("Created!", "New announcement has been posted.");
             }
 
             setIsModalOpen(false);
             setEditingAnn(null);
-            setFormData({ title: "", content: "" });
+            setFormData({ title: "", content: "", type: "general", expiresAt: "", studentsIds: [] });
             fetchAnnouncements();
         } catch (err) {
             swalService.error("Save Error", err.response?.data?.message || "Something went wrong while saving.");
@@ -170,7 +211,11 @@ const Announcements = () => {
                 <div className="prereg-header">
                     <h2>Announcements</h2>
                 </div>
-                <button className="btn-1" onClick={() => { setEditingAnn(null); setFormData({ title: "", content: "" }); setIsModalOpen(true); }}>
+                <button className="btn-1" onClick={() => {
+                    setEditingAnn(null);
+                    setFormData({ title: "", content: "", type: "general", expiresAt: "", studentsIds: [] });
+                    setIsModalOpen(true);
+                }}>
                     <Plus size={18} /> Create New
                 </button>
             </div>
@@ -242,17 +287,11 @@ const Announcements = () => {
                             </select>
                         </div>
                     )}
-
-                    {/* <div className="search-box-modern">
-                        <Search size={18} />
-                        <input type="text" placeholder="Search..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    </div> */}
                     <div className="date-filter-box">
                         <Calendar size={18} />
                         <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} />
                         {dateFilter && <X size={14} className="clear-date" onClick={() => setDateFilter("")} />}
                     </div>
-                    {/* Layout Switcher */}
                     <div className="layout-toggle">
                         <button className={layout === "table" ? "active" : ""} onClick={() => setLayout("table")} title="Table View">
                             <List size={20} />
@@ -261,7 +300,6 @@ const Announcements = () => {
                             <LayoutGrid size={20} />
                         </button>
                     </div>
-
                 </div>
             </div>
 
@@ -270,27 +308,37 @@ const Announcements = () => {
                 <div className="loading-state">Loading...</div>
             ) : filteredData.length > 0 ? (
                 layout === "table" ? (
-                    /* Table View */
                     <div className="table-wrapper">
                         <table className="advising-table">
                             <thead>
                                 <tr>
                                     <th>Title</th>
-                                    <th>Content</th>
-                                    <th>Date</th>
-                                    <th>Author</th>
+                                    <th>Type</th>
+                                    <th>Content Preview</th>
+                                    <th>Expiry Date</th>
+                                    <th>Target Recipient</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredData.map(ann => (
-                                    <tr key={ann._id}>
-                                        <td style={{ fontWeight: '600', color: '#1e293b' }}>{ann.title}</td>
+                                    <tr key={ann._id} onClick={() => setViewingAnn(ann)} style={{ cursor: 'pointer' }}>
+                                        <td className="content-cell" style={{ fontWeight: '600' }}>{ann.title}</td>
+                                        <td><span className={`badge-type ${ann.type}`}>{ann.type}</span></td>
                                         <td className="content-cell">{ann.content}</td>
-                                        <td>{new Date(ann.createdAt).toLocaleDateString()}</td>
-                                        <td>{ann.staffId?.staffName || "Admin"}</td>
+                                        <td>{ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "Permanent"}</td>
                                         <td>
-                                            <div className="action-btns">
+                                            {ann.target === "specificStudents" ? (
+                                                <span className="badge-stu">
+                                                    <Users size={12} style={{ marginRight: '4px' }} />
+                                                    {ann.targetIds?.length} Students
+                                                </span>
+                                            ) : (
+                                                <span className="badge-all">All Students</span>
+                                            )}
+                                        </td>
+                                        <td onClick={(e) => e.stopPropagation()}>
+                                            <div className="action-btns" >
                                                 <button onClick={() => handleEdit(ann)} className="btn-edit"><Edit3 size={18} /></button>
                                                 <button onClick={() => handleDelete(ann._id)} className="btn-delete"><Trash2 size={18} /></button>
                                             </div>
@@ -301,23 +349,33 @@ const Announcements = () => {
                         </table>
                     </div>
                 ) : (
-                    /* Cards View (Grid) */
                     <div className="announcements-grid">
                         {filteredData.map(ann => (
-                            <div key={ann._id} className="announcement-card">
-                                <div className="card-header">
-                                    <div className="card-badge">{new Date(ann.createdAt).toLocaleDateString()}</div>
-                                    <div className="card-actions">
-                                        <button onClick={() => handleEdit(ann)} className="btn-edit"><Edit3 size={16} /></button>
+                            <div key={ann._id} className={`announcement-card border-${ann.type}`} onClick={() => setViewingAnn(ann)} style={{ cursor: 'pointer' }}>
+                                <div className="card-top">
+                                    <span className={`badge-type ${ann.type}`}>{ann.type}</span>
+                                    <div className="action-btns" onClick={(e) => e.stopPropagation()}>
+                                        <button className="btn-edit" onClick={() => handleEdit(ann)}><Edit3 size={16} /></button>
                                         <button onClick={() => handleDelete(ann._id)} className="btn-delete"><Trash2 size={16} /></button>
                                     </div>
                                 </div>
                                 <h3 className="card-title">{ann.title}</h3>
                                 <p className="card-content">{ann.content}</p>
-                                <div className="card-footer">
-                                    <div className="author-info">
-                                        <div className="author-avatar">{ann.staffId?.staffName?.charAt(0) || "A"}</div>
-                                        <span>{ann.staffId?.staffName || "Admin"}</span>
+                                <div className="card-meta-info">
+                                    <div className="meta-row">
+                                        <Calendar size={14} />
+                                        <span>Expires: {ann.expiresAt ? new Date(ann.expiresAt).toLocaleDateString() : "No Expiry"}</span>
+                                    </div>
+                                    <div className="meta-row">
+                                        <Users size={14} />
+                                        {ann.target === "specificStudents" ? (
+                                            <span className="badge-stu">{ann.targetIds?.length} Selected Students</span>
+                                        ) : (
+                                            <span className="badge-all">All Students</span>
+                                        )}
+                                    </div>
+                                    <div className="meta-row" style={{ marginTop: '4px', fontWeight: '500' }}>
+                                        <span className="date-text">Created: {new Date(ann.createdAt).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             </div>
@@ -328,30 +386,209 @@ const Announcements = () => {
                 <div className="no-data">No announcements found.</div>
             )}
 
-            {/* Modal */}
+            {/* Form Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
-                    <div className="modal-content">
+                    <div className="modal-content large">
                         <div className="modal-header">
-                            <h3>{editingAnn ? "Edit Announcement" : "New Announcement"}</h3>
-                            <button className="close-btn" onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+                            <h3>{editingAnn ? "Edit Announcement" : "Create New Announcement"}</h3>
+                            <button className="close-btn" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}>
+                                <X size={20} />
+                            </button>
                         </div>
                         <form onSubmit={handleSubmit}>
-                            <div className="form-group">
-                                <label>Title</label>
-                                <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
+                            <div className="form-main-layout">
+                                {!editingAnn && (
+                                    <div className="form-right student-selection-area">
+                                        <label><UserCheck size={16} /> Target Recipient</label>
+                                        <div className="custom-multiselect-container">
+                                            <div className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+                                                <span>
+                                                    {formData.studentsIds.length === 0
+                                                        ? "All Students (Default)"
+                                                        : `${formData.studentsIds.length} Student(s) Selected`}
+                                                </span>
+                                                <ChevronDown size={18} />
+                                            </div>
+
+                                            {isDropdownOpen && (
+                                                <div className="dropdown-panel">
+                                                    <div className="dropdown-search">
+                                                        <Search size={14} />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search student name or ID..."
+                                                            value={studentSearch}
+                                                            onChange={(e) => setStudentSearch(e.target.value)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        />
+                                                    </div>
+                                                    <div className="dropdown-options">
+                                                        {Students
+                                                            .filter(student => {
+                                                                const name = student.studentId?.studentName?.toLowerCase() || "";
+                                                                const id = student.studentId?._id?.toLowerCase() || "";
+                                                                const search = studentSearch.toLowerCase();
+                                                                return name.includes(search) || id.includes(search);
+                                                            })
+                                                            .map(student => {
+                                                                const sId = student.studentId?._id;
+                                                                const sName = student.studentId?.studentName;
+                                                                if (!sId) return null;
+
+                                                                return (
+                                                                    <div
+                                                                        key={sId}
+                                                                        className={`option-item ${formData.studentsIds.includes(sId) ? 'selected' : ''}`}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            toggleStudentSelection(sId);
+                                                                        }}
+                                                                    >
+                                                                        <div className="check-box">
+                                                                            {formData.studentsIds.includes(sId) && <Check size={12} />}
+                                                                        </div>
+                                                                        <div className="option-info">
+                                                                            <p>{sName}</p>
+                                                                            <span>{sId}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        {Students.length === 0 && <div className="no-results">No students available</div>}
+                                                    </div>
+                                                    <div className="dropdown-footer">
+                                                        <button
+                                                            type="button"
+                                                            className="btn-clear"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setFormData({ ...formData, studentsIds: [] });
+                                                            }}
+                                                        >
+                                                            Clear All
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="btn-1"
+                                                            onClick={() => {
+                                                                setIsDropdownOpen(false);
+                                                                setStudentSearch("");
+                                                            }}
+                                                        >
+                                                            Done
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <p className="selection-hint">Leave empty to send to your entire advising list.</p>
+                                    </div>
+                                )}
+                                <div className="form-left">
+                                    <div className="form-group">
+                                        <label>Title</label>
+                                        <input
+                                            required
+                                            value={formData.title}
+                                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                            placeholder="e.g., Registration Deadline"
+                                        />
+                                    </div>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Type</label>
+                                            <select value={formData.type} onChange={e => setFormData({ ...formData, type: e.target.value })}>
+                                                {types.map(t => <option key={t} value={t}>{t.toUpperCase()}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Expiry Date</label>
+                                            <input type="date" value={formData.expiresAt} onChange={e => setFormData({ ...formData, expiresAt: e.target.value })} />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Message Content</label>
+                                        <textarea
+                                            required
+                                            rows="5"
+                                            value={formData.content}
+                                            onChange={e => setFormData({ ...formData, content: e.target.value })}
+                                            placeholder="Write your message here..."
+                                        />
+                                    </div>
+                                </div>
+                                <div className="modal-foot">
+                                    <button type="button" className="btn-cancel" onClick={() => { setIsModalOpen(false); setIsDropdownOpen(false); }}>Cancel</button>
+                                    <button type="submit" disabled={submitting} className="btn-1">
+                                        {submitting ? "Processing..." : editingAnn ? "Update" : "Publish Now"}
+                                    </button>
+                                </div>
+
                             </div>
-                            <div className="form-group">
-                                <label>Content</label>
-                                <textarea required rows="4" value={formData.content} onChange={e => setFormData({ ...formData, content: e.target.value })} />
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" onClick={() => setIsModalOpen(false)}>Cancel</button>
-                                <button type="submit" disabled={submitting} className="btn-1">
-                                    {submitting ? "Saving..." : editingAnn ? "Update" : "Create"}
-                                </button>
-                            </div>
+
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* Details Drawer */}
+            {viewingAnn && (
+                <div className="details-drawer-overlay" onClick={() => setViewingAnn(null)}>
+                    <div className="details-drawer" onClick={(e) => e.stopPropagation()}>
+                        <div className="drawer-header">
+                            <div className="drawer-title-area">
+                                <span className={`badge-type ${viewingAnn.type}`}>{viewingAnn.type}</span>
+                                <h3>Announcement Details</h3>
+                            </div>
+                            <button className="close-drawer-btn" onClick={() => setViewingAnn(null)}><X size={20} /></button>
+                        </div>
+
+                        <div className="drawer-content">
+                            <div className="detail-group">
+                                <label>Title</label>
+                                <p className="detail-value title">{viewingAnn.title}</p>
+                            </div>
+                            <div className="detail-group">
+                                <label>Content</label>
+                                <p className="detail-value content-full">{viewingAnn.content}</p>
+                            </div>
+                            <div className="detail-row-grid">
+                                <div className="detail-group">
+                                    <label><Calendar size={14} /> Published</label>
+                                    <p className="detail-value">{new Date(viewingAnn.createdAt).toLocaleString()}</p>
+                                </div>
+                                <div className="detail-group">
+                                    <label><Calendar size={14} /> Expiry Date</label>
+                                    <p className="detail-value">{viewingAnn.expiresAt ? new Date(viewingAnn.expiresAt).toLocaleDateString() : "Permanent"}</p>
+                                </div>
+                            </div>
+                            <div className="detail-group">
+                                <label><Users size={14} /> Audience</label>
+                                <div className="audience-info">
+                                    {viewingAnn.target !== "specificStudents" ? (
+                                        <span className="badge-all">Sent to All Students</span>
+                                    ) : (
+                                        <div className="specific-students-list">
+                                            <p className="sub-label">Selected Students ({viewingAnn.targetIds?.length}):</p>
+                                            <div className="students-chips-container">
+                                                {viewingAnn.targetIds?.map(stdId => {
+                                                    const student = Students.find(s => s.id === stdId);
+                                                    return (
+                                                        <div key={stdId} className="student-detail-chip">
+                                                            <User size={12} />
+                                                            <div className="std-info">
+                                                                <span className="std-name">{student?.studentName || "Student"}</span>
+                                                                <span className="std-id">{stdId}</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
