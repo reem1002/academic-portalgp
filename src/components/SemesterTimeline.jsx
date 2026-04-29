@@ -13,15 +13,42 @@ const SemesterTimeline = ({ startDate, endDate, timeLine, semesterId, onUpdate }
     });
 
     const today = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
 
-    // حساب شريط التقدم
-    const totalDuration = end - start;
-    const progress = Math.min(Math.max((today - start) / totalDuration, 0), 1);
+    // مصفوفة الأحداث مرتبة زمنياً لحساب التقدم وتوزيع النقط
+    const academicEvents = [
+        { name: "Semester Start", date: new Date(startDate), isBoundary: true },
+        { name: "Pre-Registration", key: "preRegistration", dates: timeLine?.preRegistration, date: new Date(timeLine?.preRegistration?.start) },
+        { name: "Add / Drop", key: "addDrop", dates: timeLine?.addDrop, date: new Date(timeLine?.addDrop?.start) },
+        { name: "Final Exams", key: "finalExams", dates: timeLine?.finalExams, date: new Date(timeLine?.finalExams?.start) },
+        { name: "Semester End", date: new Date(endDate), isBoundary: true }
+    ];
+
+    // دالة حساب التقدم الذكي بين النقط الثابتة (Space Between)
+    const calculateProgress = () => {
+        const totalPoints = academicEvents.length;
+        const segmentWidth = 100 / (totalPoints - 1); // كل قسم يمثل 25% من الشريط
+
+        for (let i = 0; i < totalPoints - 1; i++) {
+            const currentEventDate = academicEvents[i].date;
+            const nextEventDate = academicEvents[i + 1].date;
+
+            if (today >= currentEventDate && today <= nextEventDate) {
+                const timePassedInSegment = today - currentEventDate;
+                const segmentTotalDuration = nextEventDate - currentEventDate;
+                const segmentProgress = timePassedInSegment / segmentTotalDuration;
+
+                return (i * segmentWidth) + (segmentProgress * segmentWidth);
+            }
+        }
+
+        if (today > academicEvents[totalPoints - 1].date) return 100;
+        return 0;
+    };
+
+    const progressPercentage = calculateProgress();
 
     const format = (dateStr) => {
-        if (!dateStr) return "N/A";
+        if (!dateStr || isNaN(new Date(dateStr))) return "N/A";
         return new Date(dateStr).toLocaleDateString('en-GB', {
             day: '2-digit',
             month: 'short'
@@ -47,12 +74,10 @@ const SemesterTimeline = ({ startDate, endDate, timeLine, semesterId, onUpdate }
         });
     };
 
-
-
     const handleUpdate = async (e) => {
         e.preventDefault();
 
-        // 1. التحقق من المنطق (مثلاً: تاريخ النهاية ميكونش قبل البداية)
+        // 1. التحقق من المنطق
         if (new Date(editModal.dates.start) > new Date(editModal.dates.end)) {
             return swalService.error("Invalid Dates", "End date cannot be earlier than start date.");
         }
@@ -80,44 +105,44 @@ const SemesterTimeline = ({ startDate, endDate, timeLine, semesterId, onUpdate }
         }
     };
 
-    const academicEvents = [
-        { name: "Pre-Registration", key: "preRegistration", dates: timeLine?.preRegistration },
-        { name: "Add / Drop", key: "addDrop", dates: timeLine?.addDrop },
-        { name: "Final Exams", key: "finalExams", dates: timeLine?.finalExams }
-    ];
-
     return (
         <div className="timeline-wrapper">
             <h3>Semester Timeline</h3>
             <div className="timeline-container">
+                {/* شريط التقدم الخلفي */}
                 <div className="timeline-line">
-                    <div className="timeline-progress" style={{ width: `${progress * 100}%` }}></div>
+                    <div className="timeline-progress" style={{ width: `${progressPercentage}%` }}></div>
                 </div>
 
+                {/* توزيع النقط بـ Space Between */}
                 <div className="timeline-events">
-                    <div className="timeline-point start">
-                        <span></span>
-                        <p>Semester Start</p>
-                        <small>{format(startDate)}</small>
-                    </div>
+                    {academicEvents.map((event, i) => {
+                        const isReached = today >= event.date;
+                        const isCurrentActive = event.dates ? isActive(event.dates.start, event.dates.end) : false;
 
-                    {academicEvents.map((event, i) => (
-                        <div key={i} className={`timeline-point ${isActive(event.dates?.start, event.dates?.end) ? "active" : ""}`}>
-                            {/* أيقونة القلم للتعديل */}
-                            <button className="edit-timeline-btn" onClick={() => openEdit(event.key, event.dates)}>
-                                <Edit2 size={12} />
-                            </button>
-                            <span></span>
-                            <h4>{event.name}</h4>
-                            <p>{format(event.dates?.start)} — {format(event.dates?.end)}</p>
-                        </div>
-                    ))}
+                        return (
+                            <div key={i} className={`timeline-point ${isReached ? "reached" : ""} ${isCurrentActive ? "active" : ""}`}>
 
-                    <div className="timeline-point end">
-                        <span></span>
-                        <p>Semester End</p>
-                        <small>{format(endDate)}</small>
-                    </div>
+                                {/* أيقونة التعديل تظهر فقط للأحداث القابلة للتعديل */}
+                                {event.key && (
+                                    <button className="edit-timeline-btn" onClick={() => openEdit(event.key, event.dates)}>
+                                        <Edit2 size={12} />
+                                    </button>
+                                )}
+
+                                <span></span>
+
+                                <div className="label-content">
+                                    <h4>{event.name}</h4>
+                                    {event.isBoundary ? (
+                                        <small>{format(event.date)}</small>
+                                    ) : (
+                                        <p>{format(event.dates?.start)} — {format(event.dates?.end)}</p>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

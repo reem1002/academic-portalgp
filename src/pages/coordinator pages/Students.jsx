@@ -351,7 +351,6 @@ const Students = () => {
             {(filterReg || filterLevel || filterStatus || search) && (
                 <div className="active-filters-bar">
                     <div className="filters-info">
-                        <Search size={16} />
                         <span>Showing results for: </span>
                         {search && <span className="filter-chip">Search: "{search}"</span>}
                         {filterReg && <span className="filter-chip">Reg: {filterReg}</span>}

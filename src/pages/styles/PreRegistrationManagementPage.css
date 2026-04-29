@@ -141,7 +141,7 @@
   flex: 1;
   display: flex;
   gap: 10px;
-max-width: 40%;
+/* max-width: 40%; */
 align-items: center;
 }
 
@@ -193,9 +193,7 @@ align-items: center;
     color: var( --primary-blue-color);
 }
 
-/* --- تحسين شكل الـ Table Row Status --- */
-/* ملحوظة: خلي بالك إن td واخد background-color: #fff في كودك القديم، ده هيداري على لون الـ tr */
-/* الحل نعدل الـ selector كدة: */
+
 
 .courses-table tr.row-status-open td { 
     background-color: #f0fdf4 !important; /* أخضر أرق بكتير */
