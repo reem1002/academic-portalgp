@@ -18,9 +18,12 @@ import {
     ShieldCheck,
     UserCog,
     Calendar,
-    CalendarDays, // أيقونة للجدول
-    BellRing,     // أيقونة للإعلانات
-    MessagesSquare // أيقونة للمقابلات
+    CalendarDays,
+    BellRing,
+    MessagesSquare,
+    FileText,    // أيقونة جديدة للطلبات
+    Layers,      // أيقونة إضافية محتملة
+    Clock        // أيقونة للسجل التاريخي
 } from "lucide-react";
 
 const iconSize = 20;
@@ -55,7 +58,7 @@ export const menuConfig = {
         {
             name: "Requests",
             path: "/student/St-Requests",
-            icon: <CalendarDays size={iconSize} />
+            icon: <FileText size={iconSize} />
         },
     ],
 
@@ -93,7 +96,7 @@ export const menuConfig = {
         {
             name: "Anouncements",
             path: "/staff/coordinator/Anouncements",
-            icon: <BellRing size={iconSize} /> // تم التغيير لتمييز الإعلانات
+            icon: <BellRing size={iconSize} />
         },
         {
             name: "Schedule",
@@ -108,7 +111,7 @@ export const menuConfig = {
         {
             name: "Requests",
             path: "/staff/coordinator/coo-Requests",
-            icon: <CalendarDays size={iconSize} />
+            icon: <FileText size={iconSize} />
         },
     ],
 
@@ -133,7 +136,6 @@ export const menuConfig = {
             path: "/staff/lecturer/Lec-anouncements",
             icon: <Megaphone size={iconSize} />
         }
-
     ],
 
     "academic-advisor": [
@@ -160,7 +162,7 @@ export const menuConfig = {
         {
             name: "Requests",
             path: "/staff/academic-advisor/Adv-Requests",
-            icon: <CalendarDays size={iconSize} />
+            icon: <FileText size={iconSize} />
         },
     ],
 
@@ -179,7 +181,7 @@ export const menuConfig = {
             name: "Schedule",
             path: "/staff/ta/ta-Schedule",
             icon: <CalendarDays size={iconSize} />
-        }, ,
+        },
         {
             name: "Anouncements",
             path: "/staff/ta/TA-anouncements",
