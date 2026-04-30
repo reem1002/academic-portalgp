@@ -4,7 +4,7 @@ import api from "../../services/api";
 import swalService from "../../services/swal";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
-    Trash2, Settings, X, RefreshCw, Layers, User, Hash, Menu, Download, Megaphone, Search, Eye, Save, Clock
+    Trash2, Settings, X, RefreshCw, Layers, User, Hash, Menu, Download, Megaphone, Search, Eye, Save, Clock, Users
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -138,7 +138,6 @@ const ScheduleManager = () => {
     const handleScheduleError = (err) => {
         const errorData = err.response?.data;
         if (errorData?.conflictCourses) {
-            // Updated Conflict UI with View Profile logic
             window.viewStudent = (id) => navigate(`/staff/${role}/students/${id}`);
 
             const conflictRows = errorData.conflictCourses.map(c =>
@@ -259,12 +258,19 @@ const ScheduleManager = () => {
     const renderCourseCard = (offering, isInsideGrid = false) => (
         <div className={`uniform-card-s ${isInsideGrid ? 'grid-version' : ''}`} title={offering.courseId?.courseName}>
             {isInsideGrid && (
-                <button className="len-btn" onClick={(e) => {
-                    e.stopPropagation();
-                    toggleLecLength(offering);
-                }}>
-                    <Layers size={10} /> {offering.schedule?.lecLength}P
-                </button>
+                <div className="card-top-badges">
+                    <button className="len-btn" onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLecLength(offering);
+                    }}>
+                        <Layers size={10} /> {offering.schedule?.lecLength}P
+                    </button>
+                    {offering.enrolledCount !== undefined && (
+                        <div className="enroll-badge" title="Enrolled Students">
+                            <Users size={10} /> {offering.enrolledCount}
+                        </div>
+                    )}
+                </div>
             )}
             <div className="course-header-row">
                 <p className="course-name-text-s">
@@ -280,6 +286,12 @@ const ScheduleManager = () => {
                     <User size={12} />
                     <span>{offering.instructorId?.staffName || "No Instructor"}</span>
                 </div>
+                {!isInsideGrid && offering.enrolledCount !== undefined && (
+                    <div className="detail-item-s enrollment-info">
+                        <Users size={12} />
+                        <span>{offering.enrolledCount} Students</span>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -392,7 +404,6 @@ const ScheduleManager = () => {
                                 </button>
                             </div>
 
-                            {/* Catalog Search Input */}
                             <div className="sidebar-search-wrapper">
                                 <Search size={14} className="search-icon-inside" />
                                 <input
@@ -439,7 +450,6 @@ const ScheduleManager = () => {
 
             </DragDropContext>
 
-            {/* Enhanced Settings Modal */}
             {isModalOpen && (
                 <div className="modal-overlay">
                     <div className="modal-content period-modal-wide">
