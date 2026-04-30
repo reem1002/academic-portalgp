@@ -23,7 +23,8 @@ import {
     TrendingUp,
     FileMinus,
     Zap,
-    X
+    X,
+    FileText // أضفت أيقونة للتقرير
 } from 'lucide-react';
 import api from '../../services/api';
 import swalService from "../../services/swal";
@@ -36,7 +37,7 @@ const AdvisorAcademicRequests = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
-    const [typeFilter, setTypeFilter] = useState(''); // Added missing state for type filtering
+    const [typeFilter, setTypeFilter] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [advisorComment, setAdvisorComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,6 +59,57 @@ const AdvisorAcademicRequests = () => {
     useEffect(() => {
         fetchRequests();
     }, []);
+
+    // Function to generate PDF Report
+    const generatePDF = () => {
+        const doc = new jsPDF();
+
+        // Header
+        doc.setFontSize(18);
+        doc.text("Academic Requests Summary Report", 14, 20);
+        doc.setFontSize(11);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+        doc.text(`Total Requests: ${filteredRequests.length}`, 14, 34);
+
+        const tableColumn = ["Student Name", "ID", "Type", "Details", "Date", "Status"];
+        const tableRows = [];
+
+        filteredRequests.forEach(req => {
+            // منطق استخراج التفاصيل للتقرير النصي
+            let details = "";
+            if (req.requestType === 'Add Drop') {
+                details = `Add: ${req.addedCourses?.join(', ') || '-'} | Drop: ${req.droppedCourses?.join(', ') || '-'}`;
+            } else if (req.requestType === 'Withdrawal' || req.requestType === 'improve Grade') {
+                details = `Course: ${req.courseId || 'N/A'}`;
+            } else if (req.requestType === 'Overload') {
+                details = `Courses: ${req.addedCourses?.join(', ') || 'N/A'}`;
+            } else {
+                details = req.courseId || 'N/A';
+            }
+
+            const rowData = [
+                req.studentId?.studentName || "N/A",
+                req.studentId?.id || "N/A",
+                req.requestType,
+                details,
+                new Date(req.createdAt).toLocaleDateString(),
+                req.status.toUpperCase()
+            ];
+            tableRows.push(rowData);
+        });
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillStyle: 'f1f5f9', textColor: [30, 41, 59], fontStyle: 'bold' },
+            alternateRowStyles: { fillStyle: [248, 250, 252] },
+        });
+
+        doc.save(`Academic_Requests_Report_${new Date().getTime()}.pdf`);
+    };
 
     // Handle Response (Approve/Reject)
     const handleRespond = async (requestId, status) => {
@@ -116,10 +168,17 @@ const AdvisorAcademicRequests = () => {
 
     return (
         <div className="management-container">
-            <header className="management-header">
+            <header className="management-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div className="prereg-header">
                     <h2>Academic Requests</h2>
                 </div>
+                {/* زر تحميل التقرير */}
+                <button
+                    onClick={generatePDF}
+                    className='btn-2'
+                >
+                    <FileText size={18} /> Export Report
+                </button>
             </header>
 
             {/* Insights Grid */}
@@ -203,9 +262,6 @@ const AdvisorAcademicRequests = () => {
                                 <tr key={req._id} style={{ borderBottom: '1px solid #f1f5f9', transition: '0.2s' }}>
                                     <td style={styles.tableCell}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            {/* <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#1e293b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '14px' }}>
-                                                {req.studentId?.studentName?.charAt(0) || '?'}
-                                            </div> */}
                                             <div>
                                                 <div style={{ fontWeight: '600', color: '#1e293b' }}>{req.studentId?.studentName}</div>
                                                 <div style={{ fontSize: '12px', color: '#64748b' }}>ID: {req.studentId?.id}</div>
@@ -230,7 +286,6 @@ const AdvisorAcademicRequests = () => {
                                         <StatusBadge status={req.status} />
                                     </td>
                                     <td style={styles.tableCell}>
-
                                         <button
                                             onClick={() => setSelectedRequest(req)}
                                             className="btn-view"
