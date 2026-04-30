@@ -217,6 +217,70 @@
 
 .sd-semester-text { font-size: 0.75rem; font-weight: 600; color: #94a3b8; }
 
+
+/* Container for the filter dropdown */
+.sd-filter-dropdown-container {
+    min-width: 200px;
+}
+
+/* The Select Element itself */
+.sd-filter-dropdown-container select {
+    width: 100%;
+    background-color: #f8fafc; /* Slate 50 */
+    border: 1px solid #e2e8f0; /* Slate 200 */
+    color: #1e293b; /* Deep Slate - Your Preferred Base */
+    padding: 0.6rem 2.5rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover & Focus States */
+.sd-filter-dropdown-container select:hover {
+    border-color: #cbd5e1;
+    background-color: #ffffff;
+}
+
+.sd-filter-dropdown-container select:focus {
+    outline: none;
+    ring: 2px;
+    border-color: #3b82f6; /* Blue 500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Meta icons inside the dropdown area (Optional styling for positioning) */
+.sd-filter-dropdown-container .absolute {
+    transition: color 0.2s ease;
+}
+
+.group:hover .absolute {
+    color: #1e293b;
+}
+
+/* Style for the options inside the dropdown */
+.sd-filter-dropdown-container select option {
+    padding: 10px;
+    background-color: #ffffff;
+    color: #1e293b;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 640px) {
+    .sd-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .sd-filter-dropdown-container {
+        width: 100%;
+    }
+}
+
+
 /* --- Responsive --- */
 @media (max-width: 1024px) {
     .sd-content-layout { grid-template-columns: 1fr; }

@@ -23,7 +23,7 @@ const AdvisingAnnouncements = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [editingAnn, setEditingAnn] = useState(null);
-    const [viewingAnn, setViewingAnn] = useState(null); // State for Drawer
+    const [viewingAnn, setViewingAnn] = useState(null);
     const [viewMode, setViewMode] = useState("week");
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -33,6 +33,7 @@ const AdvisingAnnouncements = () => {
         title: "",
         content: "",
         type: "general",
+        target: "advisingList",
         expiresAt: "",
         studentsIds: []
     });
@@ -279,7 +280,7 @@ const AdvisingAnnouncements = () => {
                                                     {ann.targetIds?.length} Students
                                                 </span>
                                             ) : (
-                                                <span className="badge-all">ِAll Students</span>
+                                                <span className="badge-all">All Students</span>
                                             )}
                                         </td>
                                         <td onClick={(e) => e.stopPropagation()}>
@@ -350,9 +351,10 @@ const AdvisingAnnouncements = () => {
                                         <div className="custom-multiselect">
                                             <div className={`dropdown-trigger ${isDropdownOpen ? 'open' : ''}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                                                 <span>
-                                                    {formData.studentsIds.length === 0
-                                                        ? "All Students (Default)"
+                                                    {formData.target === "advisingList"
+                                                        ? "All Students List (Default)"
                                                         : `${formData.studentsIds.length} Student(s) Selected`}
+
                                                 </span>
                                                 <ChevronDown size={18} />
                                             </div>

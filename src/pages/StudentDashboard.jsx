@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
     Megaphone, Calendar, User, Video,
-    ArrowRight, Clock, Bell, CalendarCheck
+    ArrowRight, Clock, Bell, CalendarCheck,
+    ChevronDown, Filter
 } from "lucide-react";
 import { CalendarDays, CalendarPlus, } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
@@ -47,24 +48,33 @@ const StudentDashboard = () => {
         setActiveTab(tabType);
         setLoading(true);
         try {
-            let endpoint = "/student/me/announcements";
-
-            if (tabType === "advisingList") {
-                endpoint = "/student/me/advising-list-announcements";
-            } else if (tabType === "department") {
-                const publicOnly = announcements.filter(a => a.target === "specificStudents");
-                setFilteredAnnouncements(publicOnly);
-                setLoading(false);
-                return;
-            } else if (tabType === "all-public") {
-                const publicOnly = announcements.filter(a => a.target === "all");
-                setFilteredAnnouncements(publicOnly);
+            // "all" تعيد كافة الإعلانات التي تم جلبها في البداية
+            if (tabType === "all") {
+                setFilteredAnnouncements(announcements);
                 setLoading(false);
                 return;
             }
 
-            const res = await api.get(endpoint);
-            setFilteredAnnouncements(res.data);
+            // تصفية بناءً على الـ target المذكور في الـ Schema
+            let filtered;
+            if (tabType === "advisingList") {
+                // جلب إعلانات قائمة الإرشاد من السيرفر مباشرة لضمان الدقة
+                const res = await api.get("/student/me/advising-list-announcements");
+                setFilteredAnnouncements(res.data);
+                setLoading(false);
+                return;
+            } else if (tabType === "specificStudents") {
+                // الإعلانات الموجهة للطالب بشكل خاص (Private)
+                filtered = announcements.filter(a => a.target === "specificStudents");
+            } else if (tabType === "all-public") {
+                // الإعلانات العامة للجميع
+                filtered = announcements.filter(a => a.target === "all");
+            } else if (tabType === "academic") {
+                // الإعلانات المتعلقة بالمستويات أو الكورسات
+                filtered = announcements.filter(a => a.target === "course" || a.target === "level");
+            }
+
+            setFilteredAnnouncements(filtered || []);
         } catch (err) {
             console.error("Filter error:", err);
             setFilteredAnnouncements([]);
@@ -82,10 +92,27 @@ const StudentDashboard = () => {
     };
 
     const getTagClass = (target) => {
-        if (target === "advisingList") return "sd-tag-academic";
-        if (target === "all") return "sd-tag-public";
-        return "sd-tag-dept";
+        switch (target) {
+            case "advisingList": return "sd-tag-academic";
+            case "all": return "sd-tag-public";
+            case "specificStudents": return "sd-tag-dept";
+            case "course":
+            case "level": return "sd-tag-academic";
+            default: return "sd-tag-public";
+        }
     };
+
+    const getTargetLabel = (target) => {
+        switch (target) {
+            case "all": return "Public";
+            case "advisingList": return "Advising";
+            case "specificStudents": return "Private";
+            case "course": return "Course";
+            case "level": return "Level";
+            default: return target;
+        }
+    };
+
     const formatDate = (dateString) => {
         if (!dateString) return "N/A";
         return new Date(dateString).toLocaleDateString('en-GB', {
@@ -94,6 +121,14 @@ const StudentDashboard = () => {
             year: 'numeric',
         });
     };
+
+    const filterOptions = [
+        { id: "all", label: "All Announcements" },
+        { id: "all-public", label: "Public Announcements" },
+        { id: "advisingList", label: "Advising List" },
+        { id: "specificStudents", label: "Private (Specific)" },
+        { id: "academic", label: "Academic (Course/Level)" }
+    ];
 
     return (
         <div className="management-container sd-page-wrapper">
@@ -126,22 +161,29 @@ const StudentDashboard = () => {
                 {/* Main Content: Announcements */}
                 <main className="sd-announcements-area">
                     <div className="sd-glass-card">
-                        <div className="sd-section-header">
-                            <div className="sd-section-title-box">
+                        <div className="sd-section-header flex justify-between items-center mb-6">
+                            <div className="sd-section-title-box flex items-center gap-2">
                                 <Megaphone className="sd-primary-icon" size={24} />
-                                <h2>Recent Announcements</h2>
+                                <h2 className="text-xl font-bold">Recent Announcements</h2>
                             </div>
 
-                            <div className="sd-filter-tabs">
-                                {["all", "all-public", "advisingList", "department"].map((tab) => (
-                                    <button
-                                        key={tab}
-                                        className={`sd-tab-item ${activeTab === tab ? "is-active" : ""}`}
-                                        onClick={() => handleTabChange(tab)}
+                            {/* Dropdown Filter */}
+                            <div className="sd-filter-dropdown-container relative">
+                                <div className="relative group">
+                                    <select
+                                        className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2 pl-10 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer transition-all text-sm font-medium"
+                                        value={activeTab}
+                                        onChange={(e) => handleTabChange(e.target.value)}
                                     >
-                                        {tab === "all" ? "All" : tab === "all-public" ? "Public" : tab === "advisingList" ? "Advising" : "Private"}
-                                    </button>
-                                ))}
+                                        {filterOptions.map((opt) => (
+                                            <option key={opt.id} value={opt.id}>
+                                                {opt.label}
+                                            </option>
+                                        ))}
+                                    </select>
+
+
+                                </div>
                             </div>
                         </div>
 
@@ -160,9 +202,9 @@ const StudentDashboard = () => {
                                     <div key={ann._id} className="sd-ann-item">
                                         <div className="sd-ann-header">
                                             <span className={`sd-pill-tag ${getTagClass(ann.target)}`}>
-                                                {ann.target === "advisingList" ? "Advising" : ann.target === "all" ? "Public" : "Private"}
+                                                {getTargetLabel(ann.target)}
                                             </span>
-                                            <span className="sd-semester-text">{ann.semesterId}</span>
+                                            <span className="sd-semester-text">{ann.semesterId?.name || ann.semesterId}</span>
                                         </div>
                                         <h3 className="sd-ann-title">{ann.title}</h3>
                                         <p className="sd-ann-content">{ann.content}</p>
@@ -214,7 +256,6 @@ const StudentDashboard = () => {
                                     <p>No scheduled meetings.</p>
                                 </div>
                             ) : (
-
                                 meetings.slice(0, 4).map(meet => (
                                     <div key={meet._id} className="sd-mini-card">
                                         <div className={`sd-card-accent ${getStatusClass(meet.meetingStatus)}`}></div>
