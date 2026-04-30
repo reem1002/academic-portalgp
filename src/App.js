@@ -7,7 +7,8 @@ import StaffDashboard from "./pages/StaffDashboard";
 import StudentTranscript from "./pages/StudentTranscript";
 import StudentDetails from "./pages/coordinator pages/StudentDetails";
 import StudentMeetings from "./pages/StudentMeetings";
-import StudentSchedule from "./pages/student pages/StudentSchedule"
+import StudentSchedule from "./pages/student pages/StudentSchedule";
+import StudentRequestsManagement from "./pages/student pages/StudentRequestsManagement"
 
 import PreRegistrationManagement from "./pages/coordinator pages/PreRegistrationManagementPage";
 import EnrollmentStatsPage from "./pages/coordinator pages/EnrollmentStatsPage";
@@ -20,13 +21,15 @@ import AdvisingDetailsPage from "./pages/coordinator pages/AdvisingDetailsPage";
 import Announcements from "./pages/coordinator pages/Announcements";
 import UnassignedStudentsPage from "./pages/coordinator pages/UnassignedStudentsPage";
 import CooEnrollmentPage from "./pages/coordinator pages/CooEnrollmentPage";
-import ScheduleManager from "./pages/coordinator pages/ScheduleManager"
+import ScheduleManager from "./pages/coordinator pages/ScheduleManager";
+import CoordinatorAcademicRequests from "./pages/coordinator pages/CoordinatorAcademicRequests"
 
 import AdviseStudents from "./pages/academicAdvisor/AdviseStudents";
 import AdvisingAnnouncements from "./pages/academicAdvisor/AdvisingAnnouncements";
 import AdvisingMeetings from "./pages/academicAdvisor/AdvisingMeetings";
 import AdviserEnrollmentPage from "./pages/academicAdvisor/AdviserEnrollmentPage";
 import AdvisedStudentDetails from "./pages/academicAdvisor/AdvisedStudentDetails";
+import AdvisorAcademicRequests from "./pages/academicAdvisor/AdvisorAcademicRequests";
 
 import MyCourses from "./pages/lecturer/MyCourses";
 import CourseGrading from "./pages/lecturer/CourseGrading";
@@ -77,6 +80,7 @@ function App() {
           <Route path="meetings" element={<StudentMeetings />} />
           <Route path="registration" element={<StudentCourseOfferingsPage />} />
           <Route path="St-Schedule" element={<StudentSchedule />} />
+          <Route path="St-Requests" element={<StudentRequestsManagement />} />
         </Route>
 
         {/* Staff Routes */}
@@ -104,6 +108,7 @@ function App() {
           <Route path=":role/advising/unassigned" element={<UnassignedStudentsPage />} />
           <Route path=":role/coordinator/enroll/:studentId" element={<CooEnrollmentPage />} />
           <Route path=":role/ScheduleManager" element={<ScheduleManager />} />
+          <Route path=":role/coo-Requests" element={<CoordinatorAcademicRequests />} />
 
           {/* _______________ */}
           <Route path=":role/advise-students" element={<AdviseStudents />} />
@@ -112,6 +117,8 @@ function App() {
 
           <Route path=":role/advisor/enroll/:studentId" element={<AdviserEnrollmentPage />} />
           <Route path=":role/student/:id" element={<AdvisedStudentDetails />} />
+          <Route path=":role/Adv-Requests" element={< AdvisorAcademicRequests />} />
+
           {/* _______________ */}
           <Route path=":role/lec-courses" element={<MyCourses />} />
           <Route path=":role/grading/:id/:courseId" element={<CourseGrading />} />

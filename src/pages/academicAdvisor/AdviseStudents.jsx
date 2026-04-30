@@ -137,35 +137,35 @@ const AdviseStudents = () => {
                 </div>
             </header>
 
-            <div className="adv-stats">
-                <div className="adv-card-stat">
-                    <div className="adv-icon-box blue">
-                        <Users size={24} />
+            <div className="insights-grid">
+                <div className="insight-card">
+                    <div className="insight-header">
+                        <span className="insight-icon icon-blue">
+                            <Users size={18} />
+                        </span>
+                        <span className="insight-label">Total Students</span>
                     </div>
-                    <div className="adv-info">
-                        <span className="insight-header">Total Students</span>
-                        <span className="adv-value">{stats.total}</span>
-                    </div>
+                    <div className="insight-value">{stats.total}</div>
                 </div>
 
-                <div className="adv-card-stat">
-                    <div className="adv-icon-box green">
-                        <BookOpen size={18} />
+                <div className="insight-card">
+                    <div className="insight-header">
+                        <span className="insight-icon icon-green">
+                            <BookOpen size={18} />
+                        </span>
+                        <span className="insight-label">Filtered Students</span>
                     </div>
-                    <div className="adv-info">
-                        <span className="insight-header">Filtered Students</span>
-                        <span className="adv-value">{filteredStudents.length}</span>
-                    </div>
+                    <div className="insight-value">{filteredStudents.length}</div>
                 </div>
 
-                <div className="adv-card-stat">
-                    <div className="adv-icon-box orange">
-                        <BarChart3 size={24} />
+                <div className="insight-card">
+                    <div className="insight-header">
+                        <span className="insight-icon icon-orange">
+                            <BarChart3 size={18} />
+                        </span>
+                        <span className="insight-label">Avg. GPA</span>
                     </div>
-                    <div className="adv-info">
-                        <span className="insight-header">Avg. GPA</span>
-                        <span className="adv-value">{stats.avgGPA}</span>
-                    </div>
+                    <div className="insight-value">{stats.avgGPA}</div>
                 </div>
             </div>
 

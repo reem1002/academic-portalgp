@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import TranscriptProgressMapModal from "../components/TranscriptProgressMapModal";
 
-// استيراد المكتبات بطريقة تضمن تسجيل autoTable
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
