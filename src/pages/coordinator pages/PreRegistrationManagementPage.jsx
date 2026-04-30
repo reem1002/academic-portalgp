@@ -24,7 +24,7 @@ const PreRegistrationManagementPage = () => {
     const [isPublished, setIsPublished] = useState(false);
     const [allowEnrollment, setAllowEnrollment] = useState(false);
 
-    const [updatingCourseId, setUpdatingCourseId] = useState(null); // بيمسك الـ ID للمادة اللي بتحدث حالياً
+    const [updatingCourseId, setUpdatingCourseId] = useState(null);
 
     // --- Effects ---
     useEffect(() => {
@@ -39,10 +39,45 @@ const PreRegistrationManagementPage = () => {
         }
     }, [currentSemester]);
 
+    // التعديل الأول: إضافة Effect لتحديث حالة الوقت دورياً لضمان دقة "isWithinPreRegPeriod"
+    useEffect(() => {
+        const timer = setInterval(() => {
+            // تحديث بسيط لإجبار الكومبوننت على إعادة الحساب إذا انتهى الوقت أثناء فتح الصفحة
+            if (currentSemester) {
+                setCurrentSemester(prev => ({ ...prev }));
+            }
+        }, 60000); // تحديث كل دقيقة
+
+        return () => clearInterval(timer);
+    }, [currentSemester]);
+
+    // التعديل الثاني: التحقق من "Pause" تلقائياً إذا انتهى الوقت والبوابة مفتوحة
+    useEffect(() => {
+        const checkAutoPause = async () => {
+            // التحقق من المسار الكامل للبيانات كما في صورة image_c917b6.png
+            if (allowEnrollment && currentSemester?.timeLine?.preRegistration) {
+                const now = new Date();
+                const end = new Date(currentSemester.timeLine.preRegistration.end);
+
+                if (now > end) {
+                    try {
+                        await api.put(`/semesters/${currentSemester._id}/stopPreRegistration`);
+                        setAllowEnrollment(false);
+                        swalService.info("Notice", "Registration period has ended. Portal closed automatically.");
+                    } catch (err) {
+                        console.error("Auto-pause failed", err);
+                    }
+                }
+            }
+        };
+        checkAutoPause();
+    }, [allowEnrollment, currentSemester]);
+
     // --- Functions ---
     const fetchSemesters = async () => {
         try {
             const res = await api.get("/semesters");
+            console.log(res.data) // تظهر هنا البيانات كما في image_c917b6.png
             const current = res.data.find(s => s.isCurrent);
             if (current) {
                 const detailRes = await api.get(`/semesters/${current._id}`);
@@ -90,7 +125,6 @@ const PreRegistrationManagementPage = () => {
         }
     };
 
-    // --- Course Status Toggle (The Fixed Part) ---
     const toggleCourseStatus = async (courseId, newStatus) => {
         if (!currentSemester) return;
 
@@ -107,7 +141,6 @@ const PreRegistrationManagementPage = () => {
             setUpdatingCourseId(courseId);
             const offeringId = `${courseId}-${currentSemester._id}`;
             try {
-                // استخدام Toast صغير بدلاً من Alert كبير لتجربة سلسة
                 swalService.showLoading("Updating...");
                 await api.put(`/course-offerings/${offeringId}`, { status: newStatus });
 
@@ -120,7 +153,6 @@ const PreRegistrationManagementPage = () => {
                 setUpdatingCourseId(null);
             }
         } else {
-            // حالة الـ Draft: تعديل محلي سريع
             setCourses(prev => prev.map(c => c._id === courseId ? { ...c, status: newStatus } : c));
         }
     };
@@ -162,7 +194,6 @@ const PreRegistrationManagementPage = () => {
         }
     };
 
-    // --- Enrollment Handlers ---
     const handleStartRegistration = async () => {
         try {
             swalService.showLoading("Opening Student Portal...");
@@ -189,7 +220,7 @@ const PreRegistrationManagementPage = () => {
             "CRITICAL ACTION",
             "This will PERMANENTLY close the current semester. You cannot undo this!",
             "Yes, End Semester",
-            "error" // أيقونة حمراء للتحذير الشديد
+            "error"
         );
 
         if (!result.isConfirmed) return;
@@ -205,8 +236,7 @@ const PreRegistrationManagementPage = () => {
         }
     };
 
-
-    // --- Logic Helpers ---
+    // التعديل الثالث: التأكد من دقة الوصول لبيانات preRegistration كما في image_c917b6.png
     const isWithinPreRegPeriod = useMemo(() => {
         if (!currentSemester?.timeLine?.preRegistration) return false;
         const now = new Date();
@@ -258,27 +288,16 @@ const PreRegistrationManagementPage = () => {
                 onClose={() => setShowSemesterModal(false)}
                 onSuccess={(sem) => { setCurrentSemester(sem); setShowSemesterModal(false); fetchSemesters(); }}
             />
-            {/* EMPTY STATE */}
 
             {!currentSemester && (
-
                 <div className="empty-semester">
-
                     <h3>No Active Semester</h3>
-
                     <p>Start a semester to manage courses and open student registration.</p>
-
                     <button className="history-btn" onClick={() => navigate("/dashboard/semester-history")}>
-
                         View Semesters History
-
                     </button>
-
                 </div>
-
             )}
-
-
 
             {currentSemester && (
                 <>
@@ -379,7 +398,9 @@ const PreRegistrationManagementPage = () => {
                                             <button
                                                 className="btn-1"
                                                 onClick={handleStartRegistration}
-                                                disabled={!isWithinPreRegPeriod}>
+                                                disabled={!isWithinPreRegPeriod}
+                                                title={!isWithinPreRegPeriod ? "Registration period has ended" : ""}
+                                            >
                                                 <Play size={18} /> Start Enrollment
                                             </button>
                                         ) : (
@@ -388,10 +409,8 @@ const PreRegistrationManagementPage = () => {
                                             </button>
                                         )}
 
-                                        {/* الزرار الجديد هنا */}
                                         <button
                                             className="btn-2"
-
                                             onClick={() => navigate(`/staff/${role}/enrollment-stats/${currentSemester._id}`)}
                                         >
                                             <BarChart3 size={18} /> Enrollment Details

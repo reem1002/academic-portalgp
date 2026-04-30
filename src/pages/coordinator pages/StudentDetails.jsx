@@ -194,16 +194,32 @@ const StudentDetails = () => {
 
     // دالة تحديث اللائحة (Regulation)
     const handleUpdateRegulation = async (newRegulation) => {
-        try {
-            swalService.showLoading("Updating Regulation...");
-            await api.put(`/transcripts/${data.transcript._id}`, {
-                regulation: newRegulation
-            });
+        const oldRegulation = data.transcript.regulation;
+
+        if (newRegulation === oldRegulation) return;
+
+        const result = await swalService.confirm(
+            "Update Regulation?",
+            `You are about to change the student's regulation from "${oldRegulation}" to "${newRegulation}". This may affect credit calculations and graduation requirements. Are you sure?`,
+            "Yes, update it",
+            "warning"
+        );
+
+        if (result.isConfirmed) {
+            try {
+                swalService.showLoading("Updating Regulation...");
+                await api.put(`/transcripts/${data.transcript._id}`, {
+                    regulation: newRegulation
+                });
+                await fetchStudentDetails();
+                swalService.success("Success", `Regulation updated to ${newRegulation}`);
+            } catch (err) {
+                console.error(err);
+                swalService.error("Error", "Failed to update regulation.");
+                await fetchStudentDetails();
+            }
+        } else {
             await fetchStudentDetails();
-            swalService.success("Success", `Regulation updated to ${newRegulation}`);
-        } catch (err) {
-            console.error(err);
-            swalService.error("Error", "Failed to update regulation.");
         }
     };
 

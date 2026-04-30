@@ -140,6 +140,13 @@ th {
 }
 
 
+.btn-1:disabled {
+  color: #858484;
+
+    cursor: not-allowed;
+
+}
+
 .btn-view{
   color:#3b82f6;
 }
@@ -161,4 +168,13 @@ th {
 ::-webkit-scrollbar-thumb {
     background: #1e3547;
     border-radius: 6px;
+}
+
+
+.modal-card{
+  min-width: 500px;
+}
+
+.modal-body{
+    overflow-x: hidden !important;
 }
