@@ -193,35 +193,35 @@ const StudentDetails = () => {
     };
 
     // دالة تحديث اللائحة (Regulation)
-    const handleUpdateRegulation = async (newRegulation) => {
-        const oldRegulation = data.transcript.regulation;
+    // const handleUpdateRegulation = async (newRegulation) => {
+    //     const oldRegulation = data.transcript.regulation;
 
-        if (newRegulation === oldRegulation) return;
+    //     if (newRegulation === oldRegulation) return;
 
-        const result = await swalService.confirm(
-            "Update Regulation?",
-            `You are about to change the student's regulation from "${oldRegulation}" to "${newRegulation}". This may affect credit calculations and graduation requirements. Are you sure?`,
-            "Yes, update it",
-            "warning"
-        );
+    //     const result = await swalService.confirm(
+    //         "Update Regulation?",
+    //         `You are about to change the student's regulation from "${oldRegulation}" to "${newRegulation}". This may affect credit calculations and graduation requirements. Are you sure?`,
+    //         "Yes, update it",
+    //         "warning"
+    //     );
 
-        if (result.isConfirmed) {
-            try {
-                swalService.showLoading("Updating Regulation...");
-                await api.put(`/transcripts/${data.transcript._id}`, {
-                    regulation: newRegulation
-                });
-                await fetchStudentDetails();
-                swalService.success("Success", `Regulation updated to ${newRegulation}`);
-            } catch (err) {
-                console.error(err);
-                swalService.error("Error", "Failed to update regulation.");
-                await fetchStudentDetails();
-            }
-        } else {
-            await fetchStudentDetails();
-        }
-    };
+    //     if (result.isConfirmed) {
+    //         try {
+    //             swalService.showLoading("Updating Regulation...");
+    //             await api.put(`/transcripts/${data.transcript._id}`, {
+    //                 regulation: newRegulation
+    //             });
+    //             await fetchStudentDetails();
+    //             swalService.success("Success", `Regulation updated to ${newRegulation}`);
+    //         } catch (err) {
+    //             console.error(err);
+    //             swalService.error("Error", "Failed to update regulation.");
+    //             await fetchStudentDetails();
+    //         }
+    //     } else {
+    //         await fetchStudentDetails();
+    //     }
+    // };
 
     const handleUpdateGrade = async (courseId, newGrade) => {
         try {
@@ -306,16 +306,17 @@ const StudentDetails = () => {
                             <span className={`badge ${transcript.atRisk ? 'risk' : 'safe'}`}>{transcript.atRisk ? "At Risk" : "Good Standing"}</span>
                             <span className="badge dept">{transcript.department}</span>
                             <span className={`badge level-${transcript.level}`}>{transcript.level}</span>
+                            <span className="reg-badge">{transcript.regulation} Regulation</span>
 
                             {/* تعديل اللائحة - Select Box */}
-                            <select
-                                className="regulation-select-badge badge-select"
+                            {/* <select
+                                className=" badge-select"
                                 value={transcript.regulation}
                                 onChange={(e) => handleUpdateRegulation(e.target.value)}
                             >
                                 <option value="New">New Regulation</option>
                                 <option value="last">Last Regulation</option>
-                            </select>
+                            </select> */}
                         </div>
                     </div>
                 </div>

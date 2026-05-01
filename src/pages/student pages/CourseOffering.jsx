@@ -68,7 +68,11 @@ const StudentCourseOfferingsPage = () => {
 
             const enrolledRes = await api.get("/student/me/enrollments/current");
             const data = enrolledRes.data;
-            const currentIds = data?.courses?.map((c) => c.courseOfferingId) || [];
+
+            // استخراج المعرفات بناءً على هيكلة بيانات الـ GET المفترضة
+            const currentIds = data?.courses?.map(
+                (c) => typeof c.courseOfferingId === 'object' ? c.courseOfferingId._id : c.courseOfferingId
+            ) || [];
 
             setEnrolledCourses(currentIds);
             setDraftEnrolled(currentIds);
@@ -82,7 +86,6 @@ const StudentCourseOfferingsPage = () => {
     const fetchRecommendations = async () => {
         try {
             const res = await api.get("/student/me/recommendations");
-            // ترتيب تنازلي بناءً على الـ score
             const sortedRecs = (res.data.recommendations || []).sort((a, b) => b.score - a.score);
             setRecommendations(sortedRecs);
         } catch (err) {
@@ -138,15 +141,25 @@ const StudentCourseOfferingsPage = () => {
 
             const res = await api.post("/student/me/enroll", payload);
 
-            const newIds = res.data.enrollment.courses.map((c) => c.courseOfferingId);
-            setEnrolledCourses(newIds);
-            setDraftEnrolled(newIds);
-            localStorage.removeItem("courseDraft");
+            // التعديل هنا: بناءً على الـ Response اللي بعته
+            // الرد يحتوي على كائن enrollment وداخله مصفوفة courses
+            const updatedEnrollment = res.data.enrollment;
+            if (updatedEnrollment && updatedEnrollment.courses) {
+                const newIds = updatedEnrollment.courses.map(c => c.courseOfferingId);
 
-            swalService.success("Success!", "Your enrollment has been processed successfully.");
+                setEnrolledCourses(newIds);
+                setDraftEnrolled(newIds);
+                localStorage.removeItem("courseDraft");
+
+                await swalService.success("Success!", "Your enrollment has been processed successfully.");
+            } else {
+                // في حال نجاح الطلب ولكن الهيكل مختلف قليلاً، نعيد جلب البيانات من الـ API لضمان المزامنة
+                await fetchData();
+                await swalService.success("Success!", "Enrollment updated.");
+            }
         } catch (err) {
             console.error(err);
-            swalService.error("Registration Failed", err.response?.data?.error || "Something went wrong!");
+            swalService.error("Registration Failed", err.response?.data?.message || err.response?.data?.error || "Something went wrong!");
         } finally {
             setSaving(false);
         }
@@ -218,7 +231,6 @@ const StudentCourseOfferingsPage = () => {
                                         const offering = rec.course;
                                         const isInDraft = draftEnrolled.includes(offering._id);
                                         const credits = offering.courseId?.courseCredits || 0;
-                                        // تعطيل الزر إذا لم تكن المادة مختارة بالفعل وكان إجمالي الساعات سيتخطى المسموح
                                         const isDisabled = !isInDraft && (currentTotalCredits + credits > allowedCredits);
 
                                         return (
@@ -301,7 +313,6 @@ const StudentCourseOfferingsPage = () => {
                                 .map((offering) => {
                                     const isInDraft = draftEnrolled.includes(offering._id);
                                     const credits = offering.courseId.courseCredits;
-                                    // تعطيل الزر إذا لم تكن المادة مختارة بالفعل وكان إجمالي الساعات سيتخطى المسموح
                                     const isDisabled = !isInDraft && (currentTotalCredits + credits > allowedCredits);
 
                                     return (

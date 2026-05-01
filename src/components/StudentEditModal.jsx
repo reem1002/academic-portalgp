@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, Mail, Phone, User } from 'lucide-react';
+import { X, Lock, Mail, Phone, User, BookOpen } from 'lucide-react';
 import api from '../services/api';
 import swalService from "../services/swal";
 import '../pages/styles/ProgramCourses.css';
 
-const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
+const StudentEditModal = ({ isOpen, onClose, studentId, studentRegulation, transId, onUpdate }) => {
     const [formData, setFormData] = useState({
         studentName: '',
         studentEmail: '',
@@ -17,8 +17,10 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
     });
     const [errors, setErrors] = useState({});
     const [changePassword, setChangePassword] = useState(false);
+    const [changeRegulation, setChangeRegulation] = useState(false); // الحالة الجديدة للائحة
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(false); // حالة خاصة بجلب البيانات في البداية
+    const [selectedRegulation, setSelectedRegulation] = useState(''); // لتخزين اللائحة المختارة
 
     // جلب بيانات الطالب عند فتح المودال وتوفر الـ ID
     useEffect(() => {
@@ -35,8 +37,13 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
                         studentPhone: student.studentPhone || '',
                         username: student.username || '',
                     });
+
+                    // تعيين اللائحة الحالية من البيانات القادمة
+                    setSelectedRegulation(student.regulation || 'New');
+
                     // إعادة ضبط الحالات الأخرى
                     setChangePassword(false);
+                    setChangeRegulation(false);
                     setPasswordData({ password: '', confirmPassword: '' });
                     setErrors({});
                 } catch (err) {
@@ -81,6 +88,7 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
             setLoading(false);
         }
     };
+
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
 
@@ -111,7 +119,42 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
         }
     };
 
+    const handleUpdateRegulation = async (e) => {
+        e.preventDefault();
+
+        const result = await swalService.confirm(
+            "Update Regulation?",
+            `Are you sure you want to change the regulation to "${selectedRegulation}"? This may affect credit calculations.`,
+            "Yes, update it",
+            "warning"
+        );
+
+        if (result.isConfirmed) {
+            try {
+                setLoading(true);
+                swalService.showLoading("Updating Regulation...");
+
+
+                await api.put(`/transcripts/${transId}`, {
+                    regulation: selectedRegulation
+                });
+
+                await swalService.success("Success", `Regulation updated to ${selectedRegulation}`);
+                setChangeRegulation(false);
+                if (onUpdate) onUpdate();
+            } catch (err) {
+                console.error(err);
+                swalService.error("Error", "Failed to update regulation.");
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+
     if (!isOpen) return null;
+
+
 
     return (
         <div className="modal-overlay">
@@ -159,13 +202,47 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
                                     </div>
                                 </div>
 
-                                <button type="submit" className="btn-submit" disabled={loading} style={{ marginTop: '15px', width: '100%' }}>
+                                <button type="submit" className="btn-1" disabled={loading} style={{ marginTop: '15px', width: '100%' }}>
                                     {loading ? "Saving..." : "Update Basic Info"}
                                 </button>
                             </form>
 
                             <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #eee' }} />
 
+                            {/* Change Regulation Section */}
+                            {!changeRegulation ? (
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    style={{ width: '100%', background: 'transparent', color: '#2563eb', border: '1px dashed #2563eb', padding: '10px', borderRadius: '5px', marginBottom: '10px' }}
+                                    onClick={() => setChangeRegulation(true)}
+                                >
+                                    <BookOpen size={16} style={{ marginRight: '8px', display: 'inline' }} /> Change Student Regulation?
+                                </button>
+                            ) : (
+                                <form onSubmit={handleUpdateRegulation} style={{ background: '#f0f9ff', padding: '15px', borderRadius: '8px', marginBottom: '15px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                                        <strong>Update Regulation</strong>
+                                        <button type="button" onClick={() => setChangeRegulation(false)} style={{ border: 'none', background: 'none', color: '#2563eb', cursor: 'pointer' }}>Cancel</button>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Select Regulation</label>
+                                        <select
+                                            value={selectedRegulation}
+                                            onChange={(e) => setSelectedRegulation(e.target.value)}
+                                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
+                                        >
+                                            <option value="New">New</option>
+                                            <option value="last">last</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" className="btn-submit" style={{ background: '#2563eb', marginTop: '10px', width: '100%', fontWeight: '550' }} disabled={loading}>
+                                        {loading ? "Updating..." : "Confirm New Regulation"}
+                                    </button>
+                                </form>
+                            )}
+
+                            {/* Change Password Section */}
                             {!changePassword ? (
                                 <button
                                     type="button"
@@ -199,7 +276,7 @@ const StudentEditModal = ({ isOpen, onClose, studentId, onUpdate }) => {
                                             />
                                         </div>
                                     </div>
-                                    <button type="submit" className="btn-submit" style={{ background: '#b44d4b', marginTop: '10px', width: '100%' }} disabled={loading}>
+                                    <button type="submit" className="btn-1" style={{ background: '#b44d4b', marginTop: '10px', width: '100%' }} disabled={loading}>
                                         {loading ? "Updating..." : "Confirm New Password"}
                                     </button>
                                 </form>

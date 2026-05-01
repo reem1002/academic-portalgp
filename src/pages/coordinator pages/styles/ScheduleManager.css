@@ -625,7 +625,7 @@ font-weight: 500;
     gap: 12px;
 }
 
-.save-btn {
+/* .save-btn {
     background: #06d6a0;
     color: #000;
     border: none;
@@ -636,7 +636,7 @@ font-weight: 500;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-}
+} */
 
 .cancel-btn {
     background: transparent;

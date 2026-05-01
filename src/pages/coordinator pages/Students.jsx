@@ -41,6 +41,7 @@ const Students = () => {
             const res = await api.get("/transcripts", {
                 headers: { Authorization: `Bearer ${token}` }
             });
+            console.log(res)
             const data = res.data?.data || res.data || [];
             setStudents(data);
             setLoading(false);
@@ -375,8 +376,7 @@ const Students = () => {
                             <tr>
                                 <th>Student ID</th>
                                 <th>Student Name</th>
-                                <th>Regulation</th>
-                                <th>Level</th>
+                                <th>Academic Details</th>
                                 <th>Performance</th>
                                 <th>Status</th>
                                 <th style={{ textAlign: 'center' }}>Actions</th>
@@ -391,8 +391,26 @@ const Students = () => {
                                             {student.studentId?.studentName}
                                         </div>
                                     </td>
-                                    <td className="capitalize-text">{student.regulation}</td>
-                                    <td className="capitalize-text">{student.level}</td>
+                                    <td className="student-info-combined">
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            {/* Regulation text */}
+                                            <span style={{ fontSize: '0.9rem', fontWeight: '500', color: '#1e293b' }}>
+                                                {student.regulation} Regulation
+                                            </span>
+
+                                            {/* Level Badge */}
+                                            <span className="type-badge" style={{
+                                                backgroundColor: '#e0f2fe',
+                                                color: '#0369a1',
+                                                fontSize: '0.75rem',
+                                                padding: '2px 8px',
+                                                width: 'fit-content',
+                                                borderRadius: '4px'
+                                            }}>
+                                                {student.level}
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div className="performance-info">
                                             <span style={{ fontWeight: 'bold', color: student.GPA < 2 ? '#dc2626' : 'inherit' }}>
@@ -450,6 +468,8 @@ const Students = () => {
                     isOpen={isEditModalOpen}
                     onClose={() => { setIsEditModalOpen(false); setEditingStudent(null); }}
                     studentId={editingStudent.studentId?._id}
+                    studentRegulation={editingStudent.regulation}
+                    transId={editingStudent._id}
                     onUpdate={() => { fetchStudents(); setIsEditModalOpen(false); setEditingStudent(null); }}
                 />
             )}
