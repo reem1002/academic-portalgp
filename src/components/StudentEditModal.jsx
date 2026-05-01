@@ -17,10 +17,10 @@ const StudentEditModal = ({ isOpen, onClose, studentId, studentRegulation, trans
     });
     const [errors, setErrors] = useState({});
     const [changePassword, setChangePassword] = useState(false);
-    const [changeRegulation, setChangeRegulation] = useState(false); // الحالة الجديدة للائحة
+    const [changeRegulation, setChangeRegulation] = useState(false); 
     const [loading, setLoading] = useState(false);
-    const [fetching, setFetching] = useState(false); // حالة خاصة بجلب البيانات في البداية
-    const [selectedRegulation, setSelectedRegulation] = useState(''); // لتخزين اللائحة المختارة
+    const [fetching, setFetching] = useState(false); 
+    const [selectedRegulation, setSelectedRegulation] = useState(''); 
 
     // جلب بيانات الطالب عند فتح المودال وتوفر الـ ID
     useEffect(() => {
@@ -38,7 +38,7 @@ const StudentEditModal = ({ isOpen, onClose, studentId, studentRegulation, trans
                         username: student.username || '',
                     });
 
-                    // تعيين اللائحة الحالية من البيانات القادمة
+
                     setSelectedRegulation(student.regulation || 'New');
 
                     // إعادة ضبط الحالات الأخرى

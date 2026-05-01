@@ -104,15 +104,16 @@ export const menuConfig = {
             icon: <CalendarDays size={iconSize} />
         },
         {
-            name: "Semesters History",
-            path: "/staff/coordinator/semester-history",
-            icon: <History size={iconSize} />
-        },
-        {
             name: "Requests",
             path: "/staff/coordinator/coo-Requests",
             icon: <FileText size={iconSize} />
         },
+        {
+            name: "Semesters History",
+            path: "/staff/coordinator/semester-history",
+            icon: <History size={iconSize} />
+        },
+
     ],
 
     lecturer: [

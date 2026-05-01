@@ -59,6 +59,7 @@ const Students = () => {
     const fetchUnassignedStudents = async () => {
         try {
             const res = await api.get("/advisors/advising-lists/unassigned-students");
+            console.log(res);
             setUnassignedStudents(res.data || []);
         } catch (err) {
             console.error("Error fetching unassigned:", err);
@@ -82,9 +83,14 @@ const Students = () => {
         const email = (studentObj.studentEmail || "").toLowerCase();
 
         const matchesSearch = name.includes(searchLower) || id.includes(searchLower) || email.includes(searchLower);
+
+        // التعديل هنا: نتحقق إذا كان الطالب موجود في قائمة الـ unassignedStudents
+        const isUnassigned = unassignedStudents.some(un => un.studentId._id === studentObj._id);
+
         const matchesStatus = filterStatus === '' ||
             (filterStatus === 'atRisk' ? s.atRisk :
-                filterStatus === 'noAdvisor' ? !s.advisorId : !s.atRisk);
+                filterStatus === 'noAdvisor' ? isUnassigned : !s.atRisk);
+
         const matchesLevel = filterLevel === '' || s.level === filterLevel;
         const matchesReg = filterReg === '' || s.regulation === filterReg;
 
@@ -154,7 +160,6 @@ const Students = () => {
         }
     };
 
-    // وظيفة تصدير التقرير (نفس نهج الـ Staff)
     const handleExportReport = () => {
         if (filteredStudents.length === 0) {
             swalService.error("No Data", "There is no data to export with the current filters.");
@@ -198,7 +203,6 @@ const Students = () => {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    {/* زرار الاكسبورت المضاف */}
                     <button
                         className="btn-2"
                         onClick={handleExportReport}
@@ -393,12 +397,10 @@ const Students = () => {
                                     </td>
                                     <td className="student-info-combined">
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                            {/* Regulation text */}
                                             <span style={{ fontSize: '0.9rem', fontWeight: '500', color: '#1e293b' }}>
                                                 {student.regulation} Regulation
                                             </span>
 
-                                            {/* Level Badge */}
                                             <span className="type-badge" style={{
                                                 backgroundColor: '#e0f2fe',
                                                 color: '#0369a1',

@@ -39,10 +39,9 @@ const PreRegistrationManagementPage = () => {
         }
     }, [currentSemester]);
 
-    // التعديل الأول: إضافة Effect لتحديث حالة الوقت دورياً لضمان دقة "isWithinPreRegPeriod"
+
     useEffect(() => {
         const timer = setInterval(() => {
-            // تحديث بسيط لإجبار الكومبوننت على إعادة الحساب إذا انتهى الوقت أثناء فتح الصفحة
             if (currentSemester) {
                 setCurrentSemester(prev => ({ ...prev }));
             }
@@ -51,10 +50,9 @@ const PreRegistrationManagementPage = () => {
         return () => clearInterval(timer);
     }, [currentSemester]);
 
-    // التعديل الثاني: التحقق من "Pause" تلقائياً إذا انتهى الوقت والبوابة مفتوحة
+
     useEffect(() => {
         const checkAutoPause = async () => {
-            // التحقق من المسار الكامل للبيانات كما في صورة image_c917b6.png
             if (allowEnrollment && currentSemester?.timeLine?.preRegistration) {
                 const now = new Date();
                 const end = new Date(currentSemester.timeLine.preRegistration.end);
@@ -77,7 +75,7 @@ const PreRegistrationManagementPage = () => {
     const fetchSemesters = async () => {
         try {
             const res = await api.get("/semesters");
-            console.log(res.data) // تظهر هنا البيانات كما في image_c917b6.png
+            console.log(res.data)
             const current = res.data.find(s => s.isCurrent);
             if (current) {
                 const detailRes = await api.get(`/semesters/${current._id}`);

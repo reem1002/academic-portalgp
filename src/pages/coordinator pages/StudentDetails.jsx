@@ -184,6 +184,7 @@ const StudentDetails = () => {
         try {
             setLoading(true);
             const res = await api.get(`/students/${id}/details`);
+            
             setData(res.data);
             setLoading(false);
         } catch (err) {
