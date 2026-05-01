@@ -628,7 +628,7 @@
 }
 
 .drawer-title-area h3 {
-    margin: 8px 0 0 0;
+    margin: 10px 0 0 0;
     font-size: 1.25rem;
     font-weight: 600;
     color: #000;
@@ -656,9 +656,9 @@
     padding: 24px;
 }
 
-.detail-group {
+/* .detail-group {
     margin-bottom: 24px;
-}
+} */
 
 .detail-group label {
     display: flex;
@@ -681,7 +681,7 @@
 }
 
 .detail-value.title {
-    font-size: 1.1rem;
+    /* font-size: 1.1rem; */
     font-weight: 500;
     color: #1d2a3d; 
 }
@@ -709,6 +709,7 @@
 }
 
 .student-detail-chip {
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 12px;

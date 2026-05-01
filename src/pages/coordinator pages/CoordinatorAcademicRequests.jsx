@@ -14,25 +14,25 @@ import {
     RotateCcw,
     XCircle,
     FileText,
-    LayoutDashboard
+    LayoutDashboard, X, MessageSquare
 } from 'lucide-react';
 import api from '../../services/api';
 import swalService from "../../services/swal";
 
 const CoordinatorAcademicRequests = () => {
     // States
+
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [typeFilter, setTypeFilter] = useState('');
     const [selectedRequest, setSelectedRequest] = useState(null);
-
+    const [viewingRequest, setViewingRequest] = useState(null);
     // Fetch All Requests for Coordinator
     const fetchAllRequests = async () => {
         try {
             setLoading(true);
-            // بناءً على التوثيق الذي أرسلته: http://localhost:5000/api/academic-requests/all
             const res = await api.get("/academic-requests/all");
             setRequests(res.data.Requests || []);
         } catch (err) {
@@ -146,59 +146,78 @@ const CoordinatorAcademicRequests = () => {
                 </div>
             </div>
 
-            {/* Requests Table */}
-            <div className="table-wrapper"  >
-                <table >
-                    <thead >
+            {/* --- Requests Table Section --- */}
+            <div className="table-wrapper">
+                <table>
+                    <thead>
                         <tr>
-                            <th >Student Info</th>
-                            <th >Type</th>
-                            <th >Course / Action</th>
-                            <th >Advisor</th>
-                            <th >Status</th>
-                            <th >Actions</th>
+                            <th>Student Info</th>
+                            <th>Type</th>
+                            <th>Course / Action</th>
+                            <th>Advisor</th>
+                            <th>Status</th>
+                            <th style={{ textAlign: 'center' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Fetching academic records...</td></tr>
+                            <tr>
+                                <td colSpan="6" style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+                                    Fetching academic records...
+                                </td>
+                            </tr>
                         ) : filteredRequests.length > 0 ? (
-                            filteredRequests.map(req => (
-                                <tr key={req._id} style={{ transition: '0.2s' }} className="table-row-hover">
-                                    <td style={styles.tableCell}>
-                                        <div style={{ fontWeight: '600', color: '#1e293b' }}>{req.studentId?.studentName || "N/A"}</div>
-                                        <div style={{ fontSize: '12px', color: '#64748b' }}>ID: {req.studentId?._id || "N/A"}</div>
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                        <span className={`badge-type ${req.requestType.replace(/\s+/g, '-').toLowerCase()}`}>
-                                            {req.requestType}
-                                        </span>
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                        <RequestSummaryView request={req} />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>
-                                                <User size={12} />
+                            [...filteredRequests]
+                                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                                .map(req => (
+                                    <tr key={req._id} className="table-row-hover">
+                                        <td style={{ padding: '12px' }}>
+                                            <div style={{ fontWeight: '600', color: '#1e293b' }}>
+                                                {req.studentId?.studentName || "N/A"}
                                             </div>
-                                            <span style={{ fontSize: '13px' }}>{req.academicAdvisorId?.staffName || "Unassigned"}</span>
-                                        </div>
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                        <StatusBadge status={req.status} />
-                                    </td>
-                                    <td style={styles.tableCell}>
-                                        <button
-                                            onClick={() => setSelectedRequest(req)}
-                                            className="btn-view"
-                                            title='view details'
-                                        >
-                                            <Eye size={18} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                                            <div style={{ fontSize: '12px', color: '#64748b' }}>
+                                                ID: {req.studentId?._id || req.studentId?.id || "N/A"}
+                                            </div>
+                                        </td>
+                                        <td style={styles.tableCell}>
+                                            <span style={{
+                                                padding: '4px 10px',
+                                                borderRadius: '6px',
+                                                fontSize: '12px',
+                                                fontWeight: '600',
+                                                backgroundColor: '#f1f5f9',
+                                                color: '#475569'
+                                            }}>{req.requestType}</span>
+                                        </td>
+                                        <td>
+                                            <RequestSummaryView request={req} />
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <User size={12} />
+                                                </div>
+                                                <span style={{ fontSize: '13px' }}>
+                                                    {req.academicAdvisorId?.staffName || "Unassigned"}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <StatusBadge status={req.status} />
+                                        </td>
+                                        <td>
+                                            <div className="action-btns" style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                                                <button
+                                                    className="btn-icon btn-view"
+                                                    title="View Details"
+                                                    onClick={() => setViewingRequest(req)}
+                                                >
+                                                    <Eye size={18} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
                         ) : (
                             <tr>
                                 <td colSpan="6" style={{ padding: '60px 0', textAlign: 'center', color: '#94a3b8' }}>
@@ -211,51 +230,145 @@ const CoordinatorAcademicRequests = () => {
                 </table>
             </div>
 
-            {/* Detailed View Modal */}
-            {selectedRequest && (
-                <div style={styles.modalOverlay}>
-                    <div style={styles.modalContent}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 style={{ fontSize: '20px', fontWeight: '700', color: '#1e293b' }}>Request Details</h3>
-                            <button onClick={() => setSelectedRequest(null)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}>
-                                <XCircle size={24} />
+            {/* --- Academic Request Details Drawer (Coordinator View) --- */}
+            {viewingRequest && (
+                <div className="details-drawer-overlay" onClick={() => setViewingRequest(null)}>
+                    <div className="details-drawer" onClick={(e) => e.stopPropagation()}>
+
+                        {/* Header - موحد مع ثيم الإعلانات وواجهة الطالب */}
+                        <div className="drawer-header">
+                            <div className="drawer-title-area">
+                                <span className={`badge-type status-${viewingRequest.status.toLowerCase()}`}>
+                                    {viewingRequest.status}
+                                </span>
+                                <h3>Academic Request Details</h3>
+                            </div>
+                            <button className="close-drawer-btn" onClick={() => setViewingRequest(null)}>
+                                <X size={20} />
                             </button>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-                            <InfoBox label="Student" value={selectedRequest.studentId?.studentName} icon={<User size={14} />} />
-                            <InfoBox label="Assigned Advisor" value={selectedRequest.academicAdvisorId?.staffName} icon={<CheckCircle2 size={14} />} />
-                            <InfoBox label="Request Date" value={new Date(selectedRequest.createdAt).toLocaleString()} icon={<Calendar size={14} />} />
-                            <InfoBox label="Status" value={selectedRequest.status.toUpperCase()} icon={<Clock size={14} />} />
-                        </div>
-
-                        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                            <h4 style={{ fontSize: '13px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '15px' }}>Decision Logs</h4>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <div style={{ fontSize: '12px', color: '#94a3b8' }}>Advisor Comment:</div>
-                                <div style={{ fontSize: '15px', color: '#1e293b', fontWeight: '500', marginTop: '4px' }}>
-                                    {selectedRequest.academicAdvisorComment || "No comment provided by advisor."}
+                        <div className="drawer-content">
+                            {/* 1. Student & Semester Info - عرض بيانات الطالب الأساسية */}
+                            <div className="detail-row" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div className="detail-group">
+                                    <label> Student Info</label>
+                                    <div className="student-detail-chip">
+                                        <div className="std-info">
+                                            <span className="std-name">{viewingRequest.studentId?.studentName}</span>
+                                            <span className="std-id">ID: {viewingRequest.studentId?._id}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="detail-row-grid">
+                                    <div className="detail-group">
+                                        <label>Request Type</label>
+                                        <p className="detail-value title">{viewingRequest.requestType}</p>
+                                    </div>
+                                    <div className="detail-group">
+                                        <label>Submission Date</label>
+                                        <p className="detail-value">
+                                            {new Date(viewingRequest.createdAt).toLocaleDateString()}
+                                        </p>
+                                        <span className="sub-id" style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                            Semester: {viewingRequest.semesterId?.name || "N/A"}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            {selectedRequest.studentSuggestion && (
-                                <div>
-                                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>Student Justification:</div>
-                                    <div style={{ fontSize: '14px', color: '#475569', marginTop: '4px', fontStyle: 'italic' }}>
-                                        "{selectedRequest.studentSuggestion}"
+                            <hr className="drawer-divider" />
+
+                            <div className="specific-details">
+
+
+                                {/* Case: Withdrawal or Improve Grade */}
+                                {(viewingRequest.requestType === "Withdrawal" || viewingRequest.requestType === "improve Grade") && (
+                                    <div className="detail-group">
+                                        <label>Target Course</label>
+                                        <p className="detail-value highlight">
+                                            {viewingRequest.courseId?.courseName || viewingRequest.courseId || "N/A"}
+                                            {viewingRequest.courseId?._id && <span className="sub-id"> ({viewingRequest.courseId._id})</span>}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Case: Add Drop or Overload */}
+                                {(viewingRequest.requestType === "Add Drop" || viewingRequest.requestType === "Overload") && (
+                                    <div className="detail-row">
+                                        <div className="detail-group">
+                                            <label >Added Courses</label>
+                                            <div className="course-chips detail-value-green">
+                                                {viewingRequest.addedCourses?.length > 0 ? (
+                                                    viewingRequest.addedCourses.map(c => (
+                                                        <span key={c._id || c} className="chip add">
+                                                            {c.courseName || c} - {c._id ? `${c._id}` : ''}
+                                                        </span>
+                                                    ))
+                                                ) : <p className="detail-value-muted">None</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="detail-group" style={{ marginTop: '15px' }}>
+                                            <label>Dropped Courses</label>
+                                            <div className="course-chips detail-value-green">
+                                                {viewingRequest.droppedCourses?.length > 0 ? (
+                                                    viewingRequest.droppedCourses.map(c => (
+                                                        <span key={c._id || c} className="chip drop">
+                                                            {c.courseName || c} - {c._id ? `${c._id}` : ''}
+                                                        </span>
+                                                    ))
+                                                ) : <p className="detail-value-muted">None</p>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <hr className="drawer-divider" />
+
+                            {/* 3. Reasons & Comments - المبررات والملاحظات */}
+                            <div className="detail-group" style={{ marginBottom: '12px' }}>
+                                <label> Student Justification</label>
+                                <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    <p style={{ margin: 0, color: '#1e293b', fontStyle: 'italic', fontSize: '14px' }}>
+                                        "{viewingRequest.writtenReason || viewingRequest.studentSuggestion || "No explanation provided."}"
+                                    </p>
+                                    {viewingRequest.withdrawalReason && (
+                                        <div style={{ marginTop: '8px' }}>
+                                            <span className="badge-type" style={{ fontSize: '10px', backgroundColor: '#e2e8f0', color: '#475569' }}>
+                                                Category: {viewingRequest.withdrawalReason}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 4. Advisor Information - مراجعة المرشد الأكاديمي */}
+                            <div className="detail-group advisor-section">
+                                <label> Academic Advisor</label>
+                                <div className="student-detail-chip">
+                                    <User size={12} />
+                                    <div className="std-info">
+                                        <span className="std-name">
+                                            {viewingRequest.academicAdvisorId?.staffName || "Not assigned yet"}
+                                        </span>
+                                        {viewingRequest.academicAdvisorId?._id && (
+                                            <span className="std-id">ID: {viewingRequest.academicAdvisorId._id}</span>
+                                        )}
                                     </div>
                                 </div>
-                            )}
-                        </div>
+                                <div className="advisor-comment-box" style={{ marginTop: '10px', fontSize: '13px', color: '#64748b', fontStyle: 'italic', paddingLeft: '10px', borderLeft: '2px solid #e2e8f0' }}>
+                                    <strong>Advisor Comment:</strong> {viewingRequest.academicAdvisorComment || "No comment from advisor yet."}
+                                </div>
+                            </div>
 
-                        <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                                onClick={() => setSelectedRequest(null)}
-                                className='btn-cancel'
-                            >
-                                Close
-                            </button>
+                            {/* Footer Action */}
+                            <div style={{ marginTop: '30px' }}>
+                                {/* <button className="btn-cancel" style={{ width: '100%' }} onClick={() => setViewingRequest(null)}>
+                                    Close Details
+                                </button> */}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -264,24 +377,24 @@ const CoordinatorAcademicRequests = () => {
     );
 };
 
-// Sub-components for clarity
+
 const RequestSummaryView = ({ request }) => {
-    const courseName = request.courseId?.courseName || request.courseId || "Multiple Courses";
+    const courseName = request.courseId?._id || request.courseId || "Multiple Courses";
 
     switch (request.requestType) {
         case 'Add Drop':
             return (
-                <div style={{ fontSize: '12px' }}>
-                    <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}><ArrowUpCircle size={12} /> Added: {request.addedCourses?.length || 0}</div>
-                    <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px' }}><ArrowDownCircle size={12} /> Dropped: {request.droppedCourses?.length || 0}</div>
+                <div style={{ fontSize: '14px', display: 'flex', gap: '5px' }}>
+                    <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowUpCircle size={16} /> Added: {request.addedCourses?.length || 0}</div>
+                    <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowDownCircle size={16} /> Dropped: {request.droppedCourses?.length || 0}</div>
                 </div>
             );
         case 'Withdrawal':
-            return <div style={{ color: '#ef4444', fontWeight: '500' }}>Withdraw: {courseName}</div>;
+            return <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: '500' }}>Withdraw: {courseName}</div>;
         case 'improve Grade':
-            return <div style={{ color: '#6366f1', fontWeight: '500' }}>Improve: {courseName}</div>;
+            return <div style={{ fontSize: '14px', color: '#6366f1', fontWeight: '500' }}>Improve: {courseName}</div>;
         case 'Overload':
-            return <div style={{ color: '#f59e0b', fontWeight: '500' }}>Credit Overload</div>;
+            return <div style={{ fontSize: '14px', color: '#f59e0b', fontWeight: '500' }}>{request.addedCourses?.length || 0} Overload</div>;
         default:
             return <span>{courseName}</span>;
     }

@@ -42,6 +42,8 @@ const AdvisorAcademicRequests = () => {
     const [advisorComment, setAdvisorComment] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const [viewingRequest, setViewingRequest] = useState(null);
+
     // Fetch Requests
     const fetchRequests = async () => {
         try {
@@ -166,6 +168,28 @@ const AdvisorAcademicRequests = () => {
         modalContent: { backgroundColor: '#fff', width: '90%', maxWidth: '650px', borderRadius: '20px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '90vh', overflowY: 'auto' }
     };
 
+    const RequestSummaryView = ({ request }) => {
+        const courseName = request.courseId?._id || request.courseId || "Multiple Courses";
+
+        switch (request.requestType) {
+            case 'Add Drop':
+                return (
+                    <div style={{ fontSize: '14px', display: 'flex', gap: '5px' }}>
+                        <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowUpCircle size={16} /> Added: {request.addedCourses?.length || 0}</div>
+                        <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowDownCircle size={16} /> Dropped: {request.droppedCourses?.length || 0}</div>
+                    </div>
+                );
+            case 'Withdrawal':
+                return <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: '500' }}>Withdraw: {courseName}</div>;
+            case 'improve Grade':
+                return <div style={{ fontSize: '14px', color: '#6366f1', fontWeight: '500' }}>Improve: {courseName}</div>;
+            case 'Overload':
+                return <div style={{ fontSize: '14px', color: '#f59e0b', fontWeight: '500' }}>{request.addedCourses?.length || 0} Overload</div>;
+            default:
+                return <span>{courseName}</span>;
+        }
+    };
+
     return (
         <div className="management-container">
             <header className="management-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -246,6 +270,7 @@ const AdvisorAcademicRequests = () => {
                 <table >
                     <thead style={{ backgroundColor: '#f1f5f9' }}>
                         <tr>
+
                             <th >Student</th>
                             <th >Type</th>
                             <th >Requested Changes</th>
@@ -278,18 +303,19 @@ const AdvisorAcademicRequests = () => {
                                             color: '#475569'
                                         }}>{req.requestType}</span>
                                     </td>
-                                    <td style={styles.tableCell}>
-                                        <RequestDataView request={req} />
+                                    <td>
+                                        <RequestSummaryView request={req} />
                                     </td>
                                     <td style={styles.tableCell}>{new Date(req.createdAt).toLocaleDateString()}</td>
-                                    <td style={styles.tableCell}>
+
+                                    <td>
                                         <StatusBadge status={req.status} />
                                     </td>
                                     <td style={styles.tableCell}>
                                         <button
-                                            onClick={() => setSelectedRequest(req)}
-                                            className="btn-view"
-                                            title='view details'
+                                            className="btn-icon btn-view"
+                                            title="View Details"
+                                            onClick={() => setViewingRequest(req)}
                                         >
                                             <Eye size={18} />
                                         </button>
@@ -310,8 +336,175 @@ const AdvisorAcademicRequests = () => {
                 </table>
             </div>
 
+            {/* --- Academic Request Details Drawer (Advisor View) --- */}
+            {viewingRequest && (
+                <div className="details-drawer-overlay" onClick={() => { setViewingRequest(null); setAdvisorComment(''); }}>
+                    <div className="details-drawer" onClick={(e) => e.stopPropagation()}>
+
+                        {/* Header - موحد مع ثيم الإعلانات وواجهة الطالب */}
+                        <div className="drawer-header">
+                            <div className="drawer-title-area">
+                                <span className={`badge-type status-${viewingRequest.status.toLowerCase()}`}>
+                                    {viewingRequest.status}
+                                </span>
+                                <h3>Academic Request Details</h3>
+                            </div>
+                            <button className="close-drawer-btn" onClick={() => { setViewingRequest(null); setAdvisorComment(''); }}>
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="drawer-content">
+                            {/* 1. Student & Semester Info */}
+                            <div className="detail-row" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div className="detail-group">
+                                    <label> Student Info</label>
+                                    <div className="student-detail-chip">
+                                        <div className="std-info">
+                                            <span className="std-name">{viewingRequest.studentId?.studentName}</span>
+                                            <span className="std-id">ID: {viewingRequest.studentId?._id || viewingRequest.studentId?.id}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="detail-row-grid">
+                                    <div className="detail-group">
+                                        <label> Request Type</label>
+                                        <p className="detail-value title">{viewingRequest.requestType}</p>
+                                    </div>
+                                    <div className="detail-group">
+                                        <label>Submission Date</label>
+                                        <p className="detail-value">
+                                            {new Date(viewingRequest.createdAt).toLocaleDateString()}
+                                        </p>
+                                        <span className="sub-id" style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                            Semester: {viewingRequest.semesterId?.name || "N/A"}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr className="drawer-divider" />
+
+                            {/* 2. Specific Request Details */}
+                            <div className="specific-details">
+
+
+                                {/* Case: Withdrawal or Improve Grade */}
+                                {(viewingRequest.requestType === "Withdrawal" || viewingRequest.requestType === "improve Grade") && (
+                                    <div className="detail-group">
+                                        <label>Target Course</label>
+                                        <p className="detail-value highlight">
+                                            {viewingRequest.courseId?.courseName || viewingRequest.courseId || "N/A"}
+                                            {viewingRequest.courseId?._id && <span className="sub-id"> ({viewingRequest.courseId._id})</span>}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Case: Add Drop or Overload */}
+                                {(viewingRequest.requestType === "Add Drop" || viewingRequest.requestType === "Overload") && (
+                                    <div className="detail-row">
+                                        <div className="detail-group">
+                                            <label >Added Courses</label>
+                                            <div className="course-chips detail-value-green">
+                                                {viewingRequest.addedCourses?.length > 0 ? (
+                                                    viewingRequest.addedCourses.map(c => (
+                                                        <span key={c._id || c} className="chip add">
+                                                            {c.courseName || c} - {c._id ? `${c._id}` : ''}
+                                                        </span>
+                                                    ))
+                                                ) : <p className="detail-value-muted">None</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="detail-group" style={{ marginTop: '15px' }}>
+                                            <label>Dropped Courses</label>
+                                            <div className="course-chips detail-value-green">
+                                                {viewingRequest.droppedCourses?.length > 0 ? (
+                                                    viewingRequest.droppedCourses.map(c => (
+                                                        <span key={c._id || c} className="chip drop">
+                                                            {c.courseName || c} - {c._id ? `${c._id}` : ''}
+                                                        </span>
+                                                    ))
+                                                ) : <p className="detail-value-muted">None</p>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <hr className="drawer-divider" />
+
+                            {/* 3. Reasons & Justification */}
+                            <div className="detail-group">
+                                <label> Student Justification</label>
+                                <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                                    <p style={{ margin: 0, color: '#1e293b', fontStyle: 'italic', fontSize: '14px' }}>
+                                        "{viewingRequest.writtenReason || viewingRequest.studentSuggestion || "No explanation provided."}"
+                                    </p>
+                                    {viewingRequest.withdrawalReason && (
+                                        <div style={{ marginTop: '8px' }}>
+                                            <span className="badge-type" style={{ fontSize: '10px', backgroundColor: '#e2e8f0', color: '#475569' }}>
+                                                Category: {viewingRequest.withdrawalReason}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* 4. Action Section - Logic المودال تم نقله هنا */}
+                            <div className="advisor-action-section" style={{ marginTop: '25px', paddingTop: '20px', borderTop: '2px dashed #e2e8f0' }}>
+                                {viewingRequest.status === 'pending' ? (
+                                    <>
+                                        <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#1e293b', marginBottom: '8px' }}>
+                                            Academic Advisor Feedback
+                                        </label>
+                                        <textarea
+                                            placeholder="Provide feedback or reason for your decision..."
+                                            value={advisorComment}
+                                            onChange={(e) => setAdvisorComment(e.target.value)}
+                                            style={{
+                                                width: '100%', height: '100px', padding: '12px', borderRadius: '10px',
+                                                border: '1px solid #e2e8f0', marginBottom: '20px', outline: 'none', fontSize: '14px',
+                                                fontFamily: 'inherit'
+                                            }}
+                                        />
+                                        <div className="detail-row-grid" style={{ display: 'flex', gap: '12px' }}>
+                                            <button
+                                                className="btn-approve"
+                                                disabled={isSubmitting}
+                                                onClick={() => handleRespond(viewingRequest._id, 'approved')}
+                                                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', backgroundColor: '#10b981', color: '#fff', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            >
+                                                <CheckCircle size={18} /> Approve
+                                            </button>
+                                            <button
+                                                className="btn-reject"
+                                                disabled={isSubmitting}
+                                                onClick={() => handleRespond(viewingRequest._id, 'rejected')}
+                                                style={{ flex: 1, padding: '12px', borderRadius: '10px', border: 'none', backgroundColor: '#ef4444', color: '#fff', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                            >
+                                                <XCircle size={18} /> Reject
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* عرض الرد في حالة أن الطلب ليس Pending */
+                                    <div style={{ padding: '16px', borderRadius: '12px', backgroundColor: viewingRequest.status === 'approved' ? '#ecfdf5' : '#fef2f2', border: `1px solid ${viewingRequest.status === 'approved' ? '#10b981' : '#ef4444'}` }}>
+                                        <div style={{ fontWeight: '700', color: viewingRequest.status === 'approved' ? '#065f46' : '#991b1b', marginBottom: '4px' }}>
+                                            Decision: {viewingRequest.status.toUpperCase()}
+                                        </div>
+                                        <div style={{ fontSize: '14px', color: viewingRequest.status === 'approved' ? '#065f46' : '#991b1b' }}>
+                                            <strong>Your Comment:</strong> {viewingRequest.academicAdvisorComment || "No comment provided"}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* Modal */}
-            {selectedRequest && (
+            {/* {selectedRequest && (
                 <div style={styles.modalOverlay}>
                     <div style={styles.modalContent}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px' }}>
@@ -391,76 +584,12 @@ const AdvisorAcademicRequests = () => {
                         )}
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 };
 
-// Helper components remain the same
-const RequestDataView = ({ request }) => {
-    switch (request.requestType) {
-        case 'Add Drop':
-            return (
-                <div style={{ fontSize: '12px' }}>
-                    {request.addedCourses?.length > 0 && (
-                        <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <ArrowUpCircle size={14} /> Add: {request.addedCourses.join(', ')}
-                        </div>
-                    )}
-                    {request.droppedCourses?.length > 0 && (
-                        <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <ArrowDownCircle size={14} /> Drop: {request.droppedCourses.join(', ')}
-                        </div>
-                    )}
-                </div>
-            );
-        case 'Withdrawal':
-            return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}>
-                    <XCircle size={14} color="#ef4444" /> {request.courseId}
-                </div>
-            );
-        case 'improve Grade':
-            return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}>
-                    <RotateCcw size={14} color="#6366f1" /> {request.courseId}
-                </div>
-            );
-        case 'Overload':
-            return (
-                <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}>
-                    <ArrowUpCircle size={14} /> {request.addedCourses?.join(', ') || 'N/A'}
-                </div>
-            );
-        default:
-            return <span>{request.courseId || 'N/A'}</span>;
-    }
-};
 
-const StatusBadge = ({ status }) => {
-    const styles = {
-        pending: { bg: '#fffbeb', text: '#f59e0b' },
-        approved: { bg: '#ecfdf5', text: '#10b981' },
-        rejected: { bg: '#fef2f2', text: '#ef4444' }
-    };
-    const current = styles[status] || styles.pending;
-    return (
-        <span style={{
-            padding: '6px 12px',
-            borderRadius: '20px',
-            fontSize: '12px',
-            fontWeight: '700',
-            backgroundColor: current.bg,
-            color: current.text,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-        }}>
-            {status === 'pending' && <Clock size={12} />}
-            {status.toUpperCase()}
-        </span>
-    );
-};
 
 const InfoGroup = ({ label, value, icon }) => (
     <div>
@@ -471,4 +600,53 @@ const InfoGroup = ({ label, value, icon }) => (
     </div>
 );
 
+
+
+const RequestSummaryView = ({ request }) => {
+    const courseName = request.courseId?._id || request.courseId || "Multiple Courses";
+
+    switch (request.requestType) {
+        case 'Add Drop':
+            return (
+                <div style={{ fontSize: '14px', display: 'flex', gap: '5px' }}>
+                    <div style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowUpCircle size={16} /> Added: {request.addedCourses?.length || 0}</div>
+                    <div style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '500' }}><ArrowDownCircle size={16} /> Dropped: {request.droppedCourses?.length || 0}</div>
+                </div>
+            );
+        case 'Withdrawal':
+            return <div style={{ fontSize: '14px', color: '#ef4444', fontWeight: '500' }}>Withdraw: {courseName}</div>;
+        case 'improve Grade':
+            return <div style={{ fontSize: '14px', color: '#6366f1', fontWeight: '500' }}>Improve: {courseName}</div>;
+        case 'Overload':
+            return <div style={{ fontSize: '14px', color: '#f59e0b', fontWeight: '500' }}>{request.addedCourses?.length || 0} Overload</div>;
+        default:
+            return <span>{courseName}</span>;
+    }
+};
+
+const StatusBadge = ({ status }) => {
+    const map = {
+        pending: { bg: '#fff7ed', text: '#c2410c', icon: <Clock size={12} /> },
+        approved: { bg: '#f0fdf4', text: '#15803d', icon: <CheckCircle2 size={12} /> },
+        rejected: { bg: '#fef2f2', text: '#b91c1c', icon: <XCircle size={12} /> }
+    };
+    const config = map[status] || map.pending;
+    return (
+        <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '5px 10px',
+            borderRadius: '12px',
+            fontSize: '11px',
+            fontWeight: '700',
+            backgroundColor: config.bg,
+            color: config.text,
+            textTransform: 'uppercase'
+        }}>
+            {config.icon} {status}
+        </span>
+    );
+};
 export default AdvisorAcademicRequests;
+
